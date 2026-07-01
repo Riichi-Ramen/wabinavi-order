@@ -223,6 +223,26 @@ body{
 textarea.uwagi-ta{width:100%;background:rgba(255,252,248,0.9);border:1px solid rgba(192,57,43,0.3);color:var(--text);border-radius:8px;padding:.65rem;font-size:.82rem;resize:vertical;min-height:72px;font-family:inherit}
 textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
 .modal-ft{padding:1rem 1.3rem 1.3rem;display:flex;gap:.75rem;border-top:1px solid var(--border)}
+
+/* ── 同席会員追加セクション ── */
+.coseat-box{margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem}
+.coseat-label{font-size:.8rem;color:var(--accent);font-weight:700;margin-bottom:.3rem;display:block}
+.coseat-sub{font-size:.72rem;color:var(--muted);margin-bottom:.7rem;line-height:1.6}
+.coseat-row{display:flex;gap:.5rem;margin-bottom:.5rem}
+.coseat-input{flex:1;background:rgba(255,252,248,0.9);border:1.5px solid rgba(192,57,43,0.3);
+  color:var(--text);border-radius:8px;padding:.55rem .8rem;font-size:.85rem;font-family:inherit}
+.coseat-input:focus{outline:none;border-color:var(--accent)}
+.coseat-add-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;
+  padding:.55rem .9rem;font-size:.82rem;cursor:pointer;white-space:nowrap;font-weight:700}
+.coseat-add-btn:hover{filter:brightness(1.1)}
+.coseat-list{display:flex;flex-direction:column;gap:.35rem}
+.coseat-chip{display:flex;align-items:center;justify-content:space-between;
+  background:rgba(45,122,58,0.08);border:1px solid rgba(45,122,58,0.3);
+  border-radius:8px;padding:.4rem .7rem;font-size:.78rem;color:#2d7a3a}
+.coseat-chip .remove-coseat{background:none;border:none;color:#c0392b;
+  cursor:pointer;font-size:.9rem;padding:0;margin-left:.5rem}
+.coseat-note{font-size:.7rem;color:var(--muted);margin-top:.5rem;line-height:1.5;
+  font-style:italic}
 .btn-back{flex:1;padding:.8rem;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;cursor:pointer;font-size:.88rem}
 .btn-order{flex:2;padding:.8rem;background:#2d7a3a;color:#fff;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:.9rem;box-shadow:0 4px 14px rgba(45,122,58,0.3)}
 .btn-order:hover{background:#3d9c4a}
@@ -489,6 +509,36 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
         <div class="preset-list" id="preset-list"></div>
         <textarea class="uwagi-ta" id="uwagi-ta" placeholder="Wpisz tutaj… / Write here…"></textarea>
       </div>
+
+      <!-- 同席会員追加セクション / Sekcja dla współsiadających członków -->
+      <div class="coseat-box">
+        <label class="coseat-label">
+          👥 同席の会員を追加 / Dodaj współsiadających członków<br>
+          <small style="font-weight:400;font-size:.7rem;color:var(--muted)">
+            Add co-seated members / 同じテーブルの会員
+          </small>
+        </label>
+        <div class="coseat-sub">
+          グループで来店の会員の方はこちらで追加できます。<br>
+          Członkowie przy tym stoliku mogą dodać swój e-mail, aby otrzymać pieczątkę.<br>
+          <small style="color:var(--muted)">
+            Members at this table can add their email to receive a stamp.<br>
+            ※ 追加し忘れた場合はレジで係員にお申し付けください。<br>
+            Jeśli zapomnisz — poproś obsługę przy kasie / Ask staff at the register.
+          </small>
+        </div>
+        <div class="coseat-row">
+          <input class="coseat-input" type="email" id="coseat-input"
+            placeholder="📧 E-mail współsiadającego / Co-seated member email">
+          <button class="coseat-add-btn" onclick="addCoseat()">＋ 追加 / Dodaj</button>
+        </div>
+        <div class="coseat-list" id="coseat-list"></div>
+        <div class="coseat-note">
+          ✅ 追加された方には注文と同時にスタンプが付与されます。<br>
+          Dodane osoby otrzymają pieczątkę automatycznie wraz z zamówieniem.<br>
+          <small>Added members will receive their stamp automatically with this order.</small>
+        </div>
+      </div>
     </div>
     <div class="modal-ft">
       <button class="btn-back" onclick="closeConfirm()">← Wróć / Back</button>
@@ -511,6 +561,7 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
     <div class="s-en">Thank you! Our staff will deliver your order to the kitchen. Please wait a moment.</div>
     <div style="margin-top:.8rem;font-size:.8rem;color:var(--muted)" id="order-id-display"></div>
   </div>
+  <div id="coseat-result-area" style="display:none;width:100%;max-width:420px"></div>
   <button class="new-btn" onclick="resetApp()">+ Nowe zamówienie / New Order</button>
   <div class="member-divider" id="member-divider-block">
     <div class="member-teaser">
@@ -564,6 +615,7 @@ let memberContact = "";
 let memberName    = "";
 let memberInfo    = Object.create(null);
 let midTab    = "email";
+let coseatMembers = []; // 同席会員リスト
 
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
@@ -981,6 +1033,10 @@ function findCatOfItem(id) {
 function openConfirm() {
   const ids = Object.keys(cart);
   if (!ids.length) { showToast("Nie wybrano nic / Nothing selected"); return; }
+  // 同席リストをリセット（毎回）
+  coseatMembers = [];
+  renderCoseatList();
+  document.getElementById('coseat-input') && (document.getElementById('coseat-input').value = '');
   document.getElementById('conf-meta').textContent =
     `Stolik ${tableNum} / Table ${tableNum}  •  ${guestNum} os./guests`;
 
@@ -1072,9 +1128,10 @@ async function placeOrder() {
 
   if (gasUrl) {
     document.getElementById('sending-screen').classList.add('open');
+    let res = null;
     try {
-      await fetch(gasUrl, {
-        method:'POST', mode:'no-cors',
+      const response = await fetch(gasUrl, {
+        method:'POST', mode:'cors',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           orderId, timestamp:new Date().toISOString(),
@@ -1082,14 +1139,47 @@ async function placeOrder() {
           isMember, memberName: isMember?memberName:"",
           memberContact: isMember?memberContact:"",
           memberBirthMonth: isMember?(memberInfo.birthMonth||""):"",
-          memberLanguage:   isMember?(memberInfo.language||""):""
+          memberLanguage:   isMember?(memberInfo.language||""):"",
+          coseatMembers: coseatMembers
         })
       });
+      res = await response.json();
     } catch(e) {}
     document.getElementById('sending-screen').classList.remove('open');
   }
 
   document.getElementById('order-id-display').textContent = `Nr zamówienia / Order ID: ${orderId}`;
+
+  // 同席会員のスタンプ結果を表示
+  const coseatResultsData = res && res.coseatResults ? res.coseatResults : [];
+  const coseatArea = document.getElementById('coseat-result-area');
+  if (coseatArea && coseatResultsData.length > 0) {
+    const msgs = coseatResultsData.map(r => {
+      if (r.status === 'ok')
+        return `<div style="color:#2d7a3a">✅ ${r.email} → +10pt（${r.newPt}pt）${r.rankUp ? ' ⬆️ ランクアップ！' : ''}${r.bonus ? ' 🎉 ボーナス！' : ''}</div>`;
+      if (r.status === 'alreadyStamped')
+        return `<div style="color:#e67e22">⏰ ${r.email} → 本日スタンプ済み</div>`;
+      if (r.status === 'notFound')
+        return `<div style="color:#c0392b">❌ ${r.email} → 未登録</div>`;
+      if (r.status === 'expired')
+        return `<div style="color:#c0392b">⚠️ ${r.email} → ポイント失効（リセット）</div>`;
+      return `<div style="color:#c0392b">❌ ${r.email} → エラー</div>`;
+    }).join('');
+    coseatArea.innerHTML = `
+      <div style="margin-top:1rem;background:rgba(255,252,245,0.9);border:1px solid rgba(192,57,43,0.2);
+        border-radius:10px;padding:.9rem;font-size:.78rem;line-height:1.9">
+        <div style="font-weight:700;color:var(--accent);margin-bottom:.5rem">
+          👥 同席会員スタンプ結果 / Wyniki pieczątki dla grupy / Co-seated stamp results
+        </div>
+        ${msgs}
+        <div style="font-size:.7rem;color:var(--muted);margin-top:.5rem">
+          ※ 取得できなかった場合は係員へお申し付けください<br>
+          Jeśli nie otrzymałeś/aś pieczątki, poproś obsługę przy kasie.<br>
+          If you did not receive a stamp, please ask our staff at the register.
+        </div>
+      </div>`;
+    coseatArea.style.display = 'block';
+  }
 
   const memberDiv = document.getElementById('member-divider-block');
   if (isMember) {
@@ -1115,10 +1205,45 @@ async function placeOrder() {
   document.getElementById('success-screen').style.display = 'flex';
 }
 
+// ── 同席会員追加・削除 ──────────────────────────────────────────
+function addCoseat() {
+  const input = document.getElementById('coseat-input');
+  const email = input.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) {
+    showToast("メールアドレスを入力してください / Enter email"); return;
+  }
+  if (email === memberContact.toLowerCase()) {
+    showToast("代表者と同じメールアドレスです / Same as main member"); return;
+  }
+  if (coseatMembers.includes(email)) {
+    showToast("すでに追加されています / Already added"); return;
+  }
+  coseatMembers.push(email);
+  input.value = '';
+  renderCoseatList();
+  showToast("✅ 追加しました / Added: " + email, false);
+}
+
+function removeCoseat(email) {
+  coseatMembers = coseatMembers.filter(e => e !== email);
+  renderCoseatList();
+}
+
+function renderCoseatList() {
+  const list = document.getElementById('coseat-list');
+  if (!list) return;
+  list.innerHTML = coseatMembers.map(email => `
+    <div class="coseat-chip">
+      <span>👤 ${email}</span>
+      <button class="remove-coseat" onclick="removeCoseat('${email}')">✕</button>
+    </div>`).join('');
+}
+
 function resetApp() {
   cart = Object.create(null);
   tableNum=""; guestNum="";
   isMember=false; memberContact=""; memberName=""; memberInfo=Object.create(null);
+  coseatMembers = [];
   document.getElementById('success-screen').style.display = 'none';
   document.getElementById('member-check-screen').style.display = 'none';
   document.getElementById('register-prompt-screen').style.display = 'none';
