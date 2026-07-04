@@ -139,6 +139,22 @@ body{
 .not-found{text-align:center;color:var(--muted);padding:1.5rem;line-height:1.8}
 .logout-btn{font-size:.72rem;color:var(--muted);text-decoration:underline;
   background:none;border:none;cursor:pointer;margin-top:.5rem}
+#withdraw-modal-card{display:none;position:fixed;inset:0;background:rgba(60,20,10,0.75);
+  backdrop-filter:blur(6px);z-index:600;align-items:center;justify-content:center;padding:1.2rem}
+#withdraw-modal-card.open{display:flex}
+.wd-box{background:rgba(255,252,245,0.97);border-radius:16px;padding:1.8rem;
+  width:100%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(120,60,40,0.2)}
+.wd-icon{font-size:2.5rem;margin-bottom:.8rem}
+.wd-title{font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:.6rem;line-height:1.6}
+.wd-msg{font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:1rem}
+.wd-warn{background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.3);
+  border-radius:8px;padding:.7rem;font-size:.75rem;color:var(--accent);
+  margin-bottom:1.2rem;line-height:1.7}
+.wd-btn-yes{background:var(--accent);color:#fff;border:none;border-radius:10px;
+  padding:.8rem;font-weight:700;font-size:.9rem;cursor:pointer;width:100%;margin-bottom:.5rem}
+.wd-btn-no{background:transparent;border:1.5px solid var(--border);color:var(--muted);
+  border-radius:10px;padding:.7rem;cursor:pointer;font-size:.85rem;width:100%}
+.wd-btn-no:hover{border-color:var(--accent);color:var(--accent)}
 .refresh-bar{display:flex;align-items:center;justify-content:space-between;
   background:rgba(45,122,58,0.06);border:1px solid rgba(45,122,58,0.2);
   border-radius:10px;padding:.6rem 1rem;margin-bottom:.8rem;width:100%;max-width:440px}
@@ -480,9 +496,19 @@ function renderFullCard(m) {
       ${roadmapHtml}
     </div>
 
-    <div style="text-align:center">
+    <div style="text-align:center;margin-top:.5rem">
       <button class="logout-btn" onclick="logout()">
         別のアカウントでログイン / Zaloguj się na inne konto
+      </button>
+      <br>
+      <button onclick="showWithdrawFromCard('${m.email}')"
+        style="background:none;border:1px solid rgba(192,57,43,0.3);
+               color:var(--accent);border-radius:8px;padding:.4rem 1rem;
+               font-size:.72rem;cursor:pointer;margin-top:.5rem">
+        🚪 退会を申し出る / Rezygnacja z członkostwa / Withdraw membership
+      </button>
+    </div>`;size:.72rem;cursor:pointer;margin-top:.5rem">
+        🚪 退会を申し出る / Rezygnacja z członkostwa / Withdraw membership
       </button>
     </div>`;
 }
@@ -582,6 +608,117 @@ function logout() {
   const bar = document.getElementById('refresh-bar');
   if (bar) bar.style.display = 'none';
   stopAutoRefresh();
+}
+</script>
+
+<!-- ══ 退会モーダル ══ -->
+<div id="withdraw-modal-card">
+  <div class="wd-box">
+    <div id="wd-confirm">
+      <div class="wd-icon">🚪</div>
+      <div class="wd-title">
+        Rezygnacja z członkostwa<br>
+        Withdraw membership<br>
+        退会申請
+      </div>
+      <div class="wd-msg">
+        Czy na pewno chcesz zrezygnować?<br>
+        Are you sure you want to withdraw?<br>
+        本当に退会しますか？
+      </div>
+      <div class="wd-warn">
+        ⚠️ Wszystkie Twoje dane osobowe zostaną trwale usunięte.<br>
+        All your personal data will be permanently deleted.<br>
+        保存されていた個人データはすべて消去されます。<br><br>
+        🍜 Zgromadzone punkty lojalnościowe zostaną unieważnione.<br>
+        All accumulated loyalty points will be invalidated.<br>
+        <strong>これまで貯めたポイントも無効となります。ご了解ください。</strong><br><br>
+        Historia wizyt zostanie utracona.<br>
+        Visit history will be lost.<br>
+        来店履歴もすべて削除されます。
+      </div>
+      <!-- 同意チェックボックス -->
+      <label style="display:flex;align-items:flex-start;gap:.6rem;
+        font-size:.78rem;color:var(--text);text-align:left;
+        margin-bottom:1rem;cursor:pointer;line-height:1.6">
+        <input type="checkbox" id="wd-agree-check"
+          style="margin-top:.2rem;accent-color:#c0392b;width:16px;height:16px;flex-shrink:0"
+          onchange="document.getElementById('wd-yes-btn').disabled=!this.checked;
+                    document.getElementById('wd-yes-btn').style.opacity=this.checked?'1':'.4'">
+        <span>
+          Rozumiem i akceptuję powyższe warunki.<br>
+          I understand and accept the above conditions.<br>
+          上記の内容を理解し、同意します。
+        </span>
+      </label>
+      <button class="wd-btn-yes" id="wd-yes-btn"
+        onclick="doWithdrawCard()" disabled style="opacity:.4">
+        ✅ Tak, rezygnuję / Yes, withdraw / はい、退会します
+      </button>
+      <button class="wd-btn-no" onclick="closeWithdrawCard()">
+        ← Anuluj / Cancel / キャンセル
+      </button>
+    </div>
+
+    <div id="wd-done" style="display:none">
+      <div class="wd-icon">🌸</div>
+      <div class="wd-title">
+        Dziękujemy za lojalność!<br>
+        Thank you for your loyalty!<br>
+        ご愛顧ありがとうございました
+      </div>
+      <div class="wd-msg">
+        Zapraszamy ponownie w każdej chwili.<br>
+        We look forward to welcoming you back anytime.<br>
+        またのご来店を心よりお待ちしております。<br><br>
+        <strong>
+        Wszystkie dane osobowe zostały usunięte.<br>
+        All personal data has been deleted.<br>
+        保存されていた個人データはすべて消去されました。
+        </strong>
+      </div>
+      <button class="wd-btn-no" onclick="closeWithdrawCard();logout()">
+        閉じる / Zamknij / Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let withdrawEmail = '';
+
+function showWithdrawFromCard(email) {
+  withdrawEmail = email;
+  document.getElementById('wd-confirm').style.display = 'block';
+  document.getElementById('wd-done').style.display    = 'none';
+  document.getElementById('withdraw-modal-card').classList.add('open');
+}
+
+function closeWithdrawCard() {
+  document.getElementById('withdraw-modal-card').classList.remove('open');
+}
+
+async function doWithdrawCard() {
+  const gasUrl = localStorage.getItem('wabi_gas_url') || '';
+  try {
+    if (gasUrl && withdrawEmail) {
+      await fetch(gasUrl, {
+        method:'POST', mode:'cors',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'withdraw', email: withdrawEmail })
+      });
+    }
+  } catch(e) {}
+
+  // ローカルデータ削除
+  try {
+    localStorage.removeItem('wabi_stamp_id');
+    localStorage.removeItem('wabi_stamp_id_type');
+    localStorage.removeItem('wabi_stamp_email');
+  } catch(e) {}
+
+  document.getElementById('wd-confirm').style.display = 'none';
+  document.getElementById('wd-done').style.display    = 'block';
 }
 </script>
 </body>

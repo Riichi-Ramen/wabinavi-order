@@ -105,6 +105,29 @@ body{
 .rp-btn-skip{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:.75rem;cursor:pointer;font-size:.85rem}
 .rp-btn-skip:hover{border-color:var(--accent);color:var(--accent)}
 
+/* ── 退会モーダル ── */
+#withdraw-modal{display:none;position:fixed;inset:0;background:rgba(60,20,10,0.75);
+  backdrop-filter:blur(6px);z-index:600;align-items:center;justify-content:center;padding:1.2rem}
+#withdraw-modal.open{display:flex}
+.withdraw-box{background:rgba(255,252,245,0.97);border-radius:16px;padding:1.8rem;
+  width:100%;max-width:380px;text-align:center;box-shadow:0 8px 40px rgba(120,60,40,0.2)}
+.withdraw-icon{font-size:2.5rem;margin-bottom:.8rem}
+.withdraw-title{font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:.6rem;line-height:1.6}
+.withdraw-msg{font-size:.78rem;color:var(--muted);line-height:1.7;margin-bottom:1rem}
+.withdraw-warn{background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.3);
+  border-radius:8px;padding:.7rem;font-size:.75rem;color:var(--accent);
+  margin-bottom:1.2rem;line-height:1.7}
+.withdraw-btns{display:flex;flex-direction:column;gap:.6rem}
+.withdraw-btn-confirm{background:var(--accent);color:#fff;border:none;border-radius:10px;
+  padding:.8rem;font-weight:700;font-size:.9rem;cursor:pointer}
+.withdraw-btn-confirm:hover{filter:brightness(1.1)}
+.withdraw-btn-cancel{background:transparent;border:1.5px solid var(--border);
+  color:var(--muted);border-radius:10px;padding:.7rem;cursor:pointer;font-size:.85rem}
+.withdraw-btn-cancel:hover{border-color:var(--accent);color:var(--accent)}
+.withdraw-done{display:none}
+.withdraw-done-icon{font-size:2.5rem;margin-bottom:.8rem}
+.withdraw-done-msg{font-size:.82rem;color:var(--text);line-height:1.8;margin-bottom:1rem}
+
 #mismatch-modal{display:none;position:fixed;inset:0;background:rgba(60,20,10,0.70);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:1.2rem}
 #mismatch-modal.open{display:flex}
 .mismatch-box{background:rgba(255,252,245,0.96);backdrop-filter:blur(16px);border:2px solid var(--orange);border-radius:16px;padding:2rem;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(80,30,20,0.3)}
@@ -414,7 +437,7 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
             </select>
           </div>
           <div style="flex:1.5">
-            <div style="font-size:.68rem;color:var(--muted);margin-bottom:.2rem">日 / Day <small>（任意）</small></div>
+            <div style="font-size:.68rem;color:var(--muted);margin-bottom:.2rem">日 / Dzień / Day <small>（任意 / opcjonalne / optional）</small></div>
             <select class="mid-input" id="mid-birthday" style="margin:0">
               <option value="">—</option>
               <option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option>
@@ -440,8 +463,8 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
         <div class="mid-field-label">🪪 会員種別 / Typ członkostwa / Member type</div>
         <select class="mid-input" id="mid-membertype">
           <option value="G">一般 / Ogólny / General</option>
-          <option value="S">🎓 学生 / Student（学生証確認後に適用）</option>
-          <option value="SR">🧓 シニア 65+ / Senior（年齢確認後に適用）</option>
+          <option value="S">🎓 学生 / Student（学生証確認後 / po weryfikacji legitymacji / after ID check）</option>
+          <option value="SR">🧓 シニア 65+ / Senior（年齢確認後 / po weryfikacji wieku / after age check）</option>
           <option value="T">✈️ 観光客 / Turysta / Tourist</option>
         </select>
       </div>
@@ -474,12 +497,22 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
     </div>
     <div class="rp-sub">会員登録しますか？</div>
     <div class="rp-perks">
-      ✅ Członkostwo <strong>bezpłatne</strong> / Free membership<br>
-      🎉 Promocje i oferty specjalne / Special offers<br>
-      🎓 Zniżka studencka / Student discount<br>
-      🧓 Zniżka senioralna / Senior discount<br>
+      ✅ Członkostwo <strong>bezpłatne</strong> / Free membership / 入会費無料<br>
+      🎉 Promocje i oferty specjalne / Special offers / 特別オファー<br>
+      🎓 Zniżka studencka / Student discount / 学生割引<br>
+      🧓 Zniżka senioralna / Senior discount / シニア割引<br>
       🍜 5 mis = następna w połowie ceny, 10 = gratis!<br>
-      &nbsp;&nbsp;5 bowls = next half price, 10 = free!
+      &nbsp;&nbsp;5 bowls = next half price, 10 = free! / 5杯で半額・10杯で無料！<br>
+      🚪 Rezygnacja możliwa w każdej chwili / Cancel anytime / いつでも退会自由
+    </div>
+    <div style="background:rgba(192,57,43,0.05);border:1px solid rgba(192,57,43,0.15);
+      border-radius:8px;padding:.7rem;margin-bottom:1rem;font-size:.72rem;
+      color:var(--muted);line-height:1.7;text-align:left">
+      🔒 <strong>GDPR / Ochrona danych osobowych</strong><br>
+      Dane osobowe są wykorzystywane wyłącznie w programie lojalnościowym Wabi Navi
+      i nie są przekazywane osobom trzecim.<br>
+      <small>Personal data is used solely for the Wabi Navi loyalty programme and is not shared with third parties.
+      個人情報はWabi Naviのポイントプログラムにのみ使用され、第三者には提供されません。</small>
     </div>
     <div class="rp-btns">
       <button class="rp-btn-register" onclick="goToRegisterForm()">
@@ -1309,6 +1342,57 @@ function renderCoseatList() {
     </div>`).join('');
 }
 
+// ── 退会処理 ──────────────────────────────────────────────────────
+function showWithdrawModal() {
+  document.getElementById('withdraw-modal').classList.add('open');
+  document.getElementById('withdraw-confirm-view').style.display = 'block';
+  document.getElementById('withdraw-done-view').style.display = 'none';
+}
+
+function closeWithdrawModal() {
+  document.getElementById('withdraw-modal').classList.remove('open');
+}
+
+async function confirmWithdraw() {
+  const gasUrl = getGasUrl();
+  const email  = memberContact;
+  if (!email) {
+    closeWithdrawModal();
+    return;
+  }
+
+  try {
+    if (gasUrl) {
+      await fetch(gasUrl, {
+        method:'POST', mode:'cors',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'withdraw', email })
+      });
+    }
+  } catch(e) {}
+
+  // ローカルの会員情報を削除
+  try {
+    localStorage.removeItem('wabi_returning_member');
+    localStorage.removeItem('wabi_stamp_id');
+    localStorage.removeItem('wabi_stamp_id_type');
+    localStorage.removeItem('wabi_stamp_email');
+  } catch(e) {}
+
+  // 完了画面を表示
+  document.getElementById('withdraw-confirm-view').style.display = 'none';
+  document.getElementById('withdraw-done-view').style.display = 'block';
+}
+
+function finishWithdraw() {
+  closeWithdrawModal();
+  isMember = false;
+  memberContact = '';
+  memberName = '';
+  memberInfo = Object.create(null);
+  resetApp();
+}
+
 function resetApp() {
   cart = Object.create(null);
   tableNum=""; guestNum="";
@@ -1336,5 +1420,83 @@ function showToast(msg, isErr=true) {
   setTimeout(()=>{el.style.display='none';},3500);
 }
 </script>
+
+<!-- ══ 退会モーダル ══ -->
+<div id="withdraw-modal">
+  <div class="withdraw-box">
+
+    <!-- 確認画面 -->
+    <div id="withdraw-confirm-view">
+      <div class="withdraw-icon">🚪</div>
+      <div class="withdraw-title">
+        Rezygnacja z członkostwa<br>
+        Withdraw membership / 退会申請
+      </div>
+      <div class="withdraw-msg">
+        Czy na pewno chcesz zrezygnować z członkostwa?<br>
+        Are you sure you want to withdraw?<br>
+        本当に退会しますか？
+      </div>
+      <div class="withdraw-warn">
+        ⚠️ Wszystkie Twoje dane osobowe zostaną trwale usunięte.<br>
+        All your personal data will be permanently deleted.<br>
+        保存されていた個人データはすべて消去されます。<br><br>
+        🍜 Zgromadzone punkty lojalnościowe zostaną unieważnione.<br>
+        All accumulated loyalty points will be invalidated.<br>
+        <strong>これまで貯めたポイントも無効となります。ご了解ください。</strong><br><br>
+        Historia wizyt zostanie utracona.<br>
+        Visit history will be lost.<br>
+        来店履歴もすべて削除されます。
+      </div>
+      <!-- 同意チェックボックス -->
+      <label style="display:flex;align-items:flex-start;gap:.6rem;
+        font-size:.78rem;color:var(--text);text-align:left;
+        margin-bottom:1rem;cursor:pointer;line-height:1.6">
+        <input type="checkbox" id="withdraw-agree-check"
+          style="margin-top:.2rem;accent-color:var(--accent);width:16px;height:16px;flex-shrink:0"
+          onchange="document.getElementById('withdraw-confirm-btn').disabled=!this.checked;
+                    document.getElementById('withdraw-confirm-btn').style.opacity=this.checked?'1':'.4'">
+        <span>
+          Rozumiem i akceptuję powyższe warunki.<br>
+          I understand and accept the above conditions.<br>
+          上記の内容を理解し、同意します。
+        </span>
+      </label>
+      <div class="withdraw-btns">
+        <button class="withdraw-btn-confirm" id="withdraw-confirm-btn"
+          onclick="confirmWithdraw()" disabled style="opacity:.4">
+          ✅ Tak, rezygnuję / Yes, withdraw / はい、退会します
+        </button>
+        <button class="withdraw-btn-cancel" onclick="closeWithdrawModal()">
+          ← Anuluj / Cancel / キャンセル
+        </button>
+      </div>
+    </div>
+
+    <!-- 完了画面 -->
+    <div class="withdraw-done" id="withdraw-done-view">
+      <div class="withdraw-done-icon">🌸</div>
+      <div class="withdraw-title">
+        Dziękujemy za lojalność!<br>
+        Thank you for your loyalty!<br>
+        ご愛顧ありがとうございました
+      </div>
+      <div class="withdraw-done-msg">
+        Zapraszamy ponownie w każdej chwili.<br>
+        We look forward to welcoming you back anytime.<br>
+        またのご来店を心よりお待ちしております。<br><br>
+        <strong>
+        Wszystkie Twoje dane osobowe zostały usunięte.<br>
+        All your personal data has been deleted.<br>
+        保存されていた個人データはすべて消去されました。
+        </strong>
+      </div>
+      <button class="withdraw-btn-cancel" onclick="finishWithdraw()">
+        閉じる / Zamknij / Close
+      </button>
+    </div>
+
+  </div>
+</div>
 </body>
 </html>
