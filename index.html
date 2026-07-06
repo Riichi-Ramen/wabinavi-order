@@ -428,6 +428,34 @@ body.show-config .config-bar{display:flex}
         <span class="mc-btn-icon">🍜</span><span>Nie / No</span><span class="mc-btn-en">いいえ</span>
       </button>
     </div>
+    <div class="member-id-box" id="member-verify-box">
+      <div class="mid-field">
+        <div class="mid-field-label">🪪 会員照合 / Weryfikacja członka / Member verification</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem;line-height:1.6">
+          登録済みのメールアドレスまたは電話番号を入力してください。<br>
+          Podaj zarejestrowany e-mail lub telefon. / Enter your registered email or phone.
+        </div>
+        <div class="mid-tabs">
+          <button class="mid-tab active" id="vtab-email" onclick="switchVerifyTab('email')">📧 E-mail</button>
+          <button class="mid-tab" id="vtab-phone" onclick="switchVerifyTab('phone')">📱 Telefon</button>
+        </div>
+        <input class="mid-input" type="email" id="verify-email-input" placeholder="np. jan@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')verifyMemberAndOrder()">
+        <input class="mid-input" type="tel" id="verify-phone-input" placeholder="np. +48 123 456 789" autocomplete="tel" style="display:none" onkeydown="if(event.key==='Enter')verifyMemberAndOrder()">
+      </div>
+      <div id="verify-error" style="display:none;background:#fee;border:1px solid #f5c6c6;
+        border-radius:8px;padding:.6rem;font-size:.76rem;color:#a00;
+        text-align:center;margin-bottom:.8rem;line-height:1.6"></div>
+      <button class="confirm-btn" id="verify-btn" onclick="verifyMemberAndOrder()">
+        ✅ 照合して注文へ / Zweryfikuj i zamów / Verify & order
+      </button>
+      <div style="text-align:center;margin-top:.7rem">
+        <button onclick="openRegisterFormFromVerify()"
+          style="background:none;border:none;color:var(--muted);font-size:.74rem;
+                 text-decoration:underline;cursor:pointer">
+          📝 まだ会員でない方はこちら（新規登録） / Nowa rejestracja / New registration
+        </button>
+      </div>
+    </div>
     <div class="member-id-box" id="member-id-box">
       <div class="mid-field">
         <div class="mid-field-label">👤 Imię i nazwisko / Full name <span class="req">★</span></div>
@@ -836,18 +864,116 @@ function selectMember(yes) {
   isMember = yes;
   document.getElementById('mc-btn-yes').classList.toggle('selected', yes);
   document.getElementById('mc-btn-no').classList.toggle('selected', !yes);
-  const box = document.getElementById('member-id-box');
+  const verifyBox = document.getElementById('member-verify-box');
+  const regBox    = document.getElementById('member-id-box');
   if (yes) {
-    box.classList.add('open');
-    document.getElementById('mid-firstname').focus();
+    // 会員 → 照合ボックスのみ表示（登録フォームは非表示）
+    regBox.classList.remove('open');
+    verifyBox.classList.add('open');
+    document.getElementById(verifyTab === 'phone' ? 'verify-phone-input' : 'verify-email-input').focus();
   } else {
-    box.classList.remove('open');
+    verifyBox.classList.remove('open');
+    regBox.classList.remove('open');
     // 非会員選択 → 「会員登録しますか？」確認画面へ
     setTimeout(() => {
       document.getElementById('member-check-screen').style.display = 'none';
       document.getElementById('register-prompt-screen').style.display = 'flex';
     }, 250);
   }
+}
+
+// ── 会員照合：メール/電話タブ切替 ─────────────────────────────────
+let verifyTab = 'email';
+function switchVerifyTab(tab) {
+  verifyTab = tab;
+  document.getElementById('vtab-email').classList.toggle('active', tab==='email');
+  document.getElementById('vtab-phone').classList.toggle('active', tab==='phone');
+  document.getElementById('verify-email-input').style.display = tab==='email' ? 'block' : 'none';
+  document.getElementById('verify-phone-input').style.display = tab==='phone' ? 'block' : 'none';
+  document.getElementById(tab==='email' ? 'verify-email-input' : 'verify-phone-input').focus();
+}
+
+function showVerifyError(msg) {
+  const el = document.getElementById('verify-error');
+  el.innerHTML = msg;
+  el.style.display = 'block';
+}
+
+// ── 会員照合 → 登録済みなら即メニューへ ──────────────────────────
+async function verifyMemberAndOrder() {
+  const id = (verifyTab === 'email'
+    ? document.getElementById('verify-email-input').value
+    : document.getElementById('verify-phone-input').value).trim();
+
+  document.getElementById('verify-error').style.display = 'none';
+
+  if (!id) { showVerifyError('会員IDを入力してください / Wprowadź ID / Enter your ID'); return; }
+  if (verifyTab === 'email' && !id.includes('@')) {
+    showVerifyError('正しいメールアドレスを入力してください / Podaj poprawny e-mail'); return;
+  }
+
+  const gasUrl = getGasUrl();
+  if (!gasUrl) {
+    // GAS未設定時は照合不可 → 登録フォームへフォールバック
+    openRegisterFormFromVerify();
+    return;
+  }
+
+  const btn = document.getElementById('verify-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 照合中… / Weryfikacja… / Verifying…';
+
+  try {
+    const res = await fetch(gasUrl, {
+      method:'POST', mode:'cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'getCard', email: id })
+    });
+    const data = await res.json();
+
+    if (data.status === 'ok' && data.member) {
+      // ✅ 登録済み会員 → そのまま注文へ
+      const m = data.member;
+      const nameParts = (m.name || '').split(' ');
+      isMember      = true;
+      memberContact = m.email || id;
+      memberName    = m.name || '';
+      memberInfo    = {
+        firstName:  nameParts[0] || '',
+        lastName:   nameParts.slice(1).join(' ') || '',
+        contact:    m.email || id,
+        contactType: verifyTab,
+        birthYear:  m.birthYear  || '',
+        birthMonth: m.birthMonth || '',
+        birthDay:   m.birthDay   || '',
+        gender:     m.gender     || '',
+        memberType: m.memberType || 'G',
+        language:   m.language   || ''
+      };
+      saveReturningMember();  // 次回からワンタップ
+      document.getElementById('member-check-screen').style.display = 'none';
+      launchMenu();
+      showToast(`⭐ ${memberName || 'Witamy'}様、いらっしゃいませ！ / Witamy ponownie!`, false);
+    } else {
+      // ❌ 未登録
+      showVerifyError(
+        '登録が見つかりませんでした。<br>' +
+        'Nie znaleziono rejestracji. / Registration not found.<br>' +
+        '<small>入力内容をご確認いただくか、下の「新規登録」からご登録ください。</small>');
+    }
+  } catch(e) {
+    showVerifyError('通信エラー / Błąd połączenia / Connection error.<br><small>もう一度お試しください / Spróbuj ponownie</small>');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✅ 照合して注文へ / Zweryfikuj i zamów / Verify & order';
+  }
+}
+
+// ── 照合画面から新規登録フォームへ ────────────────────────────────
+function openRegisterFormFromVerify() {
+  document.getElementById('member-verify-box').classList.remove('open');
+  document.getElementById('member-id-box').classList.add('open');
+  document.getElementById('mid-firstname').focus();
 }
 
 // 「登録する」を選択 → 会員登録フォームへ戻る
@@ -857,6 +983,7 @@ function goToRegisterForm() {
   isMember = true;
   document.getElementById('mc-btn-yes').classList.add('selected');
   document.getElementById('mc-btn-no').classList.remove('selected');
+  document.getElementById('member-verify-box').classList.remove('open');  // 照合は不要（新規登録）
   document.getElementById('member-id-box').classList.add('open');
   document.getElementById('mid-firstname').focus();
 }
