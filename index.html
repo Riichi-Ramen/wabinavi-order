@@ -926,7 +926,7 @@ async function verifyMemberAndOrder() {
   try {
     const res = await fetch(gasUrl, {
       method:'POST', mode:'cors',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({ action:'getCard', email: id })
     });
     const data = await res.json();
@@ -1582,7 +1582,7 @@ async function placeOrder() {
     try {
       const response = await fetch(gasUrl, {
         method:'POST', mode:'cors',
-        headers:{'Content-Type':'application/json'},
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({
           orderId, timestamp:new Date().toISOString(),
           table:tableNum, guests:guestNum, uwagi, total, items,
@@ -1709,7 +1709,7 @@ async function confirmWithdraw() {
     if (gasUrl) {
       await fetch(gasUrl, {
         method:'POST', mode:'cors',
-        headers:{'Content-Type':'application/json'},
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({ action:'withdraw', email })
       });
     }
