@@ -668,6 +668,13 @@ async function doRegister() {
   const birth  = document.getElementById('reg-birth').value;
   if (!name)  { showError('reg-error','氏名を入力してください / Enter your name'); return; }
   if (!email || !email.includes('@')) { showError('reg-error','メールアドレスを入力してください'); return; }
+  if (!GAS_URL) {
+    showError('reg-error',
+      '⚙️ システム準備中です。係員にお声がけください。 / ' +
+      'System w przygotowaniu — prosimy o kontakt z obsługą. / ' +
+      'System not ready — please ask our staff.');
+    return;
+  }
 
   try {
     const birthYear  = document.getElementById('reg-year').value;
@@ -688,15 +695,37 @@ async function doRegister() {
       showScreen('screen-result');
       const mid = res.member.memberId || '—';
       document.getElementById('result-icon').textContent  = '🌸';
-      document.getElementById('result-title').textContent = '登録完了！ / Zarejestrowano!';
-      document.getElementById('result-msg').textContent   = `${name}様、ようこそWabi Navi Members Clubへ！
-Witamy w klubie, ${name}!`;
+      document.getElementById('result-title').textContent = 'メンバー登録しました！ / Zarejestrowano! / Registered!';
+      document.getElementById('result-msg').textContent   = name + '様、ようこそWabi Navi Members Clubへ！ Witamy w klubie! Welcome to the club!';
       document.getElementById('result-pts').style.display = 'block';
       document.getElementById('result-pts').textContent   = mid;
       document.getElementById('result-pts-label').style.display = 'block';
       document.getElementById('result-pts-label').textContent   = '🪪 会員ID / Member ID';
-      document.getElementById('bonus-area').innerHTML =
-        `<div class="bonus-box"><div class="bonus-text">🎁 入会特典！<br>ドリンク券1枚プレゼント！<br><small>Voucher na napój — dziękujemy!</small></div></div>`;
+      // ── 特典一覧案内板＋注文に進むボタン ──
+      document.getElementById('bonus-area').innerHTML = `
+        <div class="bonus-box"><div class="bonus-text" style="text-align:left;line-height:1.9">
+          🎁 <strong>入会特典：ドリンク券1枚プレゼント！</strong><br>
+          <small>Bonus powitalny: voucher na napój! / Welcome gift: free drink voucher!</small><br><br>
+          <strong>🌸 会員特典一覧 / Twoje korzyści / Your benefits</strong><br>
+          🍜 1杯 = 10pt（100pt = ラーメン1杯無料！）<br>
+          <small>1 miska = 10 pkt → 100 pkt = ramen gratis!</small><br>
+          ⭐ 6杯目：ラーメン半額 / 6. miska: pół ceny<br>
+          🥉 11杯目：ラーメン無料 / 11. miska: gratis<br>
+          🎂 誕生月：ドリンク1杯無料 / Urodziny: napój gratis<br>
+          🎓 学生・🧓シニア：ラーメン10%引き<br>
+          <small>Studenci i seniorzy: -10% na ramen</small><br>
+          🎉 会員限定プロモ・イベント招待<br>
+          <small>Promocje i wydarzenia tylko dla członków</small>
+        </div></div>
+        <a href="index.html" style="display:block;text-decoration:none;margin-top:.8rem">
+          <button class="btn btn-primary" style="width:100%">
+            🍜 注文に進む / Przejdź do zamówienia / Proceed to order
+          </button>
+        </a>
+        <div style="font-size:.7rem;color:var(--muted);text-align:center;margin-top:.4rem;line-height:1.6">
+          ご着席のうえ、テーブルのQRコードからもご注文いただけます。<br>
+          Możesz też zamówić, skanując kod QR na stoliku.
+        </div>`;
       document.getElementById('rankup-area').innerHTML = '';
       document.getElementById('card-area').innerHTML   = renderCard(res.member);
     } else if (res.status === 'alreadyExists') {
@@ -705,7 +734,7 @@ Witamy w klubie, ${name}!`;
       showError('reg-error', res.message || 'エラーが発生しました');
     }
   } catch(e) {
-    showError('reg-error','通信エラー / Connection error');
+    showError('reg-error','📡 通信エラーが発生しました。もう一度お試しください。 / Błąd połączenia — spróbuj ponownie. / Connection error — please try again.');
   }
 }
 
@@ -792,7 +821,7 @@ async function postGAS(data) {
   if (!GAS_URL) throw new Error('GAS URL未設定 / GAS URL not set');
   const res = await fetch(GAS_URL, {
     method:'POST', mode:'cors',
-    headers:{'Content-Type':'application/json'},
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
     body: JSON.stringify(data)
   });
   return await res.json();
