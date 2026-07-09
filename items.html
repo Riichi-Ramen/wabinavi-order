@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WABI NAVI — 商品表示管理 / Item Manager</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f7f0e6;--card:#fffcf5;--accent:#c0392b;--text:#2c1810;--muted:#7a6858;
+  --green:#2d7a3a;--border:rgba(180,140,110,0.35)}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
+  padding-bottom:110px}
+.header{background:rgba(60,30,15,0.95);color:#fff;padding:1rem;text-align:center;
+  position:sticky;top:0;z-index:100}
+.header h1{font-size:1rem;color:#c8a96e}
+.header .sub{font-size:.7rem;opacity:.8;margin-top:.2rem}
+.gas-status{font-size:.68rem;margin-top:.3rem;cursor:pointer;text-decoration:underline}
+.gas-ok{color:#7ec98a}.gas-ng{color:#f5a3a3}
+.toolbar{display:flex;gap:.5rem;padding:.8rem 1rem;flex-wrap:wrap;align-items:center;
+  background:rgba(44,24,16,0.06);border-bottom:1px solid var(--border)}
+.toolbar input[type=search]{flex:1;min-width:160px;padding:.5rem .8rem;border-radius:20px;
+  border:1.5px solid var(--border);font-family:inherit;font-size:.85rem;background:var(--card)}
+.stat{font-size:.75rem;color:var(--muted);white-space:nowrap}
+.stat b{color:var(--accent)}
+.cat-sec{margin:1rem;background:var(--card);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden}
+.cat-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  padding:.8rem 1rem;background:rgba(192,57,43,0.07);cursor:pointer}
+.cat-head .cname{font-weight:700;font-size:.92rem}
+.cat-head .cname small{display:block;font-weight:400;font-size:.68rem;color:var(--muted)}
+.cat-btns{display:flex;gap:.4rem}
+.mini-btn{font-size:.66rem;padding:.3rem .6rem;border-radius:14px;cursor:pointer;
+  border:1px solid var(--border);background:#fff;color:var(--muted);font-family:inherit}
+.mini-btn:hover{border-color:var(--accent);color:var(--accent)}
+.item-list{display:none}
+.cat-sec.open .item-list{display:block}
+.item-row{display:flex;align-items:center;gap:.7rem;padding:.55rem 1rem;
+  border-top:1px solid rgba(180,140,110,0.15);cursor:pointer}
+.item-row:hover{background:rgba(192,57,43,0.04)}
+.item-row input{width:19px;height:19px;accent-color:var(--green);flex-shrink:0;cursor:pointer}
+.item-row.hidden-item{opacity:.45}
+.item-row.hidden-item .iname{text-decoration:line-through}
+.iid{font-size:.66rem;color:var(--muted);background:rgba(44,24,16,0.06);
+  border-radius:6px;padding:.1rem .4rem;min-width:44px;text-align:center;flex-shrink:0}
+.iname{flex:1;font-size:.83rem}
+.iprice{font-size:.75rem;color:var(--muted);flex-shrink:0}
+.cs-badge{font-size:.6rem;background:#e67e22;color:#fff;border-radius:10px;
+  padding:.05rem .4rem;flex-shrink:0}
+.savebar{position:fixed;bottom:0;left:0;right:0;background:rgba(60,30,15,0.97);
+  padding:.8rem 1rem;display:flex;gap:.6rem;align-items:center;z-index:100;flex-wrap:wrap}
+.savebar input{flex:1;min-width:130px;padding:.55rem .8rem;border-radius:8px;
+  border:none;font-family:inherit;font-size:.85rem}
+.save-btn{background:var(--green);color:#fff;border:none;border-radius:8px;
+  padding:.6rem 1.4rem;font-weight:700;cursor:pointer;font-size:.88rem;font-family:inherit}
+.save-btn:disabled{opacity:.5}
+.save-status{width:100%;text-align:center;font-size:.74rem;color:#c8a96e;min-height:1em}
+.loading-overlay{position:fixed;inset:0;background:rgba(247,240,230,0.9);z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem}
+.spinner{width:34px;height:34px;border:4px solid rgba(192,57,43,0.2);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🛠️ 商品表示管理 / Zarządzanie widocznością / Item Manager</h1>
+  <div class="sub">チェックを外した商品は注文アプリで非表示になります<br>
+    Odznaczone pozycje będą ukryte w aplikacji zamówień</div>
+  <div class="gas-status" id="gas-status" onclick="setupGas()">確認中…</div>
+</div>
+
+<div class="toolbar">
+  <input type="search" id="search" placeholder="🔍 検索 / Szukaj… (nazwa lub ID)" oninput="filterItems()">
+  <span class="stat">表示中 <b id="stat-visible">—</b> / 非表示 <b id="stat-hidden">—</b></span>
+</div>
+
+<div id="categories"></div>
+
+<div class="savebar">
+  <input type="password" id="save-password" placeholder="🔑 係員パスワード / Hasło obsługi">
+  <button class="save-btn" id="save-btn" onclick="saveHidden()">💾 保存 / Zapisz</button>
+  <div class="save-status" id="save-status"></div>
+</div>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div style="font-size:.85rem;color:var(--muted)">読み込み中… / Ładowanie…</div>
+</div>
+
+<script>
+const MENU = [{"id": "onigiri", "namePL": "Onigiri i Dania z Ryżem", "nameEN": "Onigiri & Rice Bowls", "items": [{"id": "o1", "namePL": "Onigiri (1 szt.)", "price": 14, "cs": false}, {"id": "o1b", "namePL": "Onigiri (2 szt.)", "price": 26, "cs": false}, {"id": "o2", "namePL": "Wabi Inari Sushi (2 szt.)", "price": 28, "cs": false}, {"id": "o3", "namePL": "Tamago Don", "price": 38, "cs": false}, {"id": "o4", "namePL": "Oyako Don", "price": 42, "cs": false}, {"id": "o5", "namePL": "Soboro Don", "price": 43, "cs": false}, {"id": "o6", "namePL": "Chashu Don", "price": 46, "cs": false}, {"id": "o7", "namePL": "Potato Ebi Don", "price": 49, "cs": false}, {"id": "o8", "namePL": "Una Don", "price": 50, "cs": false}, {"id": "o9", "namePL": "Yasai Kakiage Don", "price": 48, "cs": false}, {"id": "o10", "namePL": "Ryż Parowany", "price": 12, "cs": false}, {"id": "o11", "namePL": "Zestaw Domowy", "price": 18, "cs": false}]}, {"id": "przystawki", "namePL": "Przystawki", "nameEN": "Appetizers", "items": [{"id": "a1", "namePL": "Gyoza — Warzywne", "price": 29, "cs": false}, {"id": "a1b", "namePL": "Gyoza — Kurczak", "price": 30, "cs": false}, {"id": "a1c", "namePL": "Gyoza — Wołowina", "price": 34, "cs": false}, {"id": "a1d", "namePL": "Gyoza — Dynia i Chili", "price": 29, "cs": false}, {"id": "a1e", "namePL": "Gyoza — Kaczka", "price": 32, "cs": false}, {"id": "a1f", "namePL": "Gyoza — Krewetki", "price": 32, "cs": false}, {"id": "a1g", "namePL": "Gyoza — Jabłko", "price": 27, "cs": false}, {"id": "a2", "namePL": "Sałatka Orientalna z Kalmarów", "price": 34, "cs": false}, {"id": "a3", "namePL": "Edamame", "price": 23, "cs": false}, {"id": "a4", "namePL": "Karaage", "price": 32, "cs": false}, {"id": "a5", "namePL": "Takoyaki (5 szt.)", "price": 33, "cs": false}, {"id": "a6", "namePL": "Krewetki w Ziemniakach", "price": 38, "cs": false}, {"id": "a7", "namePL": "Mabo Dofu", "price": 34, "cs": false}, {"id": "a8", "namePL": "Sałatka z Hijiki i Edamame", "price": 25, "cs": false}, {"id": "a9", "namePL": "Sałatka z Tofu", "price": 32, "cs": false}, {"id": "a10", "namePL": "Smażone Krewetki Panko", "price": 38, "cs": false}, {"id": "a11", "namePL": "Tempura Warzywna", "price": 40, "cs": false}, {"id": "a12", "namePL": "Tempura z Krewetek i Warzyw", "price": 45, "cs": false}, {"id": "a13", "namePL": "Kimchi", "price": 23, "cs": false}, {"id": "a14", "namePL": "Goma Wakame", "price": 23, "cs": false}, {"id": "a15", "namePL": "Natto", "price": 21, "cs": false}, {"id": "a16", "namePL": "Ryż Parowany (Przystawka)", "price": 12, "cs": false}, {"id": "a17", "namePL": "Zestaw z Ryżem i Zupą Miso", "price": 18, "cs": false}, {"id": "a18", "namePL": "Sos Sezamowy", "price": 3, "cs": false}]}, {"id": "ramen", "namePL": "Ramen", "nameEN": "Ramen", "items": [{"id": "r1", "namePL": "Assari", "price": 47, "cs": false}, {"id": "r2", "namePL": "Tori Paitan", "price": 49, "cs": false}, {"id": "r3", "namePL": "Tori Kimchi", "price": 49, "cs": false}, {"id": "r4", "namePL": "Wabi Navi", "price": 47, "cs": false}, {"id": "r5", "namePL": "Miso", "price": 49, "cs": false}, {"id": "r6", "namePL": "Tantanmen", "price": 49, "cs": false}, {"id": "r7", "namePL": "Tantan Paitan", "price": 52, "cs": false}, {"id": "r8", "namePL": "Tantan Miso", "price": 52, "cs": false}, {"id": "r9", "namePL": "Tantan Kokosowy", "price": 52, "cs": false}, {"id": "r10", "namePL": "Tonkotsu", "price": 52, "cs": false}, {"id": "r11", "namePL": "Tonkotsu Miso", "price": 54, "cs": false}, {"id": "r12", "namePL": "Mabo Ramen", "price": 54, "cs": false}, {"id": "r13", "namePL": "Wege Shoyu", "price": 46, "cs": false}, {"id": "r14", "namePL": "Wege Miso", "price": 48, "cs": false}, {"id": "r15", "namePL": "Wege Tantan", "price": 48, "cs": false}, {"id": "r16", "namePL": "Wege Tantan Kokosowy", "price": 52, "cs": false}, {"id": "r17", "namePL": "Wege Białe z Tofu", "price": 53, "cs": false}, {"id": "r18", "namePL": "Wege Kimchi", "price": 48, "cs": false}, {"id": "r19", "namePL": "Seafood Ramen", "price": 52, "cs": false}, {"id": "r20", "namePL": "Tantan z Krewetkami Kokosowy", "price": 54, "cs": false}, {"id": "r21", "namePL": "Curry Tantanmen", "price": 53, "cs": false}, {"id": "r22", "namePL": "Wege Curry Tantanmen", "price": 52, "cs": false}, {"id": "r23", "namePL": "Wege Tempura Udon/Soba", "price": 54, "cs": false}, {"id": "r24", "namePL": "Udon/Soba z Grzybami", "price": 52, "cs": false}, {"id": "r25", "namePL": "Inari Udon/Soba", "price": 50, "cs": false}, {"id": "r26", "namePL": "Salad Ramen", "price": 49, "cs": false}, {"id": "r27", "namePL": "Ten Zaru Udon/Soba", "price": 50, "cs": false}, {"id": "r28", "namePL": "Zaru Soba lub Zaru Udon", "price": 40, "cs": false}]}, {"id": "sushi", "namePL": "Sushi 🚧", "nameEN": "Sushi 🚧 (Coming Soon)", "items": [{"id": "s1", "namePL": "Sake Maki (6 szt.)", "price": 22, "cs": true}, {"id": "s2", "namePL": "Maguro Maki (6 szt.)", "price": 22, "cs": true}, {"id": "s3", "namePL": "Kappa Maki (6 szt.)", "price": 16, "cs": true}, {"id": "s4", "namePL": "Futomaki (5 szt.)", "price": 26, "cs": true}, {"id": "s5", "namePL": "Uramaki California (8 szt.)", "price": 28, "cs": true}, {"id": "s6", "namePL": "Uramaki Spicy Salmon (8 szt.)", "price": 30, "cs": true}, {"id": "s7", "namePL": "Nigiri Sake (2 szt.)", "price": 18, "cs": true}, {"id": "s8", "namePL": "Nigiri Maguro (2 szt.)", "price": 18, "cs": true}, {"id": "s9", "namePL": "Nigiri Ebi (2 szt.)", "price": 18, "cs": true}, {"id": "s10", "namePL": "Temaki Sake (1 szt.)", "price": 16, "cs": true}]}, {"id": "dodatki", "namePL": "Dodatki do Ramen", "nameEN": "Ramen Add-ons", "items": [{"id": "d_noodle1", "namePL": "Dodatkowa Porcja Makaronu", "price": 9, "cs": false}, {"id": "d_noodle2", "namePL": "Pół Porcji Makaronu (Kaedama)", "price": 6, "cs": false}, {"id": "d_noodle3", "namePL": "Zmiana na Makaron Ryżowy/Udon/Soba", "price": 4, "cs": false}, {"id": "d_1a", "namePL": "Szczypiorek", "price": 1, "cs": false}, {"id": "d_1b", "namePL": "Sezam", "price": 1, "cs": false}, {"id": "d_1c", "namePL": "Nori", "price": 1, "cs": false}, {"id": "d_1d", "namePL": "Kukurydza", "price": 1, "cs": false}, {"id": "d_1e", "namePL": "Marynowany Imbir", "price": 1, "cs": false}, {"id": "d_2a", "namePL": "Pak Choi", "price": 2, "cs": false}, {"id": "d_2b", "namePL": "Szpinak", "price": 2, "cs": false}, {"id": "d_2c", "namePL": "Wakame", "price": 2, "cs": false}, {"id": "d_2d", "namePL": "Czosnek", "price": 2, "cs": false}, {"id": "d_2e", "namePL": "Grzyby Mun (Kikurage)", "price": 2, "cs": false}, {"id": "d_2f", "namePL": "Ser", "price": 2, "cs": false}, {"id": "d_3a", "namePL": "Jajko (Połowa)", "price": 3, "cs": false}, {"id": "d_3b", "namePL": "Naruto", "price": 3, "cs": false}, {"id": "d_4a", "namePL": "Kimchi (Dodatek)", "price": 4, "cs": false}, {"id": "d_4b", "namePL": "Hijiki z Edamame", "price": 4, "cs": false}, {"id": "d_5a", "namePL": "Wieprzowina Mielona", "price": 5, "cs": false}, {"id": "d_5b", "namePL": "Chashu (Karkówka)", "price": 5, "cs": false}, {"id": "d_5c", "namePL": "Kurczak (Dodatek)", "price": 5, "cs": false}, {"id": "d_6a", "namePL": "Krewetki (3 szt.)", "price": 6, "cs": false}, {"id": "d_6b", "namePL": "Tofu Kruszone", "price": 6, "cs": false}, {"id": "d_6c", "namePL": "Tofu Inari (2 szt.)", "price": 6, "cs": false}, {"id": "d_6d", "namePL": "Dodatkowa Miseczka Ryżu", "price": 6, "cs": false}, {"id": "d_6e", "namePL": "Ekstra Owoce Morza", "price": 6, "cs": false}]}, {"id": "napoje", "namePL": "Napoje, Herbaty, Kawy i Desery", "nameEN": "Drinks, Teas, Coffees & Desserts", "items": [{"id": "n1", "namePL": "Choya Soda Yuzusshu 350ml", "price": 19, "cs": false}, {"id": "n2", "namePL": "Choya Soda Umesshu 350ml", "price": 19, "cs": false}, {"id": "n3", "namePL": "Ryokucha 緑茶缶 340ml", "price": 17, "cs": false}, {"id": "n4", "namePL": "Matcha Latte 抹茶ラテ 280ml", "price": 20, "cs": false}, {"id": "n5", "namePL": "Pepsi ペプシ 200ml", "price": 9, "cs": false}, {"id": "n6", "namePL": "Mirinda ミリンダ 200ml", "price": 9, "cs": false}, {"id": "n7", "namePL": "Pepsi Max Zero ペプシ無糖 200ml", "price": 9, "cs": false}, {"id": "n8", "namePL": "Sok Jabłkowy りんごジュース 200ml", "price": 9, "cs": false}, {"id": "n9", "namePL": "Sok Pomarańczowy オレンジジュース 200ml", "price": 9, "cs": false}, {"id": "n10", "namePL": "Woda Niegazowana ミネラルウォーター 300ml", "price": 9, "cs": false}, {"id": "n11", "namePL": "Woda Gazowana ミネラルウォーター(炭酸入り) 300ml", "price": 9, "cs": false}, {"id": "n12", "namePL": "OKF Napój Gazowany Ananas スパークリング パイナップル 350ml", "price": 16, "cs": false}, {"id": "n13", "namePL": "OKF Napój Gazowany Brzoskwinia スパークリング ピーチ 350ml", "price": 16, "cs": false}, {"id": "n14", "namePL": "OKF Napój Gazowany Limonka スパークリング ライム 350ml", "price": 16, "cs": false}, {"id": "n15", "namePL": "OKF Vera King Aloes Granat ザクロ味 500ml", "price": 19, "cs": false}, {"id": "n16", "namePL": "OKF Vera King Aloes Kiwi キウィ味 500ml", "price": 19, "cs": false}, {"id": "n17", "namePL": "Sencha 煎茶 24 zł", "price": 24, "cs": false}, {"id": "n18", "namePL": "Genmaicha 玄米茶 24 zł", "price": 24, "cs": false}, {"id": "n19", "namePL": "Hojicha ほうじ茶 24 zł", "price": 24, "cs": false}, {"id": "n20", "namePL": "Sencha Sakura 桜煎茶 24 zł", "price": 24, "cs": false}, {"id": "n21", "namePL": "Sencha Cytrynowa レモン煎茶 24 zł", "price": 24, "cs": false}, {"id": "n22", "namePL": "Sencha Jaśminowa ジャスミン茶 24 zł", "price": 24, "cs": false}, {"id": "n23", "namePL": "Herbata Biała Pai Mu Tan Peach 白茶 24 zł", "price": 24, "cs": false}, {"id": "n24", "namePL": "Herbata Oolong 烏龍茶 24 zł", "price": 24, "cs": false}, {"id": "n25", "namePL": "Pu-Erh Żurawina クランベリープーアル茶 24 zł", "price": 24, "cs": false}, {"id": "n26", "namePL": "Japońska Zima ジンジャーティー 24 zł", "price": 24, "cs": false}, {"id": "n27", "namePL": "Herbata Specjalna お任せホットティー 25 zł", "price": 25, "cs": false}, {"id": "n28", "namePL": "Herbata na Zimno 14 zł", "price": 14, "cs": false}, {"id": "n29", "namePL": "Herbata Czarna w Torebce 12 zł", "price": 12, "cs": false}, {"id": "n30", "namePL": "Espresso エスプレッソ 12 zł", "price": 12, "cs": false}, {"id": "n31", "namePL": "Flat White フラットホワイト 14 zł", "price": 14, "cs": false}, {"id": "n32", "namePL": "Americano アメリカン 14 zł", "price": 14, "cs": false}, {"id": "n33", "namePL": "Cappuccino カプチーノ 16 zł", "price": 16, "cs": false}, {"id": "n34", "namePL": "Latte Macchiato ラテマキアート 16 zł", "price": 16, "cs": false}, {"id": "n35", "namePL": "Mocha モカ 16 zł", "price": 16, "cs": false}, {"id": "n36", "namePL": "Nesquik / KitKat Gorące Napoje 10 zł", "price": 10, "cs": false}, {"id": "n37", "namePL": "Owocowe Gyoza z Lodami (3 szt.) 25 zł", "price": 25, "cs": false}, {"id": "n38", "namePL": "Lody Matcha 抹茶アイス 19 zł", "price": 19, "cs": false}, {"id": "n39", "namePL": "Lody Sezamowe 黒ゴマアイス 19 zł", "price": 19, "cs": false}, {"id": "n40", "namePL": "Lody Waniliowe z Kokutō Umeshu バニラ黒糖梅酒がけ 21 zł", "price": 21, "cs": false}]}, {"id": "alkohole", "namePL": "Alkohole", "nameEN": "Alcohol", "items": [{"id": "al1", "namePL": "The Choya Ume Salute 200ml (Mała butelka)", "price": 24, "cs": false}, {"id": "al2", "namePL": "Choya Sarari-to Shita Yuzu Shu — Kieliszek 100ml", "price": 24, "cs": false}, {"id": "al2b", "namePL": "Choya Sarari-to Shita Yuzu Shu — Butelka 500ml", "price": 100, "cs": false}, {"id": "al3", "namePL": "Choya Silver Red Wino — Kieliszek 125ml", "price": 21, "cs": false}, {"id": "al3b", "namePL": "Choya Silver Red Wino — Butelka 500ml", "price": 69, "cs": false}, {"id": "al4", "namePL": "Japońskie Sake Choya 日本酒 180ml", "price": 26, "cs": false}, {"id": "al5", "namePL": "Kirin Ichiban Lager z Beczki 生ビール 330ml", "price": 22, "cs": false}, {"id": "al5b", "namePL": "Kirin Ichiban Lager z Beczki 生ビール 500ml", "price": 25, "cs": false}, {"id": "al6", "namePL": "Asahi Super Dry アサヒ スーパードライ 330ml", "price": 22, "cs": false}, {"id": "al7", "namePL": "Sapporo Premium Beer サッポロ プレミアム 330ml", "price": 22, "cs": false}, {"id": "al8", "namePL": "IKI Yuzu 330ml", "price": 22, "cs": false}, {"id": "al9", "namePL": "IKI Ginger 330ml", "price": 22, "cs": false}, {"id": "al10", "namePL": "Tyskie トゥイスキエ 500ml", "price": 15, "cs": false}, {"id": "al11", "namePL": "Lech Pils レフ ピルス 500ml", "price": 15, "cs": false}, {"id": "al12", "namePL": "Kirin Ichiban Shibori キリン一番搾り ノンアルコール 330ml", "price": 19, "cs": false}, {"id": "al13", "namePL": "Lech Free レフ フリー ノンアルコール 330ml", "price": 14, "cs": false}]}, {"id": "takeaway", "namePL": "Pojemniki na Wynos", "nameEN": "Takeaway Containers", "items": [{"id": "tk1", "namePL": "Pojemnik Duży (Zupa/Ramen)", "price": 2, "cs": false}, {"id": "tk2", "namePL": "Pojemnik Mały (Przystawki)", "price": 1, "cs": false}]}];
+const GAS_URL = localStorage.getItem('wabi_gas_url') || '';
+let hidden = new Set();
+
+// ── GAS URL設定（ステータス表示をタップ） ──
+function setupGas() {
+  const u = prompt('GAS URL (https://script.google.com/macros/s/…/exec):',
+    localStorage.getItem('wabi_gas_url') || '');
+  if (u !== null) { localStorage.setItem('wabi_gas_url', u.trim()); location.reload(); }
+}
+
+function updateGasStatus(ok, msg) {
+  const el = document.getElementById('gas-status');
+  el.className = 'gas-status ' + (ok ? 'gas-ok' : 'gas-ng');
+  el.textContent = msg + '（タップで変更 / dotknij, aby zmienić）';
+}
+
+// ── 描画 ──
+function render() {
+  document.getElementById('categories').innerHTML = MENU.map(cat => `
+    <div class="cat-sec open" id="sec-${cat.id}">
+      <div class="cat-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="cname">${cat.namePL}<small>${cat.nameEN}</small></div>
+        <div class="cat-btns" onclick="event.stopPropagation()">
+          <button class="mini-btn" onclick="setCat('${cat.id}',true)">✅ 全表示</button>
+          <button class="mini-btn" onclick="setCat('${cat.id}',false)">🚫 全非表示</button>
+        </div>
+      </div>
+      <div class="item-list">
+        ${cat.items.map(it => `
+          <label class="item-row ${hidden.has(it.id)?'hidden-item':''}" id="row-${it.id}">
+            <input type="checkbox" ${hidden.has(it.id)?'':'checked'}
+              onchange="toggle('${it.id}', this.checked)">
+            <span class="iid">${it.id}</span>
+            <span class="iname">${it.namePL}</span>
+            ${it.cs ? '<span class="cs-badge">準備中</span>' : ''}
+            <span class="iprice">${it.price} zł</span>
+          </label>`).join('')}
+      </div>
+    </div>`).join('');
+  updateStats();
+}
+
+function toggle(id, visible) {
+  if (visible) hidden.delete(id); else hidden.add(id);
+  const row = document.getElementById('row-' + id);
+  if (row) row.classList.toggle('hidden-item', !visible);
+  updateStats();
+}
+
+function setCat(catId, visible) {
+  const cat = MENU.find(c => c.id === catId);
+  cat.items.forEach(it => {
+    if (visible) hidden.delete(it.id); else hidden.add(it.id);
+    const row = document.getElementById('row-' + it.id);
+    const chk = row?.querySelector('input');
+    if (chk) chk.checked = visible;
+    if (row) row.classList.toggle('hidden-item', !visible);
+  });
+  updateStats();
+}
+
+function updateStats() {
+  const total = MENU.reduce((a,c) => a + c.items.length, 0);
+  document.getElementById('stat-hidden').textContent  = hidden.size;
+  document.getElementById('stat-visible').textContent = total - hidden.size;
+}
+
+function filterItems() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  MENU.forEach(cat => {
+    let any = false;
+    cat.items.forEach(it => {
+      const row = document.getElementById('row-' + it.id);
+      const hit = !q || it.namePL.toLowerCase().includes(q) || it.id.toLowerCase().includes(q);
+      row.style.display = hit ? 'flex' : 'none';
+      if (hit) any = true;
+    });
+    document.getElementById('sec-' + cat.id).style.display = any ? 'block' : 'none';
+  });
+}
+
+// ── 現在の非表示リストをGASから読み込み ──
+async function loadHidden() {
+  if (!GAS_URL) {
+    updateGasStatus(false, '⚠️ GAS URL未設定');
+    document.getElementById('loading').style.display = 'none';
+    render();
+    return;
+  }
+  try {
+    const res = await fetch(GAS_URL + '?action=getHiddenItems');
+    const data = await res.json();
+    if (data.status === 'ok') {
+      hidden = new Set(data.hidden || []);
+      updateGasStatus(true, '✅ 接続OK — 現在' + hidden.size + '品が非表示');
+    } else {
+      updateGasStatus(false, '⚠️ 応答エラー');
+    }
+  } catch(e) {
+    updateGasStatus(false, '⚠️ 接続失敗');
+  }
+  document.getElementById('loading').style.display = 'none';
+  render();
+}
+
+// ── 保存 ──
+async function saveHidden() {
+  const password = document.getElementById('save-password').value;
+  const status   = document.getElementById('save-status');
+  if (!GAS_URL) { status.textContent = '⚠️ GAS URLを設定してください（上部の状態表示をタップ）'; return; }
+  if (!password) { status.textContent = '🔑 パスワードを入力してください / Podaj hasło'; return; }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true; status.textContent = '⏳ 保存中… / Zapisywanie…';
+  try {
+    const res = await fetch(GAS_URL, {
+      method:'POST', mode:'cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'setHiddenItems', password, hidden:[...hidden] })
+    });
+    const data = await res.json();
+    status.textContent = data.status === 'ok'
+      ? '✅ ' + data.message + ' — アプリに即反映されます'
+      : '❌ ' + (data.message || 'エラー');
+  } catch(e) {
+    status.textContent = '📡 通信エラー / Błąd połączenia — もう一度お試しください';
+  }
+  btn.disabled = false;
+}
+
+loadHidden();
+</script>
+</body>
+</html>
