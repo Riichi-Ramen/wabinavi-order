@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>和美なび WABI NAVI — Rezerwacje (Staff)</title>
+<style>
+:root{
+  --accent:#c0392b;--text:#2c1810;--muted:#7a6858;
+  --border:rgba(180,140,110,0.35);--green:#2d7a3a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Segoe UI',sans-serif;min-height:100vh;
+  background-color:#f7f0e6;
+  background-image:linear-gradient(160deg,#f7f0e6 0%,#ede0cc 40%,#f0e4d0 100%);
+  display:flex;flex-direction:column;align-items:center;
+  padding:1.2rem 1rem 3rem;
+}
+.logo-txt{font-size:1.5rem;font-weight:700;color:var(--accent);letter-spacing:.15em;cursor:pointer;user-select:none}
+.title{font-size:.95rem;color:var(--accent);font-weight:700;text-align:center;margin:.2rem 0 1rem}
+.card{background:rgba(255,252,245,0.95);border:1px solid rgba(192,57,43,0.2);border-radius:16px;
+  padding:1.3rem;width:100%;max-width:560px;box-shadow:0 6px 30px rgba(120,60,40,0.12);margin-bottom:1rem}
+.form-label{font-size:.75rem;color:var(--muted);margin-bottom:.3rem;display:block;text-transform:uppercase;letter-spacing:.05em}
+.form-input{width:100%;background:rgba(255,252,248,0.9);border:1.5px solid rgba(192,57,43,0.3);
+  color:var(--text);border-radius:8px;padding:.7rem .9rem;font-size:.95rem;font-family:inherit;margin-bottom:1rem}
+.form-input:focus{outline:none;border-color:var(--accent)}
+.btn{padding:.8rem 1rem;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer}
+.btn-primary{background:var(--accent);color:#fff;width:100%;box-shadow:0 4px 14px rgba(192,57,43,0.3)}
+.error-msg{background:#fee;border:1px solid #f5c6c6;border-radius:8px;padding:.6rem;
+  font-size:.78rem;color:#a00;text-align:center;margin-bottom:.8rem;display:none}
+/* タブ */
+.tabs{display:flex;gap:.4rem;width:100%;max-width:560px;margin-bottom:.8rem}
+.tab{flex:1;padding:.6rem;border-radius:10px;border:1.5px solid var(--border);background:transparent;
+  color:var(--muted);font-weight:700;font-size:.82rem;cursor:pointer}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.summary{width:100%;max-width:560px;font-size:.78rem;color:var(--muted);margin-bottom:.6rem;
+  display:flex;justify-content:space-between;align-items:center}
+.refresh{background:none;border:none;color:var(--accent);cursor:pointer;font-size:.78rem;font-weight:700;text-decoration:underline}
+/* 日付見出し */
+.date-head{width:100%;max-width:560px;font-size:.85rem;font-weight:700;color:var(--text);
+  margin:.6rem 0 .4rem;padding:.4rem .8rem;background:rgba(192,57,43,0.07);
+  border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+.date-head small{color:var(--muted);font-weight:400}
+/* 予約カード */
+.res{background:rgba(255,252,245,0.95);border:1px solid rgba(192,57,43,0.18);border-radius:12px;
+  width:100%;max-width:560px;padding:.9rem 1rem;margin-bottom:.5rem;box-shadow:0 3px 12px rgba(120,60,40,0.08)}
+.res.cancelled{opacity:.55}
+.res-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}
+.res-time{font-size:1.15rem;font-weight:700;color:var(--accent)}
+.res-guests{font-size:.95rem;font-weight:700;color:var(--text)}
+.res-status{font-size:.68rem;font-weight:700;color:#fff;background:var(--accent);border-radius:20px;padding:.15rem .6rem}
+.res-status.arrived{background:#2d7a3a}
+.res-status.grey{background:#999}
+.res-name{font-size:.92rem;color:var(--text);font-weight:600;margin:.3rem 0 .1rem}
+.member-badge{display:inline-block;font-size:.68rem;background:rgba(45,122,58,0.1);border:1px solid rgba(45,122,58,0.4);
+  color:#2d7a3a;border-radius:20px;padding:.1rem .5rem;margin-left:.3rem}
+.res-meta{font-size:.76rem;color:var(--muted);line-height:1.6;word-break:break-word}
+.res-meta a{color:var(--accent);font-weight:700;text-decoration:none}
+.res-comment{font-size:.78rem;color:var(--text);background:rgba(192,57,43,0.06);border-radius:8px;
+  padding:.4rem .6rem;margin-top:.4rem}
+.res-actions{display:flex;gap:.35rem;margin-top:.6rem;flex-wrap:wrap}
+.mini{flex:1;min-width:70px;padding:.45rem .3rem;font-size:.72rem;font-weight:700;border-radius:8px;cursor:pointer;border:1.5px solid}
+.mini-green{border-color:rgba(45,122,58,.5);color:#2d7a3a;background:transparent}
+.mini-green:hover{background:rgba(45,122,58,.08)}
+.mini-grey{border-color:rgba(120,120,120,.4);color:#777;background:transparent}
+.mini-red{border-color:rgba(192,57,43,.5);color:var(--accent);background:transparent}
+.mini-red:hover{background:rgba(192,57,43,.08)}
+.empty{font-size:.85rem;color:var(--muted);text-align:center;padding:2rem 0}
+.spinner{border:3px solid rgba(192,57,43,0.15);border-top-color:var(--accent);border-radius:50%;
+  width:36px;height:36px;margin:2rem auto;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#list-area{width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center}
+</style>
+</head>
+<body>
+
+<div class="logo-txt" id="logo-tap">和美なび</div>
+<div class="title">📋 Rezerwacje — panel personelu / 予約一覧（スタッフ用）</div>
+
+<!-- ログイン -->
+<div class="card" id="login-card">
+  <div class="error-msg" id="login-err"></div>
+  <label class="form-label">🔑 Hasło personelu / スタッフパスワード</label>
+  <input class="form-input" type="password" id="pw" placeholder="••••••••"
+         onkeydown="if(event.key==='Enter')login()">
+  <button class="btn btn-primary" onclick="login()">Zaloguj / ログイン</button>
+</div>
+
+<!-- 一覧 -->
+<div id="panel" style="display:none;width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center">
+  <div class="tabs">
+    <button class="tab active" id="tab-today" onclick="setRange('today')">📅 Dziś / 今日</button>
+    <button class="tab" id="tab-upcoming" onclick="setRange('upcoming')">🔜 Nadchodzące / 今後</button>
+    <button class="tab" id="tab-all" onclick="setRange('all')">🗂 Wszystkie / 全件</button>
+  </div>
+  <div class="summary">
+    <span id="sum-text"></span>
+    <button class="refresh" onclick="load()">🔄 Odśwież / 更新</button>
+  </div>
+  <div id="list-area"><div class="spinner"></div></div>
+</div>
+
+<script>
+const GAS_URL = localStorage.getItem('wabi_gas_url') ||
+  'https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYIP8ErEz4umoJ3FN/exec';
+
+let tapCount = 0;
+document.getElementById('logo-tap').onclick = () => {
+  if (++tapCount >= 5) { tapCount = 0;
+    const u = prompt('GAS URL:', GAS_URL);
+    if (u !== null) { localStorage.setItem('wabi_gas_url', u.trim()); location.reload(); }
+  }
+};
+
+let PW = sessionStorage.getItem('wabi_staff_pw') || '';
+let RANGE = 'today';
+let TODAY = '';
+
+async function login(){
+  const pw = document.getElementById('pw').value;
+  if (!pw){ showLoginErr('Wpisz hasło / パスワードを入力'); return; }
+  PW = pw;
+  const ok = await load(true);
+  if (ok){
+    sessionStorage.setItem('wabi_staff_pw', pw);
+    document.getElementById('login-card').style.display = 'none';
+    document.getElementById('panel').style.display = 'flex';
+  }
+}
+function showLoginErr(m){ const e = document.getElementById('login-err'); e.textContent = m; e.style.display = 'block'; }
+
+function setRange(r){
+  RANGE = r;
+  ['today','upcoming','all'].forEach(x =>
+    document.getElementById('tab-'+x).classList.toggle('active', x === r));
+  load();
+}
+
+async function load(silentAuth){
+  const area = document.getElementById('list-area');
+  area.innerHTML = '<div class="spinner"></div>';
+  try{
+    const url = GAS_URL + '?action=getReservations&password=' + encodeURIComponent(PW) + '&range=' + RANGE;
+    const d = await (await fetch(url)).json();
+    if (d.status === 'unauthorized'){
+      if (silentAuth) showLoginErr('Nieprawidłowe hasło / パスワードが違います');
+      else { sessionStorage.removeItem('wabi_staff_pw'); location.reload(); }
+      area.innerHTML = '';
+      return false;
+    }
+    TODAY = d.today;
+    render(d.reservations || []);
+    return true;
+  }catch(e){
+    area.innerHTML = '<p class="empty">⚠️ Błąd połączenia / 通信エラー</p>';
+    return false;
+  }
+}
+
+function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function statusClass(st){
+  if (st.indexOf('来店済') >= 0) return 'arrived';
+  if (st.indexOf('キャンセル') >= 0 || st.indexOf('No-show') >= 0) return 'grey';
+  return '';
+}
+
+function render(list){
+  const area = document.getElementById('list-area');
+  const active = list.filter(r => statusClass(r.status) !== 'grey');
+  const totalGuests = active.reduce((s,r) => s + (parseInt(r.guests,10)||0), 0);
+  document.getElementById('sum-text').textContent =
+    `${active.length} rezerwacji / 件 · ${totalGuests} osób / 名`;
+
+  if (!list.length){
+    area.innerHTML = '<p class="empty">🍃 Brak rezerwacji / 予約はありません</p>';
+    return;
+  }
+
+  // 日付ごとにグループ化
+  const byDate = {};
+  list.forEach(r => { (byDate[r.date] = byDate[r.date] || []).push(r); });
+
+  let html = '';
+  Object.keys(byDate).sort().forEach(date => {
+    const rows = byDate[date];
+    const g = rows.filter(r => statusClass(r.status) !== 'grey')
+                  .reduce((s,r) => s + (parseInt(r.guests,10)||0), 0);
+    html += `<div class="date-head">${esc(date)}${date === TODAY ? ' ⭐ DZIŚ / 今日' : ''}
+      <small> — ${g} osób / 名</small></div>`;
+    rows.forEach(r => { html += resCard(r); });
+  });
+  area.innerHTML = html;
+}
+
+function resCard(r){
+  const sc = statusClass(r.status);
+  const cancelled = sc === 'grey';
+  return `<div class="res ${cancelled ? 'cancelled' : ''}">
+    <div class="res-top">
+      <span class="res-time">🕐 ${esc(r.time)}</span>
+      <span class="res-guests">👥 ${esc(r.guests)}</span>
+      <span class="res-status ${sc}">${esc(r.status)}</span>
+    </div>
+    <div class="res-name">${esc(r.name)}
+      ${r.memberId ? `<span class="member-badge">⭐ ${esc(r.memberRank)} ${esc(r.memberId)}</span>` : ''}
+    </div>
+    <div class="res-meta">
+      📞 <a href="tel:${esc(r.phone)}">${esc(r.phone)}</a> · 📧 ${esc(r.email)}<br>
+      🔖 ${esc(r.id)}${r.updatedAt ? ' · 🔄 ' + esc(r.updatedAt) : ''}
+    </div>
+    ${r.comment ? `<div class="res-comment">📝 ${esc(r.comment)}</div>` : ''}
+    ${r.memo ? `<div class="res-comment">🗒 Staff: ${esc(r.memo)}</div>` : ''}
+    ${cancelled ? '' : `<div class="res-actions">
+      <button class="mini mini-green" onclick="op('${esc(r.id)}','arrived')">🍜 Przyszli<br>来店済</button>
+      <button class="mini mini-grey" onclick="op('${esc(r.id)}','noshow')">👻 No-show</button>
+      <button class="mini mini-red" onclick="opCancel('${esc(r.id)}','${esc(r.name)}')">❌ Anuluj<br>取消</button>
+      <button class="mini mini-grey" onclick="memo('${esc(r.id)}')">🗒 Memo</button>
+    </div>`}
+  </div>`;
+}
+
+async function postGAS(payload){
+  const res = await fetch(GAS_URL, { method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload) });
+  return res.json();
+}
+
+async function op(id, action){
+  await postGAS({ action:'staffReservation', password: PW, id, op: action });
+  load();
+}
+async function opCancel(id, name){
+  if (!confirm('Anulować rezerwację? / この予約を取り消しますか？\n' + name + ' (' + id + ')\n※お客様にキャンセルメールが送信されます')) return;
+  await postGAS({ action:'staffReservation', password: PW, id, op:'cancel' });
+  load();
+}
+async function memo(id){
+  const m = prompt('Notatka / スタッフメモ:');
+  if (m === null) return;
+  await postGAS({ action:'staffReservation', password: PW, id, memo: m });
+  load();
+}
+
+// 保存済みパスワードがあれば自動ログイン
+if (PW){
+  document.getElementById('pw').value = PW;
+  login();
+}
+</script>
+</body>
+</html>

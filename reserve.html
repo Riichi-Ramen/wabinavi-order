@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>和美なび WABI NAVI — Rezerwacja / 予約管理</title>
+<style>
+:root{
+  --accent:#c0392b;--text:#2c1810;--muted:#7a6858;
+  --border:rgba(180,140,110,0.35);--green:#2d7a3a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Segoe UI',sans-serif;min-height:100vh;
+  background-color:#f7f0e6;
+  background-image:linear-gradient(160deg,#f7f0e6 0%,#ede0cc 40%,#f0e4d0 100%);
+  display:flex;flex-direction:column;align-items:center;
+  padding:1.5rem 1rem 3rem;
+}
+.logo-txt{font-size:1.6rem;font-weight:700;color:var(--accent);letter-spacing:.15em;margin-bottom:.2rem;cursor:pointer;user-select:none}
+.title{font-size:1rem;color:var(--accent);font-weight:700;text-align:center;margin-bottom:.3rem}
+.subtitle{font-size:.75rem;color:var(--muted);text-align:center;margin-bottom:1.5rem}
+.card{background:rgba(255,252,245,0.95);border:1px solid rgba(192,57,43,0.2);border-radius:16px;
+  padding:1.5rem;width:100%;max-width:420px;box-shadow:0 6px 30px rgba(120,60,40,0.12);margin-bottom:1rem}
+.screen{display:none}
+.screen.active{display:block}
+.form-label{font-size:.75rem;color:var(--muted);margin-bottom:.3rem;display:block;text-transform:uppercase;letter-spacing:.05em}
+.form-input,.form-select,.form-textarea{width:100%;background:rgba(255,252,248,0.9);border:1.5px solid rgba(192,57,43,0.3);
+  color:var(--text);border-radius:8px;padding:.7rem .9rem;font-size:.95rem;font-family:inherit;margin-bottom:1rem}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--accent)}
+.form-textarea{resize:vertical;min-height:70px}
+.btn{width:100%;padding:.85rem;border:none;border-radius:10px;font-weight:700;font-size:.95rem;cursor:pointer;margin-bottom:.6rem}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(192,57,43,0.3)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-green{background:#2d7a3a;color:#fff;box-shadow:0 4px 14px rgba(45,122,58,0.3)}
+.btn-secondary{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:transparent;border:1.5px solid rgba(192,57,43,0.5);color:var(--accent)}
+.btn-danger:hover{background:rgba(192,57,43,0.08)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.error-msg{background:#fee;border:1px solid #f5c6c6;border-radius:8px;padding:.6rem;
+  font-size:.78rem;color:#a00;text-align:center;margin-bottom:.8rem;display:none}
+.ok-msg{background:rgba(45,122,58,0.08);border:1px solid rgba(45,122,58,0.4);border-radius:8px;padding:.6rem;
+  font-size:.78rem;color:#2d7a3a;text-align:center;margin-bottom:.8rem;display:none}
+.result-icon{font-size:3.5rem;text-align:center;display:block;margin-bottom:.8rem}
+.result-title{font-size:1.1rem;font-weight:700;text-align:center;margin-bottom:.5rem;color:var(--text)}
+.result-msg{font-size:.82rem;color:var(--muted);text-align:center;line-height:1.7;margin-bottom:1rem}
+/* 予約詳細 */
+.res-box{border:2px solid var(--accent);border-radius:14px;padding:1.1rem;margin-bottom:1rem;
+  background:linear-gradient(135deg,#fff8f0,#fdeee6)}
+.res-status{display:inline-block;font-size:.72rem;font-weight:700;color:#fff;background:var(--accent);
+  border-radius:20px;padding:.2rem .7rem;margin-bottom:.7rem}
+.res-status.cancelled{background:#888}
+.res-status.arrived{background:#2d7a3a}
+.res-row{display:flex;justify-content:space-between;font-size:.9rem;color:var(--text);padding:.35rem 0;
+  border-bottom:1px dashed rgba(192,57,43,0.15)}
+.res-row:last-child{border-bottom:none}
+.res-row .k{color:var(--muted);font-size:.78rem}
+.res-row .v{font-weight:600;text-align:right;max-width:60%;word-break:break-word}
+.res-id{font-size:.7rem;color:var(--muted);text-align:center;margin-top:.5rem;letter-spacing:.05em}
+.note{font-size:.72rem;color:var(--muted);line-height:1.6;margin-bottom:1rem;text-align:center}
+.spinner{border:3px solid rgba(192,57,43,0.15);border-top-color:var(--accent);border-radius:50%;
+  width:36px;height:36px;margin:2rem auto;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation-duration:2s}}
+.divider{border:none;border-top:1px solid var(--border);margin:.8rem 0}
+a.tel-link{color:var(--accent);font-weight:700;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="logo-txt" id="logo-tap">和美なび</div>
+<div class="title">WABI NAVI — Twoja rezerwacja</div>
+<div class="subtitle">Your reservation / ご予約の確認・変更・キャンセル</div>
+
+<div class="card">
+  <div class="error-msg" id="err"></div>
+  <div class="ok-msg" id="ok"></div>
+
+  <!-- ローディング -->
+  <div class="screen active" id="scr-loading"><div class="spinner"></div></div>
+
+  <!-- 手動照会（リンクなしで開いた場合） -->
+  <div class="screen" id="scr-lookup">
+    <p class="note">Wpisz numer rezerwacji z e-maila i adres e-mail.<br>
+      Enter your reservation ID and email.<br>予約番号とメールアドレスを入力してください。</p>
+    <label class="form-label">Nr rezerwacji / Reservation ID / 予約番号</label>
+    <input class="form-input" id="lk-id" placeholder="RSV-20260715-123">
+    <label class="form-label">E-mail</label>
+    <input class="form-input" id="lk-email" type="email" placeholder="jan@example.com">
+    <button class="btn btn-primary" onclick="lookup()">🔍 Znajdź / Find / 照会</button>
+  </div>
+
+  <!-- 予約詳細 -->
+  <div class="screen" id="scr-view">
+    <div class="res-box">
+      <span class="res-status" id="v-status"></span>
+      <div class="res-row"><span class="k">📅 Data / 日付</span><span class="v" id="v-date"></span></div>
+      <div class="res-row"><span class="k">🕐 Godzina / 時間</span><span class="v" id="v-time"></span></div>
+      <div class="res-row"><span class="k">👥 Osoby / 人数</span><span class="v" id="v-guests"></span></div>
+      <div class="res-row"><span class="k">👤 Imię / 氏名</span><span class="v" id="v-name"></span></div>
+      <div class="res-row" id="v-comment-row"><span class="k">📝 Uwagi / メモ</span><span class="v" id="v-comment"></span></div>
+      <div class="res-id" id="v-id"></div>
+    </div>
+    <div id="v-actions">
+      <button class="btn btn-primary" onclick="showEdit()">🔄 Zmień rezerwację / Change / 変更する</button>
+      <button class="btn btn-danger" onclick="askCancel()">❌ Anuluj rezerwację / Cancel / キャンセルする</button>
+    </div>
+    <p class="note" id="v-locked" style="display:none">
+      Zmiany online możliwe do <span class="lock-h"></span>h przed wizytą — prosimy o kontakt telefoniczny.<br>
+      Online changes close <span class="lock-h"></span>h before your visit — please call us.<br>
+      ご来店<span class="lock-h"></span>時間前を過ぎたため、お電話にてご連絡ください。
+    </p>
+  </div>
+
+  <!-- 変更フォーム -->
+  <div class="screen" id="scr-edit">
+    <label class="form-label">📅 Nowa data / New date / 新しい日付</label>
+    <input class="form-input" id="e-date" type="date">
+    <label class="form-label">🕐 Godzina / Time / 時間</label>
+    <select class="form-select" id="e-time"></select>
+    <label class="form-label">👥 Liczba osób / Guests / 人数</label>
+    <select class="form-select" id="e-guests"></select>
+    <label class="form-label">📝 Uwagi / Comments / ご要望</label>
+    <textarea class="form-textarea" id="e-comment"></textarea>
+    <p class="note">⚠️ Po 20:00 tylko piątek i sobota / After 20:00 Fri &amp; Sat only / 20時以降は金・土のみ<br>
+      Grupy 8+ — telefonicznie / Groups of 8+ by phone / 8名以上はお電話で</p>
+    <button class="btn btn-green" id="e-save" onclick="saveEdit()">✅ Zapisz zmiany / Save / 変更を確定</button>
+    <button class="btn btn-secondary" onclick="show('scr-view')">← Wróć / Back / 戻る</button>
+  </div>
+
+  <!-- キャンセル確認 -->
+  <div class="screen" id="scr-cancel">
+    <span class="result-icon">🥺</span>
+    <div class="result-title">Na pewno anulować?<br>Cancel this reservation?<br>本当にキャンセルしますか？</div>
+    <p class="result-msg" id="c-summary"></p>
+    <button class="btn btn-danger" id="c-yes" onclick="doCancel()">❌ Tak, anuluj / Yes, cancel / キャンセルする</button>
+    <button class="btn btn-secondary" onclick="show('scr-view')">← Nie, wróć / No, go back / 戻る</button>
+  </div>
+
+  <!-- 完了 -->
+  <div class="screen" id="scr-done">
+    <span class="result-icon" id="d-icon">✅</span>
+    <div class="result-title" id="d-title"></div>
+    <p class="result-msg" id="d-msg"></p>
+    <button class="btn btn-secondary" onclick="location.reload()">🔄 Odśwież / Refresh / 再読み込み</button>
+  </div>
+</div>
+
+<p class="note">🍜 Wabi Navi — Toruń ·
+  <a class="tel-link" href="https://riichi-ramen.github.io/">riichi-ramen.github.io</a></p>
+
+<script>
+const GAS_URL = localStorage.getItem('wabi_gas_url') ||
+  'https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYIP8ErEz4umoJ3FN/exec';
+
+// ロゴ5回タップでGAS URL変更（他ページと同じ隠し機能）
+let tapCount = 0;
+document.getElementById('logo-tap').onclick = () => {
+  if (++tapCount >= 5) { tapCount = 0;
+    const u = prompt('GAS URL:', GAS_URL);
+    if (u !== null) { localStorage.setItem('wabi_gas_url', u.trim()); location.reload(); }
+  }
+};
+
+const params = new URLSearchParams(location.search);
+let RES = null, TOKEN = params.get('t') || '', RES_ID = params.get('id') || '', CONFIG = null;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function err(m){ const e=document.getElementById('err'); e.textContent=m; e.style.display='block';
+  document.getElementById('ok').style.display='none'; }
+function ok(m){ const e=document.getElementById('ok'); e.textContent=m; e.style.display='block';
+  document.getElementById('err').style.display='none'; }
+function clearMsg(){ document.getElementById('err').style.display='none'; document.getElementById('ok').style.display='none'; }
+
+async function postGAS(payload){
+  const res = await fetch(GAS_URL, { method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload) });
+  return res.json();
+}
+
+async function load(idOverride, emailOverride){
+  clearMsg(); show('scr-loading');
+  try{
+    let url = GAS_URL + '?action=getReservation&id=' + encodeURIComponent(idOverride || RES_ID);
+    if (TOKEN) url += '&t=' + encodeURIComponent(TOKEN);
+    if (emailOverride) url += '&email=' + encodeURIComponent(emailOverride);
+    const d = await (await fetch(url)).json();
+    if (d.status === 'notFound'){ err('Nie znaleziono rezerwacji / Not found / 予約が見つかりません'); show('scr-lookup'); return; }
+    if (d.status === 'unauthorized'){ err('Nieprawidłowe dane / Invalid link / リンクが正しくありません'); show('scr-lookup'); return; }
+    if (d.status !== 'ok'){ err(d.message || 'Błąd / Error'); show('scr-lookup'); return; }
+    RES = d.reservation; CONFIG = d.config || {};
+    RES_ID = RES.id; if (RES.token) TOKEN = RES.token;
+    render();
+  }catch(e){ err('Błąd połączenia / Connection error / 通信エラー'); show('scr-lookup'); }
+}
+
+function render(){
+  const st = document.getElementById('v-status');
+  st.textContent = RES.status;
+  st.className = 'res-status' +
+    (RES.status.indexOf('キャンセル')>=0 || RES.status.indexOf('No-show')>=0 ? ' cancelled' :
+     RES.status.indexOf('来店済')>=0 ? ' arrived' : '');
+  document.getElementById('v-date').textContent = RES.date + '（' + dayName(RES.date) + '）';
+  document.getElementById('v-time').textContent = RES.time;
+  document.getElementById('v-guests').textContent = RES.guests + ' os. / 名';
+  document.getElementById('v-name').textContent = RES.name;
+  document.getElementById('v-comment').textContent = RES.comment || '—';
+  document.getElementById('v-comment-row').style.display = RES.comment ? 'flex' : 'none';
+  document.getElementById('v-id').textContent = '🔖 ' + RES.id;
+  const can = RES.canModify;
+  document.getElementById('v-actions').style.display = can ? 'block' : 'none';
+  const locked = document.getElementById('v-locked');
+  const isFinal = RES.status.indexOf('キャンセル')>=0 || RES.status.indexOf('来店済')>=0 || RES.status.indexOf('No-show')>=0;
+  locked.style.display = (!can && !isFinal) ? 'block' : 'none';
+  document.querySelectorAll('.lock-h').forEach(x=>x.textContent = (CONFIG.minHoursBefore||2));
+  show('scr-view');
+}
+
+function dayName(dateStr){
+  const names = ['ndz/日','pon/月','wt/火','śr/水','czw/木','pt/金','sob/土'];
+  const d = new Date(dateStr + 'T12:00:00');
+  return isNaN(d) ? '' : names[d.getDay()];
+}
+
+function lookup(){
+  const id = document.getElementById('lk-id').value.trim();
+  const email = document.getElementById('lk-email').value.trim();
+  if (!id || !email){ err('Wpisz nr i e-mail / Enter ID and email / 両方入力してください'); return; }
+  TOKEN = ''; load(id, email);
+}
+
+// ── 変更フォーム ──
+function showEdit(){
+  clearMsg();
+  const dateEl = document.getElementById('e-date');
+  dateEl.value = RES.date;
+  dateEl.min = new Date().toISOString().slice(0,10);
+  const timeSel = document.getElementById('e-time');
+  timeSel.innerHTML = '';
+  const open = CONFIG.openTime || '13:00', last = CONFIG.lastTime || '21:30';
+  let [h,m] = open.split(':').map(Number);
+  while (true){
+    const t = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    if (t > last) break;
+    const o = document.createElement('option'); o.value = o.textContent = t;
+    if (t === RES.time) o.selected = true;
+    timeSel.appendChild(o);
+    m += 30; if (m >= 60){ m = 0; h++; }
+  }
+  const gSel = document.getElementById('e-guests');
+  gSel.innerHTML = '';
+  for (let i=1; i<=(CONFIG.maxGuests||7); i++){
+    const o = document.createElement('option'); o.value = i; o.textContent = i + ' os. / 名';
+    if (String(i) === String(RES.guests)) o.selected = true;
+    gSel.appendChild(o);
+  }
+  document.getElementById('e-comment').value = RES.comment || '';
+  show('scr-edit');
+}
+
+async function saveEdit(){
+  clearMsg();
+  const btn = document.getElementById('e-save');
+  btn.disabled = true; btn.textContent = '⏳ Zapisywanie… / Saving…';
+  try{
+    const d = await postGAS({ action:'updateReservation', id: RES_ID, token: TOKEN,
+      date: document.getElementById('e-date').value,
+      time: document.getElementById('e-time').value,
+      guests: document.getElementById('e-guests').value,
+      comment: document.getElementById('e-comment').value });
+    if (d.status === 'ok'){
+      document.getElementById('d-icon').textContent = '🔄';
+      document.getElementById('d-title').innerHTML = 'Rezerwacja zmieniona!<br>Reservation updated!<br>ご予約を変更しました';
+      document.getElementById('d-msg').textContent = 'Potwierdzenie wysłane e-mailem / Confirmation sent by email / 確認メールを送信しました';
+      show('scr-done');
+    } else if (d.status === 'invalid'){ err(d.message); }
+    else if (d.status === 'tooLate'){ err(d.message); }
+    else { err(d.message || 'Błąd / Error'); }
+  }catch(e){ err('Błąd połączenia / Connection error / 通信エラー'); }
+  btn.disabled = false; btn.textContent = '✅ Zapisz zmiany / Save / 変更を確定';
+}
+
+// ── キャンセル ──
+function askCancel(){
+  clearMsg();
+  document.getElementById('c-summary').textContent = RES.date + ' ' + RES.time + ' · ' + RES.guests + ' os. · ' + RES.name;
+  show('scr-cancel');
+}
+async function doCancel(){
+  const btn = document.getElementById('c-yes');
+  btn.disabled = true; btn.textContent = '⏳ …';
+  try{
+    const d = await postGAS({ action:'cancelReservation', id: RES_ID, token: TOKEN });
+    if (d.status === 'ok'){
+      document.getElementById('d-icon').textContent = '🌸';
+      document.getElementById('d-title').innerHTML = 'Rezerwacja anulowana<br>Reservation cancelled<br>キャンセル完了';
+      document.getElementById('d-msg').textContent = 'Zapraszamy ponownie! / We hope to see you again! / またのご予約をお待ちしております';
+      show('scr-done');
+    } else if (d.status === 'tooLate'){ err(d.message); show('scr-view'); }
+    else { err(d.message || 'Błąd / Error'); show('scr-view'); }
+  }catch(e){ err('Błąd połączenia / 通信エラー'); show('scr-view'); }
+  btn.disabled = false; btn.textContent = '❌ Tak, anuluj / Yes, cancel / キャンセルする';
+}
+
+// ── 起動 ──
+if (RES_ID) load(); else show('scr-lookup');
+</script>
+</body>
+</html>
