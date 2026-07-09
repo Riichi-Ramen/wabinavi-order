@@ -559,6 +559,7 @@ body.show-config .config-bar{display:flex}
       🧓 Zniżka senioralna / Senior discount / シニア割引<br>
       🍜 5 mis = następna w połowie ceny, 10 = gratis!<br>
       &nbsp;&nbsp;5 bowls = next half price, 10 = free! / 5杯で半額・10杯で無料！<br>
+      📚 Wypożyczalnia książek o Japonii / Book lending / 日本文化関連書籍の貸し出し<br>
       🚪 Rezygnacja możliwa w każdej chwili / Cancel anytime / いつでも退会自由
     </div>
     <div style="background:rgba(192,57,43,0.05);border:1px solid rgba(192,57,43,0.15);
@@ -649,6 +650,93 @@ body.show-config .config-bar{display:flex}
         <div class="cg-name">Sushi 🚧</div>
         <div class="cg-name-en">Coming Soon / 準備中</div>
       </div>
+      <div class="cg-card" onclick="openBooksView()" style="border-color:rgba(45,90,140,0.45)">
+        <span class="cg-icon">📚</span>
+        <div class="cg-name">Wypożyczalnia Książek</div>
+        <div class="cg-name-en">Book Lending / 書籍貸し出し（会員特典）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 書籍貸し出しビュー ══ -->
+  <div id="books-view" style="display:none;padding:1rem 1rem 5rem">
+    <button onclick="closeBooksView()"
+      style="background:rgba(60,30,15,0.85);color:#fff;border:none;border-radius:20px;
+             padding:.4rem 1rem;font-size:.78rem;cursor:pointer;font-weight:600;margin-bottom:.8rem">
+      ← カテゴリー一覧 / Kategorie
+    </button>
+    <div style="text-align:center;margin-bottom:.3rem;font-size:1.05rem;font-weight:700;color:var(--accent)">
+      📚 Wypożyczalnia Książek / 書籍貸し出し
+    </div>
+    <div style="text-align:center;font-size:.72rem;color:var(--muted);margin-bottom:.6rem;line-height:1.7">
+      日本文化関連書籍を会員の方に無料で貸し出しています（最長3週間）。<br>
+      Bezpłatna wypożyczalnia dla członków klubu (maks. 3 tygodnie).<br>
+      Free lending for members (max 3 weeks).
+    </div>
+    <div style="text-align:center;margin-bottom:1rem">
+      <button onclick="document.getElementById('book-terms').style.display=
+        document.getElementById('book-terms').style.display==='none'?'block':'none'"
+        style="background:none;border:1px solid var(--border);color:var(--muted);
+               border-radius:16px;padding:.35rem .9rem;font-size:.72rem;cursor:pointer">
+        📜 貸し出し規約 / Regulamin / Terms
+      </button>
+    </div>
+    <div id="book-terms" style="display:none;background:rgba(255,252,245,0.95);
+      border:1px solid var(--border);border-radius:12px;padding:1rem;
+      font-size:.74rem;line-height:1.9;color:var(--text);margin-bottom:1rem">
+      <strong>📜 貸し出し規約 / Regulamin wypożyczalni / Lending Terms</strong><br>
+      1️⃣ 会員限定サービスです（無料）。<br>
+      &nbsp;&nbsp;<small>Usługa tylko dla członków klubu (bezpłatna). / Members only (free).</small><br>
+      2️⃣ 貸出期間は最長3週間。選択した返却予定日までにカウンターへご返却ください。<br>
+      &nbsp;&nbsp;<small>Maks. 3 tygodnie — zwrot przy kasie do wybranej daty. / Max 3 weeks, return at the counter.</small><br>
+      3️⃣ 受け取り・返却はレジカウンターで会員IDをご提示ください。<br>
+      &nbsp;&nbsp;<small>Odbiór i zwrot przy kasie za okazaniem ID członka. / Show member ID at pickup & return.</small><br>
+      4️⃣ 紛失・汚損の場合は実費をご負担いただきます。<br>
+      &nbsp;&nbsp;<small>Za zgubienie lub zniszczenie pobieramy koszt książki. / Lost/damaged books charged at cost.</small><br>
+      5️⃣ 返却遅延が続く場合、貸し出しを停止することがあります。<br>
+      &nbsp;&nbsp;<small>Przy powtarzających się opóźnieniach możemy wstrzymać wypożyczenia. / Repeated delays may suspend lending.</small>
+    </div>
+    <div id="books-list">
+      <div style="text-align:center;color:var(--muted);padding:2rem">
+        <span class="spinner" style="display:inline-block;width:26px;height:26px;
+          border:3px solid rgba(192,57,43,0.2);border-top-color:var(--accent);
+          border-radius:50%;animation:spin .8s linear infinite"></span><br>読み込み中… / Ładowanie…
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 貸出モーダル ══ -->
+  <div id="borrow-modal" style="display:none;position:fixed;inset:0;background:rgba(60,20,10,0.75);
+    backdrop-filter:blur(6px);z-index:600;align-items:center;justify-content:center;padding:1.2rem">
+    <div style="background:rgba(255,252,245,0.97);border-radius:16px;padding:1.5rem;
+      width:100%;max-width:380px;box-shadow:0 8px 40px rgba(120,60,40,0.2)">
+      <div style="font-size:.95rem;font-weight:700;color:var(--accent);margin-bottom:.3rem">
+        📖 <span id="borrow-title"></span>
+      </div>
+      <div style="font-size:.74rem;color:var(--muted);margin-bottom:1rem" id="borrow-author"></div>
+      <div style="font-size:.8rem;font-weight:600;margin-bottom:.3rem">
+        📅 返却予定日 / Data zwrotu / Return date
+      </div>
+      <input type="date" id="borrow-date"
+        style="width:100%;padding:.6rem;border:1.5px solid var(--border);border-radius:10px;
+               font-family:inherit;font-size:.9rem;margin-bottom:.4rem">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:1rem;line-height:1.6">
+        ※ 本日から最長3週間以内。それまでにカウンターへご返却ください。<br>
+        Maks. 3 tygodnie od dziś. / Max 3 weeks from today.
+      </div>
+      <div id="borrow-error" style="display:none;background:#fee;border:1px solid #f5c6c6;
+        border-radius:8px;padding:.5rem;font-size:.74rem;color:#a00;
+        text-align:center;margin-bottom:.8rem"></div>
+      <button onclick="submitBorrow()" id="borrow-btn"
+        style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;
+               padding:.75rem;font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:.5rem">
+        ✅ 借りる / Wypożycz / Borrow
+      </button>
+      <button onclick="closeBorrowModal()"
+        style="width:100%;background:transparent;border:1.5px solid var(--border);
+               color:var(--muted);border-radius:10px;padding:.65rem;cursor:pointer;font-size:.85rem">
+        ← キャンセル / Anuluj
+      </button>
     </div>
   </div>
 
@@ -1513,6 +1601,121 @@ function onTopChange(itemId, ti, sel, priceDeltas) {
   const dEl = document.getElementById(`td-${itemId}-${ti}`);
   if (dEl) dEl.textContent = delta>0?`+${delta} zł`:delta<0?`${delta} zł`:'';
   refreshPrice(itemId);
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  書籍貸し出し（会員特典）
+// ════════════════════════════════════════════════════════════════════
+let borrowBookId = '';
+
+function openBooksView() {
+  document.getElementById('category-grid-screen').style.display = 'none';
+  const tabs = document.getElementById('cat-tabs'); if (tabs) tabs.style.display = 'none';
+  const wrap = document.getElementById('menu-wrap'); if (wrap) wrap.style.display = 'none';
+  document.getElementById('books-view').style.display = 'block';
+  window.scrollTo(0,0);
+  loadBooks();
+}
+
+function closeBooksView() {
+  document.getElementById('books-view').style.display = 'none';
+  backToCategoryGrid();
+}
+
+async function loadBooks() {
+  const area = document.getElementById('books-list');
+  const gasUrl = getGasUrl();
+  if (!gasUrl) {
+    area.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1.5rem;font-size:.8rem">⚙️ システム準備中です。係員にお声がけください。</div>';
+    return;
+  }
+  try {
+    const res  = await fetch(gasUrl + '?action=getBooks');
+    const data = await res.json();
+    if (data.status !== 'ok') throw 0;
+    if (!data.books.length) {
+      area.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1.5rem;font-size:.8rem">📚 蔵書を準備中です / Wkrótce dostępne</div>';
+      return;
+    }
+    area.innerHTML = data.books.map(b => `
+      <div style="background:rgba(255,252,245,0.95);border:1.5px solid ${b.lent?'rgba(230,126,34,0.5)':'rgba(45,122,58,0.4)'};
+        border-radius:12px;padding:.85rem 1rem;margin-bottom:.7rem;${b.lent?'opacity:.75':''}">
+        <div style="display:flex;justify-content:space-between;gap:.5rem;align-items:flex-start">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.88rem">📖 ${b.title}</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">
+              ${b.author}${b.lang?'　🌐 '+b.lang:''}${b.genre?'　🏷️ '+b.genre:''}</div>
+          </div>
+          <span style="flex-shrink:0;font-size:.66rem;font-weight:700;border-radius:12px;
+            padding:.2rem .55rem;color:#fff;background:${b.lent?'#e67e22':'#2d7a3a'}">
+            ${b.lent?'貸出中 / Wypożyczona':'在庫あり / Dostępna'}</span>
+        </div>
+        ${b.lent
+          ? `<div style="font-size:.72rem;color:#b9640f;margin-top:.5rem">
+               🔙 返却予定 → <strong>${b.dueDate||'—'}</strong> から貸出可能<br>
+               <small>Dostępna od / Available from: ${b.dueDate||'—'}</small></div>`
+          : `<button onclick="openBorrowModal('${b.id}', this.dataset.t, this.dataset.a)"
+               data-t="${b.title.replace(/"/g,'&quot;')}" data-a="${b.author.replace(/"/g,'&quot;')}"
+               style="margin-top:.55rem;background:#2d7a3a;color:#fff;border:none;border-radius:8px;
+                      padding:.45rem 1rem;font-size:.76rem;font-weight:700;cursor:pointer">
+               📚 借りる / Wypożycz / Borrow</button>`}
+      </div>`).join('');
+  } catch(e) {
+    area.innerHTML = '<div style="text-align:center;color:var(--accent);padding:1.5rem;font-size:.8rem">📡 読み込みに失敗しました。もう一度お試しください。</div>';
+  }
+}
+
+function openBorrowModal(id, title, author) {
+  // 会員限定チェック
+  if (!isMember || !memberContact) {
+    showToast('📚 書籍貸し出しは会員特典です。会員登録（無料）をお願いします。 / Tylko dla członków', true);
+    return;
+  }
+  borrowBookId = id;
+  document.getElementById('borrow-title').textContent  = title;
+  document.getElementById('borrow-author').textContent = author;
+  const d = document.getElementById('borrow-date');
+  const today = new Date();
+  const fmt = x => x.toISOString().split('T')[0];
+  d.min = fmt(today);
+  d.max = fmt(new Date(today.getTime() + 21*24*3600*1000));
+  d.value = fmt(new Date(today.getTime() + 14*24*3600*1000));  // 既定2週間
+  document.getElementById('borrow-error').style.display = 'none';
+  document.getElementById('borrow-modal').style.display = 'flex';
+}
+
+function closeBorrowModal() {
+  document.getElementById('borrow-modal').style.display = 'none';
+}
+
+async function submitBorrow() {
+  const err  = document.getElementById('borrow-error');
+  const date = document.getElementById('borrow-date').value;
+  if (!date) { err.textContent = '返却予定日を選択してください / Wybierz datę'; err.style.display='block'; return; }
+  const btn = document.getElementById('borrow-btn');
+  btn.disabled = true; btn.textContent = '⏳ 登録中… / Rezerwacja…';
+  try {
+    const res = await fetch(getGasUrl(), {
+      method:'POST', mode:'cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'borrowBook', bookId: borrowBookId,
+        email: memberContact, returnDate: date })
+    });
+    const d = await res.json();
+    if (d.status === 'ok') {
+      closeBorrowModal();
+      showToast('✅ 貸出登録完了！カウンターで会員IDをご提示のうえ本をお受け取りください。返却予定: ' + d.returnDate + ' / Odbierz przy kasie!', false);
+      loadBooks();
+    } else {
+      err.textContent = d.message || 'エラーが発生しました';
+      err.style.display = 'block';
+    }
+  } catch(e) {
+    err.textContent = '📡 通信エラー。もう一度お試しください / Błąd połączenia';
+    err.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.textContent = '✅ 借りる / Wypożycz / Borrow';
 }
 
 // ── 交換ルール：外し単価を「追加額を上限」に減額（ベース価格未満なし） ──
