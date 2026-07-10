@@ -199,8 +199,8 @@ body{
     <small style="color:#7a6858">Zniżka studencka: -10% na ramen (legitymacja studencka)</small><br>
     🧓 <strong>シニア会員（65歳以上）:</strong> ラーメン10%引き<br>
     <small style="color:#7a6858">Zniżka seniora (65+): -10% na ramen (potwierdzenie wieku)</small><br>
-    ⚠️ <small style="color:#7a6858">割引は6杯目半額・無料ボーナスとの併用不可<br>
-    Zniżka nie łączy się z bonusem za 6. i 11. miskę</small>
+    ⚠️ <small style="color:#7a6858">学割・シニア割は半額（6・18杯目…）・無料（12・24杯目…）特典と併用不可<br>
+    Zniżka nie łączy się z bonusami −50% i gratis</small>
   </div>
   <label class="form-label">👤 氏名 / Imię i nazwisko <span style="color:var(--accent)">★</span></label>
   <input class="form-input" type="text" id="reg-name" placeholder="Imię i Nazwisko">
@@ -707,10 +707,12 @@ async function doRegister() {
           🎁 <strong>入会特典：ドリンク券1枚プレゼント！</strong><br>
           <small>Bonus powitalny: voucher na napój! / Welcome gift: free drink voucher!</small><br><br>
           <strong>🌸 会員特典一覧 / Twoje korzyści / Your benefits</strong><br>
-          🍜 1杯 = 10pt（100pt = ラーメン1杯無料！）<br>
-          <small>1 miska = 10 pkt → 100 pkt = ramen gratis!</small><br>
-          ⭐ 6杯目：ラーメン半額 / 6. miska: pół ceny<br>
-          🥉 11杯目：ラーメン無料 / 11. miska: gratis<br>
+          🍜 1杯 = 10pt（半額・無料の丼はポイント対象外）<br>
+          <small>1 miska = 10 pkt (za miski −50%/gratis pkt nie są naliczane)</small><br>
+          ⭐ 50pt → 6杯目：半額 / 6. miska: pół ceny<br>
+          🎁 100pt → 12杯目：無料 / 12. miska: gratis<br>
+          🔁 以降50ptごとに交互（18杯目半額・24杯目無料…）<br>
+          <small>dalej co 50 pkt na przemian: 18. −50%, 24. gratis…</small><br>
           🎂 誕生月：ドリンク1杯無料 / Urodziny: napój gratis<br>
           🎓 学生・🧓シニア：ラーメン10%引き<br>
           <small>Studenci i seniorzy: -10% na ramen</small><br>

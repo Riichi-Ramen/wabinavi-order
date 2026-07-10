@@ -555,8 +555,12 @@ body.show-config .config-bar{display:flex}
       🎉 Promocje i oferty specjalne / Special offers / 特別オファー<br>
       🎓 Zniżka studencka / Student discount / 学生割引<br>
       🧓 Zniżka senioralna / Senior discount / シニア割引<br>
-      🍜 5 mis = następna w połowie ceny, 10 = gratis!<br>
-      &nbsp;&nbsp;5 bowls = next half price, 10 = free! / 5杯で半額・10杯で無料！<br>
+      🍜 Program lojalnościowy / Loyalty / ラーメン特典（1杯 = 10pt）:<br>
+      &nbsp;&nbsp;⭐ 50 pkt → <strong>6杯目 半額</strong> / 6. miska −50%<br>
+      &nbsp;&nbsp;🎁 100 pkt → <strong>12杯目 無料</strong> / 12. miska GRATIS<br>
+      &nbsp;&nbsp;🔁 以降50ptごとに交互（18杯目半額・24杯目無料…）/ dalej co 50 pkt na przemian<br>
+      &nbsp;&nbsp;<small>※半額・無料の丼はポイント対象外 / Za miski −50%・gratis pkt nie są naliczane<br>
+      &nbsp;&nbsp;※半額は学割・シニア割と併用不可 / −50% nie łączy się ze zniżką stud./senior.</small><br>
       📚 Wypożyczalnia książek o Japonii / Book lending / 日本文化関連書籍の貸し出し<br>
       🚪 Rezygnacja możliwa w każdej chwili / Cancel anytime / いつでも退会自由
     </div>
@@ -1107,7 +1111,10 @@ async function verifyMemberAndOrder() {
         language:   m.language   || ''
       };
       saveReturningMember();  // 次回からワンタップ
-      document.getElementById('member-check-screen').style.display = 'none';
+      ['member-check-screen','register-prompt-screen','welcome-screen'].forEach(sid => {
+        const el = document.getElementById(sid); if (el) el.style.display = 'none';
+      });
+      window.scrollTo(0, 0);
       launchMenu();
       showToast(`⭐ ${memberName || 'Witamy'}様、いらっしゃいませ！ / Witamy ponownie!`, false);
     } else {
@@ -1414,7 +1421,7 @@ function renderCard(item) {
   const phHtml  = `<div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div>`;
   const imgHtml = `<div class="img-wrap" data-ph="${item.id}">
       <img class="card-img" src="${imgPath}" alt="${item.nameEN}" loading="lazy"
-           onerror="this.closest('.img-wrap').innerHTML=document.getElementById('ph-template').innerHTML">
+           onerror="this.closest('.img-wrap').style.display='none'">
     </div>`;
 
   const allergensHtml = item.allergens?.length
@@ -2156,5 +2163,86 @@ function showToast(msg, isErr=true) {
 
   </div>
 </div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  誤操作防止モジュール（v20）
+//  ・カート等の状態を常時自動保存 → リロード/誤操作後も復元
+//  ・ブラウザ「戻る」をアプリ内ナビ（メニュー→カテゴリー一覧）に変換
+//  ・カートに商品がある状態でのタブ閉じ/更新に確認ダイアログ
+// ══════════════════════════════════════════════════════════════
+const WABI_SS_KEY = 'wabi_session_v1';
+
+function persistState() {
+  try {
+    const menuOpen = document.getElementById('menu-screen').style.display === 'block';
+    sessionStorage.setItem(WABI_SS_KEY, JSON.stringify({
+      tableNum, guestNum, isMember, memberContact, memberName, memberInfo,
+      cart, coseatMembers, inMenu: menuOpen, t: Date.now()
+    }));
+  } catch (e) {}
+}
+function clearPersistedState() { try { sessionStorage.removeItem(WABI_SS_KEY); } catch (e) {} }
+
+function tryRestoreState() {
+  try {
+    const raw = sessionStorage.getItem(WABI_SS_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (!s.inMenu) return false;
+    if (Date.now() - (s.t || 0) > 3 * 3600 * 1000) { clearPersistedState(); return false; } // 3時間で失効
+    tableNum = s.tableNum; guestNum = s.guestNum; isMember = s.isMember;
+    memberContact = s.memberContact || ''; memberName = s.memberName || '';
+    memberInfo = s.memberInfo || {};
+    cart = s.cart || Object.create(null);
+    coseatMembers = s.coseatMembers || [];
+    ['welcome-screen','member-check-screen','register-prompt-screen'].forEach(sid => {
+      const el = document.getElementById(sid); if (el) el.style.display = 'none';
+    });
+    launchMenu();
+    updateBadge();
+    if (Object.keys(cart).length) {
+      showToast('🔄 前回のカート内容を復元しました / Przywrócono koszyk / Cart restored', false);
+    }
+    return true;
+  } catch (e) { return false; }
+}
+
+// カート操作・画面遷移のたびに自動保存（既存関数をラップ）
+['onCheck','chgQty','toggleRemove','onTopChange','addRiceSet','launchMenu','enterCategory','backToCategoryGrid'].forEach(fn => {
+  const orig = window[fn];
+  if (typeof orig === 'function') {
+    window[fn] = function () { const r = orig.apply(this, arguments); persistState(); return r; };
+  }
+});
+// 注文送信・アプリリセット後は保存内容を整理
+(function () {
+  const origPlace = window.placeOrder;
+  if (typeof origPlace === 'function') {
+    window.placeOrder = async function () { const r = await origPlace.apply(this, arguments); persistState(); return r; };
+  }
+  const origReset = window.resetApp;
+  if (typeof origReset === 'function') {
+    window.resetApp = function () { clearPersistedState(); return origReset.apply(this, arguments); };
+  }
+})();
+
+// 「戻る」ボタン：離脱ではなくアプリ内ナビに変換
+history.pushState({ wabi: 1 }, '');
+window.addEventListener('popstate', () => {
+  history.pushState({ wabi: 1 }, '');   // すぐ積み直して離脱を防止
+  const menuOpen = document.getElementById('menu-screen').style.display === 'block';
+  const inCategory = document.getElementById('menu-wrap')?.style.display === 'block';
+  if (menuOpen && inCategory) backToCategoryGrid();  // カテゴリー内 → 一覧へ戻る
+});
+
+// タブ閉じ/リロード時：カートに商品があれば確認
+window.addEventListener('beforeunload', (e) => {
+  if (Object.keys(cart || {}).length) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// 起動時に復元を試行（既存の初期化より後に実行）
+window.addEventListener('load', () => { setTimeout(tryRestoreState, 150); });
+</script>
 </body>
 </html>
