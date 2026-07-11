@@ -363,6 +363,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v23</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -951,6 +952,7 @@ const PRESETS = [{"pl": "Zupa bardziej pikantna", "en": "Spicy broth"}, {"pl": "
 const ALLERGEN_NAMES = {"1": {"pl": "Gluten", "en": "Gluten"}, "2": {"pl": "Skorupiaki", "en": "Crustaceans"}, "3": {"pl": "Jaja", "en": "Eggs"}, "4": {"pl": "Ryby", "en": "Fish"}, "5": {"pl": "Orzeszki ziemne", "en": "Peanuts"}, "6": {"pl": "Soja", "en": "Soybeans"}, "7": {"pl": "Mleko", "en": "Milk"}, "8": {"pl": "Orzechy", "en": "Nuts"}, "9": {"pl": "Seler", "en": "Celery"}, "10": {"pl": "Gorczyca", "en": "Mustard"}, "11": {"pl": "Sezam", "en": "Sesame"}, "12": {"pl": "Dwutlenek siarki", "en": "Sulphites"}, "13": {"pl": "Łubin", "en": "Lupin"}, "14": {"pl": "Mięczaki", "en": "Molluscs"}};
 const BROTH_LABELS = {"tori": {"pl": "Bulion Drobiowy", "en": "Chicken Broth", "jp": "鶏だし"}, "buta": {"pl": "Bulion Wieprzowy", "en": "Pork Broth", "jp": "豚だし"}, "oferta": {"pl": "Oferta Specjalna", "en": "Special Offer", "jp": "スペシャル"}, "zimne": {"pl": "Na Zimno", "en": "Cold Noodles", "jp": "冷やし"}};
 const BROTH_ICONS = {tori:"🐔", buta:"🐖", oferta:"⭐", zimne:"❄️"};
+const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec";
 const BROTH_ORDER = ["tori","buta","oferta","zimne","inne"];
 const BROTH_INFO = {
   tori:  {icon:"🐔", pl:"Baza drobiowa — Tori", en:"Chicken-based broth / 鶏だしベース"},
@@ -1089,8 +1091,7 @@ async function verifyMemberAndOrder() {
 
   const gasUrl = getGasUrl();
   if (!gasUrl) {
-    // GAS未設定時は照合不可 → 登録フォームへフォールバック
-    openRegisterFormFromVerify();
+    showVerifyError('接続設定エラー / Błąd konfiguracji — prosimy zgłosić obsłudze / Please tell our staff');
     return;
   }
 
@@ -2192,7 +2193,7 @@ function resetApp() {
   document.getElementById('uwagi-ta').value = '';
 }
 
-function getGasUrl()    { try { return localStorage.getItem('wabi_gas_url')||''; } catch(e){return'';} }
+function getGasUrl()    { try { return localStorage.getItem('wabi_gas_url') || DEFAULT_GAS_URL; } catch(e){ return DEFAULT_GAS_URL; } }
 function saveGasUrl()   { try { localStorage.setItem('wabi_gas_url', document.getElementById('gas-url-input').value.trim()); } catch(e){} }
 
 function testGasUrl()   { showToast("✅ URL zapisany / Saved",false); }
