@@ -364,7 +364,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v24</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v27</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -1125,7 +1125,9 @@ async function verifyMemberAndOrder() {
         birthDay:   m.birthDay   || '',
         gender:     m.gender     || '',
         memberType: m.memberType || 'G',
-        language:   m.language   || ''
+        language:   m.language   || '',
+        points:     m.points     || 0,
+        coupons:    m.coupons    || []
       };
       saveReturningMember();  // 次回からワンタップ
       ['member-check-screen','register-prompt-screen','welcome-screen'].forEach(sid => {
@@ -1880,8 +1882,89 @@ function findCatOfItem(id) {
   }
 }
 
+let selectedCoupon = null; // 使用するクーポン（'half'|'free'|null）
+
+// クーポン割引額を計算：カート内で最も安いラーメン1杯の基本価格が対象
+// （追加トッピング分は対象外・ラーメンがなければ割引0）
+function computeCouponDiscount() {
+  if (!selectedCoupon) return { discount: 0, target: '' };
+  let target = null;
+  for (const id in cart) {
+    if (!/^r\d+$/.test(id)) continue;               // ラーメン(r1〜)のみ対象
+    const item = findItem(id);
+    if (!item) continue;
+    if (!target || item.price < target.price) target = item;
+  }
+  if (!target) return { discount: 0, target: '' };
+  const discount = selectedCoupon === 'free' ? target.price : Math.round(target.price / 2);
+  return { discount, target: target.namePL };
+}
+
+// クーポン選択が変わったら確認画面の合計を更新
+function applyCouponToTotal() {
+  const totalEl = document.getElementById('conf-total');
+  if (!totalEl) return;
+  const base = Number(totalEl.dataset.base || 0);
+  const { discount, target } = computeCouponDiscount();
+  let dLine = document.getElementById('coupon-discount-line');
+  if (discount > 0) {
+    totalEl.innerHTML = `<span style="text-decoration:line-through;opacity:.5;font-size:.8em">${base} zł</span> ${base - discount} zł`;
+    if (!dLine) {
+      dLine = document.createElement('div');
+      dLine.id = 'coupon-discount-line';
+      dLine.style.cssText = 'display:flex;justify-content:space-between;font-size:.82rem;color:#2d7a3a;font-weight:700;padding:.2rem 0';
+      const totalRow = totalEl.closest('.total-row');
+      totalRow.parentNode.insertBefore(dLine, totalRow);
+    }
+    dLine.innerHTML = `<span>🎫 Kupon（${target}）</span><span>−${discount} zł</span>`;
+    dLine.style.display = 'flex';
+  } else {
+    totalEl.textContent = base + ' zł';
+    if (dLine) dLine.style.display = 'none';
+    if (selectedCoupon) {
+      // クーポン選択中なのにラーメンがカートにない
+      showToast('⚠️ Kupon dotyczy ramenu — dodaj ramen do zamówienia / クーポンはラーメンが対象です', true);
+    }
+  }
+}
+
+function renderCouponBox() {
+  const ta = document.getElementById('uwagi-ta');
+  let box = document.getElementById('coupon-area');
+  const coupons = (isMember && memberInfo && memberInfo.coupons) ? memberInfo.coupons.filter(c => !c.u) : [];
+  if (!coupons.length) { if (box) box.style.display = 'none'; selectedCoupon = null; return; }
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'coupon-area';
+    box.style.cssText = 'margin:.8rem 0;padding:.8rem .9rem;border:2px solid #b8860b;border-radius:12px;' +
+      'background:linear-gradient(135deg,#fdf6e3,#faedc8);font-size:.82rem;line-height:1.7';
+    ta.parentNode.insertBefore(box, ta);
+  }
+  const label = c => c.t === 'free'
+    ? `🍜 DARMOWY ramen / ラーメン1杯 無料（${c.m}pt特典）`
+    : `🎫 50% ZNIŻKI na ramen / ラーメン半額（${c.m}pt特典）`;
+  box.innerHTML = `
+    <div style="font-weight:700;color:#8e6b00;margin-bottom:.4rem">
+      🎉 Masz kupon! / クーポンをお持ちです！</div>
+    <label style="display:block;padding:.2rem 0;cursor:pointer">
+      <input type="radio" name="coupon-sel" value="" checked onchange="selectedCoupon=null;applyCouponToTotal()">
+      Nie używam teraz / 今回は使わない</label>
+    ${coupons.map(c => `
+    <label style="display:block;padding:.2rem 0;cursor:pointer">
+      <input type="radio" name="coupon-sel" value="${c.t}" onchange="selectedCoupon='${c.t}';applyCouponToTotal()">
+      ${label(c)}</label>`).join('')}
+    <div style="font-size:.68rem;color:#8e6b00;margin-top:.4rem">
+      ※ Zniżka dotyczy najtańszego ramenu (cena podstawowa, bez dodatków)<br>
+      ※ 最も安いラーメン1杯の基本価格に適用（追加トッピングは対象外）<br>
+      ※ Za tę miskę punkty nie są naliczane / この1杯にはポイントが付きません<br>
+      ※ Nie łączy się ze zniżką stud./senior. / 学割・シニア割と併用不可</div>`;
+  box.style.display = 'block';
+  selectedCoupon = null;
+}
+
 function openConfirm() {
   setTimeout(checkAllergyWarning, 50);
+  setTimeout(renderCouponBox, 50);
   const ids = Object.keys(cart);
   if (!ids.length) { showToast("Nie wybrano nic / Nothing selected"); return; }
   // 注文確定ボタンを必ず有効化（不具合修正）
@@ -1932,7 +2015,11 @@ function openConfirm() {
   });
 
   document.getElementById('conf-items').innerHTML = html;
-  document.getElementById('conf-total').textContent = total + ' zł';
+  const confTotalEl = document.getElementById('conf-total');
+  confTotalEl.dataset.base = total;
+  confTotalEl.textContent = total + ' zł';
+  const oldDLine = document.getElementById('coupon-discount-line');
+  if (oldDLine) oldDLine.style.display = 'none';
   document.getElementById('preset-list').innerHTML =
     PRESETS.map(p=>`<button class="preset-btn" onclick="addPreset('${p.pl} / ${p.en}')">${p.pl}</button>`).join('');
   document.getElementById('confirm-modal').classList.add('open');
@@ -2020,12 +2107,17 @@ async function placeOrder() {
               unitPrice:unit, lineTotal:line, customizations:customStr };
   });
 
+  // クーポン割引を合計に反映
+  const couponCalc = (isMember && selectedCoupon) ? computeCouponDiscount() : { discount: 0, target: '' };
+  if (couponCalc.discount > 0) total -= couponCalc.discount;
+
   document.getElementById('confirm-modal').classList.remove('open');
   document.getElementById('btn-order').disabled = true;
 
+  let res = null;
+  let sendFailed = false;
   if (gasUrl) {
     document.getElementById('sending-screen').classList.add('open');
-    let res = null;
     try {
       const response = await fetch(gasUrl, {
         method:'POST', mode:'cors',
@@ -2041,13 +2133,35 @@ async function placeOrder() {
           memberGender:     isMember?(memberInfo.gender    ||""):"",
           memberType:       isMember?(memberInfo.memberType||"G"):"",
           memberLanguage:   isMember?(memberInfo.language  ||""):"",
+          useCoupon: (isMember && selectedCoupon && couponCalc.discount > 0) ? selectedCoupon : "",
+          couponDiscount: couponCalc.discount,
+          couponTarget: couponCalc.target,
           coseatMembers: coseatMembers
         })
       });
       res = await response.json();
-    } catch(e) {}
+    } catch(e) { sendFailed = true; }
     document.getElementById('sending-screen').classList.remove('open');
+
+    // 送信失敗 → お礼画面を出さず、確認画面に戻して再試行を促す
+    if (sendFailed || !res) {
+      document.getElementById('btn-order').disabled = false;
+      document.getElementById('confirm-modal').classList.add('open');
+      showToast('⚠️ Nie udało się wysłać zamówienia — spróbuj ponownie / 送信に失敗しました。もう一度お試しください', true);
+      return;
+    }
   }
+
+  // 送信成功 → 使用クーポンを消し込み、カートを空にして完了画面へ
+  if (isMember && selectedCoupon && memberInfo.coupons) {
+    const ci = memberInfo.coupons.findIndex(c => !c.u && c.t === selectedCoupon);
+    if (ci >= 0) memberInfo.coupons.splice(ci, 1);
+  }
+  selectedCoupon = null;
+  cart = Object.create(null);
+  updateBadge();
+  if (typeof persistState === 'function') persistState();
+  document.getElementById('btn-order').disabled = false;
 
   document.getElementById('order-id-display').textContent = `Nr zamówienia / Order ID: ${orderId}`;
 
