@@ -364,7 +364,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v27</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v28</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -1884,8 +1884,8 @@ function findCatOfItem(id) {
 
 let selectedCoupon = null; // 使用するクーポン（'half'|'free'|null）
 
-// クーポン割引額を計算：カート内で最も安いラーメン1杯の基本価格が対象
-// （追加トッピング分は対象外・ラーメンがなければ割引0）
+// クーポン割引額を計算：カート内で最も高いラーメン1杯の基本価格が対象
+// （＝お好きな1杯無料/半額と同等。追加トッピング・替え玉は対象外＝満額請求）
 function computeCouponDiscount() {
   if (!selectedCoupon) return { discount: 0, target: '' };
   let target = null;
@@ -1893,7 +1893,7 @@ function computeCouponDiscount() {
     if (!/^r\d+$/.test(id)) continue;               // ラーメン(r1〜)のみ対象
     const item = findItem(id);
     if (!item) continue;
-    if (!target || item.price < target.price) target = item;
+    if (!target || item.price > target.price) target = item;
   }
   if (!target) return { discount: 0, target: '' };
   const discount = selectedCoupon === 'free' ? target.price : Math.round(target.price / 2);
@@ -1954,8 +1954,8 @@ function renderCouponBox() {
       <input type="radio" name="coupon-sel" value="${c.t}" onchange="selectedCoupon='${c.t}';applyCouponToTotal()">
       ${label(c)}</label>`).join('')}
     <div style="font-size:.68rem;color:#8e6b00;margin-top:.4rem">
-      ※ Zniżka dotyczy najtańszego ramenu (cena podstawowa, bez dodatków)<br>
-      ※ 最も安いラーメン1杯の基本価格に適用（追加トッピングは対象外）<br>
+      ※ Dotyczy 1 miski ramenu — cena podstawowa (dodatki, kaedama płatne osobno)<br>
+      ※ ラーメン1杯の基本価格に適用（複数注文時は最も高い1杯に自動適用・追加トッピング/替え玉は別料金）<br>
       ※ Za tę miskę punkty nie są naliczane / この1杯にはポイントが付きません<br>
       ※ Nie łączy się ze zniżką stud./senior. / 学割・シニア割と併用不可</div>`;
   box.style.display = 'block';
