@@ -356,7 +356,7 @@ body.show-config .config-bar{display:flex}
 .config-bar input:focus{outline:none;border-color:var(--accent)}
 .config-bar button{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:.3rem .65rem;font-size:.72rem;cursor:pointer;font-weight:700;white-space:nowrap}
 
-#error-toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#c0392b;color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;z-index:600;display:none;max-width:90%;text-align:center}
+#error-toast{position:fixed;top:calc(1rem + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:#c0392b;color:#fff;padding:.7rem 1.2rem;border-radius:10px;font-size:.9rem;font-weight:600;z-index:700;display:none;max-width:92%;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 
 #allergen-modal{display:none;position:fixed;inset:0;background:rgba(60,20,10,0.7);backdrop-filter:blur(6px);z-index:700;align-items:center;justify-content:center;padding:1rem}
 #allergen-modal.open{display:flex}
@@ -377,7 +377,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v34</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v35</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -2469,6 +2469,8 @@ async function placeOrder() {
 function openCheckout() {
   document.getElementById('success-screen').style.display = 'none';
   document.getElementById('menu-screen').style.display = 'none';
+  const bar = document.getElementById('order-bar');
+  if (bar) bar.style.display = 'none';
   const sum = sessionOrders.reduce((a, o) => a + (o.total || 0), 0);
   document.getElementById('co-sum').textContent =
     `Stolik ${tableNum} ・ ${sessionOrders.length} zamówień / 件 ・ Razem ${sum} zł`;
@@ -2667,6 +2669,8 @@ function finishWithdraw() {
 function resetApp() {
   cart = Object.create(null);
   sessionOrders = []; payGroups = {}; splitBill = false;
+  const bar = document.getElementById('order-bar');
+  if (bar) { bar.style.display = 'none'; bar.innerHTML = ''; }
   checkoutInvoice = { type: 'none', nip: '', name: '', address: '' };
   const co = document.getElementById('checkout-screen'); if (co) co.style.display = 'none';
   tableNum=""; guestNum="";
