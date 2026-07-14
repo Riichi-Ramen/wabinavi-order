@@ -197,6 +197,11 @@ body{
 .grp-chip{border:1.2px solid rgba(142,36,24,.45);color:#8e2418;background:#fff;
   border-radius:6px;padding:.08rem .4rem;font-size:.66rem;font-weight:700;cursor:pointer;user-select:none}
 .grp-chip.sel{background:#8e2418;border-color:#8e2418;color:#fff}
+.co-btn{display:block;width:100%;margin-bottom:.55rem;padding:.85rem;border-radius:12px;
+  border:1.5px solid rgba(91,59,142,.35);background:rgba(255,252,245,.95);color:#2c1810;
+  font-size:.9rem;font-weight:700;cursor:pointer;line-height:1.4}
+.co-btn small{font-weight:400;color:#7a6858;font-size:.72rem}
+.co-btn:active{filter:brightness(.96)}
 .onigiri-chips{display:flex;flex-direction:column;gap:.35rem;width:100%}
 .onigiri-chip{display:block;border:1.5px solid rgba(192,57,43,.45);color:#8e2418;background:#fffcf5;
   border-radius:12px;padding:.45rem .7rem;font-size:.8rem;font-weight:700;line-height:1.35;
@@ -372,7 +377,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v33</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v34</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -856,7 +861,16 @@ body.show-config .config-bar{display:flex}
     <div style="margin-top:.8rem;font-size:.8rem;color:var(--muted)" id="order-id-display"></div>
   </div>
   <div id="coseat-result-area" style="display:none;width:100%;max-width:420px"></div>
-  <button class="new-btn" onclick="resetApp()">+ Nowe zamówienie / New Order</button>
+  <div id="session-orders" style="width:100%;max-width:420px;margin:.6rem 0;padding:.7rem .9rem;
+    background:rgba(255,252,245,.9);border:1px solid rgba(192,57,43,.25);border-radius:12px;
+    font-size:.8rem;text-align:left;color:var(--text)"></div>
+  <button class="new-btn" style="background:linear-gradient(135deg,#2d7a3a,#3d9c4a)"
+    onclick="backToMenuKeepSession()">➕ Zamów więcej / Order more / 追加注文する</button>
+  <button class="new-btn" style="background:linear-gradient(135deg,#5b3b8e,#7a52b8);margin-top:.5rem"
+    onclick="openCheckout()">💳 Zapłać — do kasy / Pay / 支払い（レジへ）</button>
+  <button style="background:none;border:none;color:var(--muted);font-size:.75rem;
+    margin-top:.7rem;cursor:pointer;text-decoration:underline"
+    onclick="resetApp()">🔄 Nowy stolik / 次のお客様（リセット）</button>
   <div class="member-divider" id="member-divider-block">
     <div class="member-teaser">
       🎁 <strong>Zostań członkiem Wabi Navi Club!</strong><br>
@@ -1866,7 +1880,19 @@ function updateOrderBar(n) {
     document.body.appendChild(bar);
   }
   const menuVisible = document.getElementById('menu-screen').style.display === 'block';
-  if (!n || !menuVisible) { bar.style.display = 'none'; return; }
+  if (!menuVisible) { bar.style.display = 'none'; return; }
+  if (!n) {
+    if (sessionOrders.length) {
+      bar.onclick = openCheckout;
+      bar.style.background = 'linear-gradient(135deg,#5b3b8e,#7a52b8)';
+      bar.innerHTML = `💳 <strong>Zapłać — do kasy / 支払い（レジへ）▶</strong>
+        &nbsp;<span style="opacity:.9">${sessionOrders.reduce((a,o)=>a+(o.total||0),0)} zł</span>`;
+      bar.style.display = 'flex';
+    } else { bar.style.display = 'none'; }
+    return;
+  }
+  bar.onclick = openConfirm;
+  bar.style.background = 'linear-gradient(135deg,#1f6b2d,#2d9c42)';
   let total = 0;
   for (const id in cart) {
     const item = findItem(id);
@@ -1896,6 +1922,8 @@ function findCatOfItem(id) {
 //  一人あたりの支払額を自動計算。注文票にも👤タグと内訳が記録される。
 // ══════════════════════════════════════════════════════════════
 let splitBill = false;
+let sessionOrders = [];   // この卓で送信済みの注文（追加注文・会計用）
+let checkoutInvoice = { type: 'none', nip: '', name: '', address: '' };
 
 function payerLabel(p) {
   return p ? ('Osoba ' + p + ' / 客' + p) : 'Wspólne / みんなで';
@@ -2381,6 +2409,7 @@ async function placeOrder() {
     if (ci >= 0) memberInfo.coupons.splice(ci, 1);
   }
   selectedCoupon = null;
+  sessionOrders.push({ id: orderId, total: total });
   cart = Object.create(null);
   updateBadge();
   if (typeof persistState === 'function') persistState();
@@ -2432,8 +2461,122 @@ async function placeOrder() {
       </div>`;
   }
 
+  renderSessionOrders();
   document.getElementById('menu-screen').style.display = 'none';
   document.getElementById('success-screen').style.display = 'flex';
+}
+
+function openCheckout() {
+  document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('menu-screen').style.display = 'none';
+  const sum = sessionOrders.reduce((a, o) => a + (o.total || 0), 0);
+  document.getElementById('co-sum').textContent =
+    `Stolik ${tableNum} ・ ${sessionOrders.length} zamówień / 件 ・ Razem ${sum} zł`;
+  showCoStep('co-step-type');
+  document.getElementById('checkout-screen').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function showCoStep(id) {
+  document.querySelectorAll('.co-step').forEach(d => d.style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+  if (id === 'co-step-nip') {
+    document.getElementById('co-nip-err').style.display = 'none';
+    document.getElementById('co-company').style.display = 'none';
+    document.getElementById('co-confirm-nip').style.display = 'none';
+  }
+}
+
+function chooseInvoice(type) {
+  checkoutInvoice = { type, nip: '', name: '', address: '' };
+  if (type === 'none') showCoStep('co-step-confirm');
+  else showCoStep('co-step-nip');
+}
+
+// NIPチェックサム検証（クライアント側の事前チェック）
+function validNip(nip) {
+  if (!/^\d{10}$/.test(nip)) return false;
+  const w = [6, 5, 7, 2, 3, 4, 5, 6, 7];
+  const sum = w.reduce((a, wi, i) => a + wi * Number(nip[i]), 0);
+  return sum % 11 === Number(nip[9]);
+}
+
+async function lookupNipFromApp() {
+  const errEl = document.getElementById('co-nip-err');
+  const compEl = document.getElementById('co-company');
+  const btn = document.getElementById('co-nip-check');
+  errEl.style.display = 'none'; compEl.style.display = 'none';
+  document.getElementById('co-confirm-nip').style.display = 'none';
+  const nip = document.getElementById('co-nip').value.replace(/[^0-9]/g, '');
+  if (!validNip(nip)) {
+    errEl.innerHTML = '❌ Nieprawidłowy NIP — sprawdź i wpisz ponownie.<br>Invalid NIP number.<br>NIP番号が正しくありません。ご確認の上、再入力してください。';
+    errEl.style.display = 'block';
+    return;
+  }
+  btn.disabled = true; btn.textContent = '⏳ Sprawdzanie… / 照会中…';
+  try {
+    const d = await (await fetch(getGasUrl() + '?action=lookupNip&nip=' + nip)).json();
+    if (d.status === 'ok') {
+      checkoutInvoice.nip = nip;
+      checkoutInvoice.name = d.name || '';
+      checkoutInvoice.address = d.address || '';
+      compEl.innerHTML = `✅ <strong>Znaleziono w rejestrze / 登録確認済み</strong><br>
+        🏢 ${d.name}<br>📍 ${d.address || '—'}<br>
+        <small>Status VAT: ${d.statusVat || '—'} ・ NIP: ${nip}</small><br>
+        <small>Dane zostaną przekazane do kasy / この情報がレジに送信されます</small>`;
+      compEl.style.display = 'block';
+      document.getElementById('co-confirm-nip').style.display = 'block';
+    } else if (d.status === 'notFound') {
+      errEl.innerHTML = '❌ NIP nie znaleziony w rejestrze VAT.<br>Sprawdź numer i spróbuj ponownie.<br>この番号はVAT登録簿に見つかりませんでした。番号をご確認の上、再入力してください。';
+      errEl.style.display = 'block';
+    } else {
+      errEl.innerHTML = '⚠️ Błąd weryfikacji — spróbuj ponownie lub zgłoś przy kasie.<br>照会エラー。もう一度お試しいただくか、レジでスタッフにお申し出ください。';
+      errEl.style.display = 'block';
+    }
+  } catch (e) {
+    errEl.innerHTML = '⚠️ Błąd połączenia / 通信エラー。もう一度お試しください。';
+    errEl.style.display = 'block';
+  }
+  btn.disabled = false; btn.textContent = '🔍 Sprawdź NIP / Verify / NIPを照会';
+}
+
+async function confirmCheckout() {
+  const sum = sessionOrders.reduce((a, o) => a + (o.total || 0), 0);
+  try {
+    await fetch(getGasUrl(), { method: 'POST', mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'checkout',
+        table: tableNum, guests: guestNum,
+        orders: sessionOrders.map(o => o.id), sum,
+        invoiceType: checkoutInvoice.type, nip: checkoutInvoice.nip,
+        companyName: checkoutInvoice.name, companyAddress: checkoutInvoice.address,
+        isMember, memberName: isMember ? memberName : '', memberContact: isMember ? memberContact : '' })
+    });
+  } catch (e) { /* 送信失敗でも案内は表示（スタッフに口頭申告可能） */ }
+  showCoStep('co-step-done');
+  clearPersistedState();
+}
+
+function renderSessionOrders() {
+  const box = document.getElementById('session-orders');
+  if (!box) return;
+  if (!sessionOrders.length) { box.style.display = 'none'; return; }
+  const sum = sessionOrders.reduce((a, o) => a + (o.total || 0), 0);
+  box.style.display = 'block';
+  box.innerHTML = '<strong>🧾 Zamówienia tego stolika / この卓の注文</strong><br>' +
+    sessionOrders.map((o, i) => `${i + 1}. ${o.id} — ${o.total} zł`).join('<br>') +
+    `<div style="border-top:1px dashed rgba(192,57,43,.3);margin-top:.4rem;padding-top:.3rem">
+     Razem / 合計: <strong style="color:var(--accent)">${sum} zł</strong></div>`;
+}
+
+// 追加注文：セッション（テーブル・会員情報・注文履歴）を保持したままメニューへ
+function backToMenuKeepSession() {
+  document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('menu-screen').style.display = 'block';
+  updateBadge();
+  window.scrollTo(0, 0);
+  showToast('➕ Dodaj kolejne pozycje / 追加のご注文をどうぞ', false);
+  if (typeof persistState === 'function') persistState();
 }
 
 // ── 同席会員追加・削除 ──────────────────────────────────────────
@@ -2523,6 +2666,9 @@ function finishWithdraw() {
 
 function resetApp() {
   cart = Object.create(null);
+  sessionOrders = []; payGroups = {}; splitBill = false;
+  checkoutInvoice = { type: 'none', nip: '', name: '', address: '' };
+  const co = document.getElementById('checkout-screen'); if (co) co.style.display = 'none';
   tableNum=""; guestNum="";
   isMember=false; memberContact=""; memberName=""; memberInfo=Object.create(null);
   coseatMembers = [];
@@ -2640,7 +2786,7 @@ function persistState() {
     const menuOpen = document.getElementById('menu-screen').style.display === 'block';
     sessionStorage.setItem(WABI_SS_KEY, JSON.stringify({
       tableNum, guestNum, isMember, memberContact, memberName, memberInfo,
-      cart, coseatMembers, inMenu: menuOpen, t: Date.now()
+      cart, coseatMembers, sessionOrders, inMenu: menuOpen, t: Date.now()
     }));
   } catch (e) {}
 }
@@ -2658,6 +2804,7 @@ function tryRestoreState() {
     memberInfo = s.memberInfo || {};
     cart = s.cart || Object.create(null);
     coseatMembers = s.coseatMembers || [];
+    sessionOrders = s.sessionOrders || [];
     ['welcome-screen','member-check-screen','register-prompt-screen'].forEach(sid => {
       const el = document.getElementById(sid); if (el) el.style.display = 'none';
     });
@@ -2712,5 +2859,80 @@ window.addEventListener('beforeunload', (e) => {
 // 起動時に復元を試行（既存の初期化より後に実行）
 window.addEventListener('load', () => { setTimeout(tryRestoreState, 150); });
 </script>
+
+<!-- ══ 💳 会計画面 / Checkout ══ -->
+<div id="checkout-screen" style="display:none;position:fixed;inset:0;z-index:600;overflow-y:auto;
+  background:linear-gradient(160deg,#f7f0e6 0%,#ede0cc 40%,#f0e4d0 100%);padding:1.5rem 1rem 3rem">
+  <div style="max-width:440px;margin:0 auto">
+    <div style="text-align:center;font-size:1.15rem;font-weight:700;color:#5b3b8e;margin-bottom:.2rem">
+      💳 Płatność / Payment / お会計</div>
+    <div id="co-sum" style="text-align:center;font-size:.85rem;color:#7a6858;margin-bottom:1rem"></div>
+
+    <!-- STEP 1: 領収書タイプ -->
+    <div class="co-step" id="co-step-type">
+      <p style="font-size:.85rem;color:#2c1810;margin-bottom:.7rem;text-align:center">
+        Czy potrzebujesz faktury? / Do you need an invoice? / 領収書の種類をお選びください</p>
+      <button class="co-btn" onclick="chooseInvoice('none')">🧾 Zwykły paragon / Regular receipt<br>
+        <small>通常レシート（NIP不要）</small></button>
+      <button class="co-btn" onclick="chooseInvoice('nip')">🧾 Paragon z NIP<br>
+        <small>NIP付きレシート（企業経費用）</small></button>
+      <button class="co-btn" onclick="chooseInvoice('faktura')">📄 Faktura VAT<br>
+        <small>VATインボイス（正式請求書）</small></button>
+    </div>
+
+    <!-- STEP 2: NIP入力・照会 -->
+    <div class="co-step" id="co-step-nip" style="display:none">
+      <label style="font-size:.75rem;color:#7a6858;display:block;margin-bottom:.3rem">
+        NIP (10 cyfr / 10桁の数字)</label>
+      <input id="co-nip" inputmode="numeric" maxlength="13" placeholder="np. 1234563218"
+        style="width:100%;padding:.8rem;border:1.5px solid rgba(91,59,142,.4);border-radius:10px;
+        font-size:1.1rem;letter-spacing:.1em;text-align:center;margin-bottom:.6rem"
+        onkeydown="if(event.key==='Enter')lookupNipFromApp()">
+      <div id="co-nip-err" style="display:none;background:#fdeaea;border:1.5px solid #c0392b;color:#a81f10;
+        border-radius:10px;padding:.6rem;font-size:.78rem;text-align:center;margin-bottom:.6rem"></div>
+      <button class="co-btn" style="background:#5b3b8e;color:#fff" id="co-nip-check"
+        onclick="lookupNipFromApp()">🔍 Sprawdź NIP / Verify / NIPを照会</button>
+      <div id="co-company" style="display:none;background:#f2f9ee;border:1.5px solid #2d7a3a;border-radius:12px;
+        padding:.8rem;font-size:.82rem;color:#1f5429;margin:.6rem 0;line-height:1.7"></div>
+      <button class="co-btn" id="co-confirm-nip" style="display:none;background:linear-gradient(135deg,#1f6b2d,#2d9c42);color:#fff"
+        onclick="confirmCheckout()">✅ Potwierdzam — do kasy / Confirm / レジ会計を確定</button>
+      <button class="co-btn" style="border:1.5px solid rgba(120,100,80,.4);background:transparent;color:#7a6858"
+        onclick="showCoStep('co-step-type')">← Wróć / 戻る</button>
+    </div>
+
+    <!-- STEP 3: 確定（NIP不要の場合） -->
+    <div class="co-step" id="co-step-confirm" style="display:none">
+      <p style="font-size:.85rem;text-align:center;color:#2c1810;margin-bottom:.8rem">
+        Zgłosić rachunek do kasy? / Send bill request to the register?<br>お会計をレジに送信しますか？</p>
+      <button class="co-btn" style="background:linear-gradient(135deg,#1f6b2d,#2d9c42);color:#fff"
+        onclick="confirmCheckout()">✅ Potwierdzam — do kasy / レジ会計を確定</button>
+      <button class="co-btn" style="border:1.5px solid rgba(120,100,80,.4);background:transparent;color:#7a6858"
+        onclick="showCoStep('co-step-type')">← Wróć / 戻る</button>
+    </div>
+
+    <!-- STEP 4: 完了・レジへ案内 -->
+    <div class="co-step" id="co-step-done" style="display:none;text-align:center">
+      <div style="font-size:3rem;margin:.5rem 0">🙏</div>
+      <div style="font-size:1.05rem;font-weight:700;color:#2c1810;line-height:1.8;margin-bottom:.8rem">
+        Prosimy podejść do kasy lub zgłosić się do obsługi.<br>
+        Please proceed to the register or call our staff.<br>
+        レジへお進みください。係員にお申し出ください。</div>
+      <div style="background:rgba(255,252,245,.95);border:1.5px solid #b8860b;border-radius:12px;
+        padding:.8rem;font-size:.8rem;color:#8e6b00;line-height:1.8;margin-bottom:1rem">
+        ⭐ Punkty: jeśli nie otrzymałeś/aś jeszcze dzisiejszej pieczątki,<br>
+        zeskanuj kod QR przy kasie.<br>
+        Points: if you haven't received today's stamp yet,<br>
+        please scan the stamp QR code at the register counter.<br>
+        本日のポイント付与がお済みでないお客様は、<br>レジカウンターのスタンプ用QRコードをご利用ください。</div>
+      <div style="font-size:.9rem;color:#8e2418;font-weight:700;line-height:1.9;margin-bottom:1.2rem">
+        Dziękujemy serdecznie za wizytę! Zapraszamy ponownie!<br>
+        Thank you very much for dining with us.<br>We look forward to your next visit!<br>
+        ご来店誠にありがとうございました。<br>またのお越しをお待ちしております。🍜</div>
+      <button class="co-btn" style="background:#c0392b;color:#fff" onclick="resetApp()">
+        🔄 Nowy stolik / New table / 次のお客様へ</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
