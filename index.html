@@ -372,7 +372,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v32</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v33</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -2693,6 +2693,12 @@ function tryRestoreState() {
 history.pushState({ wabi: 1 }, '');
 window.addEventListener('popstate', () => {
   history.pushState({ wabi: 1 }, '');   // すぐ積み直して離脱を防止
+  // 確認画面が開いていれば、まずそれを閉じる（＝編集に戻る）
+  const confirmModal = document.getElementById('confirm-modal');
+  if (confirmModal && confirmModal.classList.contains('open')) {
+    confirmModal.classList.remove('open');
+    return;
+  }
   const menuOpen = document.getElementById('menu-screen').style.display === 'block';
   const inCategory = document.getElementById('menu-wrap')?.style.display === 'block';
   if (menuOpen && inCategory) backToCategoryGrid();  // カテゴリー内 → 一覧へ戻る
