@@ -372,7 +372,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v30</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v32</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -1971,7 +1971,15 @@ function computeSplitTotals() {
   }
   const sharePerHead = shared / n;
   const finals = persons.map(v => v + sharePerHead);
-  return { n, persons, shared, sharePerHead, finals };
+  // クーポン情報（説明表示用）：対象商品と、その負担者
+  let coupon = null;
+  if (cc.discount > 0 && cart[cc.targetId]) {
+    const tp = getPayers(cart[cc.targetId]).filter(p => p >= 1 && p <= n);
+    coupon = { discount: cc.discount, target: cc.target,
+               who: tp.length ? '👤' + tp.join('+') : '👥wsp.',
+               whoJp: tp.length ? '客' + tp.join('・') : 'みんなで' };
+  }
+  return { n, persons, shared, sharePerHead, finals, coupon };
 }
 
 function fmtZl(v) {
@@ -2038,7 +2046,9 @@ function renderSplitSummary() {
   }
   box.style.display = 'block';
   const letters = Array.from({ length: t.n }, (_, i) => String.fromCharCode(65 + i));
-  let html = '<strong>💳 Podział rachunku / 支払いの内訳</strong><br>';
+  let html = '<strong>💳 Podział rachunku / 支払いの内訳</strong><br>' +
+    '<small style="opacity:.85">🧾 A・B・C… = numer rachunku (paragonu) / 伝票の仕分け記号。' +
+    'Osoby z tą samą literą płacą razem / 同じ記号を選んだ客は同じ伝票にまとまります</small><br>';
   t.finals.forEach((v, i) => {
     const p = i + 1;
     const grpChips = letters.map(L =>
@@ -2047,9 +2057,14 @@ function renderSplitSummary() {
     html += `<div style="display:flex;align-items:center;justify-content:space-between;gap:.4rem;flex-wrap:wrap">
       <span>👤 客${p}: <strong>${fmtZl(v)}</strong>
       ${t.persons[i] > 0 && t.shared > 0 ? `<small>(własne ${fmtZl(t.persons[i])} + wsp. ${fmtZl(t.sharePerHead)})</small>` : ''}</span>
-      <span class="grp-chips">🧾${grpChips}</span></div>`;
+      <span class="grp-chips"><small style="font-weight:700;color:#8e2418">🧾 Rachunek/伝票:</small>${grpChips}</span></div>`;
   });
   if (t.shared > 0) html += `<small>👥 Wspólne / みんなで: ${fmtZl(t.shared)} ÷ ${t.n}名</small><br>`;
+  if (t.coupon) {
+    html += `<div style="margin:.3rem 0;padding:.35rem .5rem;background:#fdf6e3;border:1px solid #b8860b;border-radius:8px;font-size:.72rem;color:#8e6b00">
+      🎫 Kupon −${fmtZl(t.coupon.discount)}（${t.coupon.target}）— zniżka odliczona od: ${t.coupon.who}<br>
+      クーポン割引は「${t.coupon.target}」の負担者（${t.coupon.whoJp}）の支払額から<strong>差し引き済み</strong>です</div>`;
+  }
 
   // 伝票グループ集計（同じ文字の客をまとめて請求）
   const groups = {};
@@ -2291,6 +2306,7 @@ async function placeOrder() {
         ? Object.keys(groups).sort().map(L=>'🧾'+L+'(👤'+groups[L].members.join('+')+')→'+fmtZl(groups[L].total)).join(' | ')
         : t.finals.map((v,i)=>'👤'+(i+1)+'→'+fmtZl(v)).join(' | ')) +
       (t.shared>0 ? '（wspólne '+fmtZl(t.shared)+'÷'+t.n+'）' : '') +
+      (t.coupon ? ' ｜ 🎫kupon −'+fmtZl(t.coupon.discount)+' odliczony od '+t.coupon.who : '') +
       (uwagi ? ' ｜ ' + uwagi : '');
   }
   const orderId = 'WN-' + Date.now().toString(36).toUpperCase();
