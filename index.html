@@ -189,6 +189,10 @@ body{
 .menu-wrap{padding:1.2rem;max-width:940px;margin:0 auto}
 .cat-section{margin-bottom:2.5rem}
 .vege-card{background:linear-gradient(135deg,#f3faee,#e9f5e0)!important;border:2px solid #7cb87a!important;position:relative}
+.payer-chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.4rem}
+.payer-chip{border:1.5px solid rgba(45,122,58,.5);color:#2d7a3a;background:#fff;
+  border-radius:14px;padding:.2rem .55rem;font-size:.7rem;font-weight:700;cursor:pointer;user-select:none}
+.payer-chip.sel{background:#2d7a3a;border-color:#2d7a3a;color:#fff}
 .onigiri-chips{display:flex;flex-direction:column;gap:.35rem;width:100%}
 .onigiri-chip{display:block;border:1.5px solid rgba(192,57,43,.45);color:#8e2418;background:#fffcf5;
   border-radius:12px;padding:.45rem .7rem;font-size:.8rem;font-weight:700;line-height:1.35;
@@ -364,7 +368,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v28</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v29</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -1882,12 +1886,133 @@ function findCatOfItem(id) {
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+//  💳 個別会計 / Rachunki osobne（v29）
+//  人数2名以上のとき、確認画面で各商品を「客1/客2/…/みんなで」に割り当て、
+//  一人あたりの支払額を自動計算。注文票にも👤タグと内訳が記録される。
+// ══════════════════════════════════════════════════════════════
+let splitBill = false;
+
+function payerLabel(p) {
+  return p ? ('Osoba ' + p + ' / 客' + p) : 'Wspólne / みんなで';
+}
+
+function toggleSplitBill() {
+  splitBill = !splitBill;
+  renderSplitUI();
+  if (typeof persistState === 'function') persistState();
+}
+
+function setPayer(id, p, el) {
+  if (!cart[id]) return;
+  cart[id].payer = p;
+  el.parentNode.querySelectorAll('.payer-chip').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  renderSplitSummary();
+  if (typeof persistState === 'function') persistState();
+}
+
+// 一人あたりの支払額を計算（クーポン割引は対象の丼の持ち主から差し引く）
+function computeSplitTotals() {
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  const persons = Array.from({ length: n }, () => 0);
+  let shared = 0;
+  const cc = (isMember && selectedCoupon) ? computeCouponDiscount() : { discount: 0, targetId: '' };
+  for (const id in cart) {
+    const item = findItem(id);
+    if (!item) continue;
+    const o = cart[id];
+    let line = (item.price + swapCalc(item, o).delta) * o.qty;
+    if (cc.discount > 0 && id === cc.targetId) line -= cc.discount;
+    const p = o.payer || 0;
+    if (p >= 1 && p <= n) persons[p - 1] += line;
+    else shared += line;
+  }
+  const sharePerHead = shared / n;
+  const finals = persons.map(v => v + sharePerHead);
+  return { n, persons, shared, sharePerHead, finals };
+}
+
+function fmtZl(v) {
+  return (Math.round(v * 100) / 100).toFixed(2).replace(/\.00$/, '') + ' zł';
+}
+
+function renderSplitUI() {
+  const confItems = document.getElementById('conf-items');
+  if (!confItems) return;
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+
+  // トグルボタン（2名以上のときのみ）
+  let tArea = document.getElementById('split-toggle-area');
+  if (n < 2) { if (tArea) tArea.style.display = 'none'; splitBill = false; }
+  else {
+    if (!tArea) {
+      tArea = document.createElement('div');
+      tArea.id = 'split-toggle-area';
+      confItems.parentNode.insertBefore(tArea, confItems);
+    }
+    tArea.style.display = 'block';
+    tArea.innerHTML = `<button onclick="toggleSplitBill()" style="width:100%;margin:.2rem 0 .5rem;
+      padding:.6rem;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;
+      border:1.5px solid ${splitBill ? '#2d7a3a' : 'rgba(192,57,43,.4)'};
+      background:${splitBill ? 'linear-gradient(135deg,#eaf6e6,#dff0d8)' : 'transparent'};
+      color:${splitBill ? '#2d7a3a' : '#8e2418'}">
+      💳 Płatność osobno / 個別会計: ${splitBill ? 'ON ✅' : 'OFF'}
+      <span style="display:block;font-size:.66rem;font-weight:400;opacity:.8">
+        ${splitBill ? 'Przypisz pozycje do osób poniżej / 下で各商品を人に割り当ててください'
+                    : 'Kliknij, aby podzielić rachunek / タップで会計を分ける'}</span></button>`;
+  }
+
+  // 各商品の割り当てチップ
+  document.querySelectorAll('#conf-items .conf-item').forEach(div => {
+    const old = div.querySelector('.payer-chips');
+    if (old) old.remove();
+    if (!splitBill || n < 2) return;
+    const id = div.dataset.id;
+    const cur = (cart[id] && cart[id].payer) || 0;
+    const chips = document.createElement('div');
+    chips.className = 'payer-chips';
+    let inner = `<span class="payer-chip${cur === 0 ? ' sel' : ''}" onclick="setPayer('${id}',0,this)">👥 wsp.</span>`;
+    for (let p = 1; p <= n; p++) {
+      inner += `<span class="payer-chip${cur === p ? ' sel' : ''}" onclick="setPayer('${id}',${p},this)">👤${p}</span>`;
+    }
+    chips.innerHTML = inner;
+    div.appendChild(chips);
+  });
+
+  renderSplitSummary();
+}
+
+function renderSplitSummary() {
+  let box = document.getElementById('split-summary');
+  if (!splitBill) { if (box) box.style.display = 'none'; return; }
+  const t = computeSplitTotals();
+  if (!box) {
+    const totalRow = document.querySelector('#conf-total').closest('.total-row');
+    box = document.createElement('div');
+    box.id = 'split-summary';
+    box.style.cssText = 'margin:.5rem 0;padding:.7rem .8rem;border:1.5px solid #2d7a3a;border-radius:10px;' +
+      'background:#f2f9ee;font-size:.8rem;line-height:1.8;color:#1f5429';
+    totalRow.parentNode.insertBefore(box, totalRow.nextSibling);
+  }
+  box.style.display = 'block';
+  let html = '<strong>💳 Podział rachunku / 支払いの内訳</strong><br>';
+  t.finals.forEach((v, i) => {
+    html += `👤 Osoba ${i + 1} / 客${i + 1}: <strong>${fmtZl(v)}</strong>`;
+    if (t.persons[i] > 0 && t.shared > 0) html += ` <small>(własne ${fmtZl(t.persons[i])} + wspólne ${fmtZl(t.sharePerHead)})</small>`;
+    html += '<br>';
+  });
+  if (t.shared > 0) html += `<small>👥 Wspólne / みんなで: ${fmtZl(t.shared)} ÷ ${t.n}名</small><br>`;
+  html += '<small style="opacity:.75">※ Grosze zaokrągla kasa / 端数（グロシュ）はレジで調整します</small>';
+  box.innerHTML = html;
+}
+
 let selectedCoupon = null; // 使用するクーポン（'half'|'free'|null）
 
 // クーポン割引額を計算：カート内で最も高いラーメン1杯の基本価格が対象
 // （＝お好きな1杯無料/半額と同等。追加トッピング・替え玉は対象外＝満額請求）
 function computeCouponDiscount() {
-  if (!selectedCoupon) return { discount: 0, target: '' };
+  if (!selectedCoupon) return { discount: 0, target: '', targetId: '' };
   let target = null;
   for (const id in cart) {
     if (!/^r\d+$/.test(id)) continue;               // ラーメン(r1〜)のみ対象
@@ -1895,9 +2020,9 @@ function computeCouponDiscount() {
     if (!item) continue;
     if (!target || item.price > target.price) target = item;
   }
-  if (!target) return { discount: 0, target: '' };
+  if (!target) return { discount: 0, target: '', targetId: '' };
   const discount = selectedCoupon === 'free' ? target.price : Math.round(target.price / 2);
-  return { discount, target: target.namePL };
+  return { discount, target: target.namePL, targetId: target.id };
 }
 
 // クーポン選択が変わったら確認画面の合計を更新
@@ -1918,9 +2043,11 @@ function applyCouponToTotal() {
     }
     dLine.innerHTML = `<span>🎫 Kupon（${target}）</span><span>−${discount} zł</span>`;
     dLine.style.display = 'flex';
+    renderSplitSummary();
   } else {
     totalEl.textContent = base + ' zł';
     if (dLine) dLine.style.display = 'none';
+    renderSplitSummary();
     if (selectedCoupon) {
       // クーポン選択中なのにラーメンがカートにない
       showToast('⚠️ Kupon dotyczy ramenu — dodaj ramen do zamówienia / クーポンはラーメンが対象です', true);
@@ -2003,7 +2130,7 @@ function openConfirm() {
       const changed  = Object.values(o.toppingLabels||{}).filter(Boolean);
       if (sw.disc > 0) changed.push('↩︎ Zamiana składnika / 具材交換: −' + sw.disc + ' zł');
       const changedHtml = changed.length ? `<div class="conf-changed">🔧 ${changed.join(', ')}</div>` : '';
-      html += `<div class="conf-item">
+      html += `<div class="conf-item" data-id="${id}">
         <div class="conf-item-top">
           <div class="conf-name">${item.namePL}<br><span class="conf-name-en">${item.nameEN}</span></div>
           <div class="conf-qty">×${o.qty}</div>
@@ -2015,6 +2142,7 @@ function openConfirm() {
   });
 
   document.getElementById('conf-items').innerHTML = html;
+  renderSplitUI();
   const confTotalEl = document.getElementById('conf-total');
   confTotalEl.dataset.base = total;
   confTotalEl.textContent = total + ' zł';
@@ -2088,7 +2216,14 @@ function closeConfirm() {
 
 async function placeOrder() {
   const gasUrl  = getGasUrl();
-  const uwagi   = document.getElementById('uwagi-ta').value.trim();
+  let uwagi   = document.getElementById('uwagi-ta').value.trim();
+  if (splitBill && (parseInt(guestNum,10)||1) >= 2) {
+    const t = computeSplitTotals();
+    uwagi = '💳 RACHUNKI OSOBNE/個別会計: ' +
+      t.finals.map((v,i)=>'👤'+(i+1)+'→'+fmtZl(v)).join(' | ') +
+      (t.shared>0 ? '（wspólne '+fmtZl(t.shared)+'÷'+t.n+'）' : '') +
+      (uwagi ? ' ｜ ' + uwagi : '');
+  }
   const orderId = 'WN-' + Date.now().toString(36).toUpperCase();
   const ids     = Object.keys(cart);
   let total = 0;
@@ -2103,7 +2238,9 @@ async function placeOrder() {
     const changedStr  = Object.values(o.toppingLabels).filter(Boolean).join(', ');
     const swapStr     = sw.disc > 0 ? ('Zamiana / 交換減額: −' + sw.disc + ' zł') : '';
     const customStr   = [removedStr, changedStr, swapStr].filter(Boolean).join(' | ');
-    return { namePL:item.namePL, nameEN:item.nameEN, qty:o.qty,
+    const payerTag = (splitBill && (parseInt(guestNum,10)||1) >= 2)
+      ? ('【' + (o.payer ? '👤' + o.payer : '👥wsp') + '】') : '';
+    return { namePL: payerTag + item.namePL, nameEN:item.nameEN, qty:o.qty,
               unitPrice:unit, lineTotal:line, customizations:customStr };
   });
 
