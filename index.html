@@ -193,6 +193,10 @@ body{
 .payer-chip{border:1.5px solid rgba(45,122,58,.5);color:#2d7a3a;background:#fff;
   border-radius:14px;padding:.2rem .55rem;font-size:.7rem;font-weight:700;cursor:pointer;user-select:none}
 .payer-chip.sel{background:#2d7a3a;border-color:#2d7a3a;color:#fff}
+.grp-chips{display:inline-flex;gap:.2rem;align-items:center}
+.grp-chip{border:1.2px solid rgba(142,36,24,.45);color:#8e2418;background:#fff;
+  border-radius:6px;padding:.08rem .4rem;font-size:.66rem;font-weight:700;cursor:pointer;user-select:none}
+.grp-chip.sel{background:#8e2418;border-color:#8e2418;color:#fff}
 .onigiri-chips{display:flex;flex-direction:column;gap:.35rem;width:100%}
 .onigiri-chip{display:block;border:1.5px solid rgba(192,57,43,.45);color:#8e2418;background:#fffcf5;
   border-radius:12px;padding:.45rem .7rem;font-size:.8rem;font-weight:700;line-height:1.35;
@@ -368,7 +372,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v29</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v30</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -1903,13 +1907,46 @@ function toggleSplitBill() {
   if (typeof persistState === 'function') persistState();
 }
 
-function setPayer(id, p, el) {
+// 商品の負担者を取得（旧形式payerからの自動移行付き）
+function getPayers(o) {
+  if (Array.isArray(o.payers)) return o.payers;
+  if (o.payer) return [o.payer];
+  return [];
+}
+
+// チップをタップ：複数の客で分担可能（例：唐揚げ2人前を客4と客5で）
+function togglePayer(id, p, el) {
   if (!cart[id]) return;
-  cart[id].payer = p;
-  el.parentNode.querySelectorAll('.payer-chip').forEach(c => c.classList.remove('sel'));
-  el.classList.add('sel');
+  let payers = getPayers(cart[id]);
+  if (p === 0) {
+    payers = []; // 「みんなで」は排他
+  } else {
+    const i = payers.indexOf(p);
+    if (i >= 0) payers.splice(i, 1); else payers.push(p);
+    payers.sort((a, b) => a - b);
+  }
+  cart[id].payers = payers;
+  delete cart[id].payer;
+  // チップの見た目を更新
+  const wrap = el.parentNode;
+  wrap.querySelectorAll('.payer-chip').forEach(c => {
+    const v = Number(c.dataset.p);
+    c.classList.toggle('sel', v === 0 ? payers.length === 0 : payers.includes(v));
+  });
   renderSplitSummary();
   if (typeof persistState === 'function') persistState();
+}
+
+// 会計グループ（客をA/B/C…の伝票にまとめる。既定＝各自バラバラ）
+let payGroups = {};
+function getPayGroup(p) {
+  return payGroups[p] || String.fromCharCode(64 + p); // 1→A, 2→B…
+}
+function setPayGroup(p, letter, el) {
+  payGroups[p] = letter;
+  el.parentNode.querySelectorAll('.grp-chip').forEach(c =>
+    c.classList.toggle('sel', c.dataset.l === letter));
+  renderSplitSummary();
 }
 
 // 一人あたりの支払額を計算（クーポン割引は対象の丼の持ち主から差し引く）
@@ -1924,9 +1961,13 @@ function computeSplitTotals() {
     const o = cart[id];
     let line = (item.price + swapCalc(item, o).delta) * o.qty;
     if (cc.discount > 0 && id === cc.targetId) line -= cc.discount;
-    const p = o.payer || 0;
-    if (p >= 1 && p <= n) persons[p - 1] += line;
-    else shared += line;
+    const payers = getPayers(o).filter(p => p >= 1 && p <= n);
+    if (payers.length) {
+      const each = line / payers.length; // 複数選択時は均等割り
+      payers.forEach(p => { persons[p - 1] += each; });
+    } else {
+      shared += line;
+    }
   }
   const sharePerHead = shared / n;
   const finals = persons.map(v => v + sharePerHead);
@@ -1969,12 +2010,12 @@ function renderSplitUI() {
     if (old) old.remove();
     if (!splitBill || n < 2) return;
     const id = div.dataset.id;
-    const cur = (cart[id] && cart[id].payer) || 0;
+    const payers = cart[id] ? getPayers(cart[id]) : [];
     const chips = document.createElement('div');
     chips.className = 'payer-chips';
-    let inner = `<span class="payer-chip${cur === 0 ? ' sel' : ''}" onclick="setPayer('${id}',0,this)">👥 wsp.</span>`;
+    let inner = `<span class="payer-chip${payers.length === 0 ? ' sel' : ''}" data-p="0" onclick="togglePayer('${id}',0,this)">👥 wsp.</span>`;
     for (let p = 1; p <= n; p++) {
-      inner += `<span class="payer-chip${cur === p ? ' sel' : ''}" onclick="setPayer('${id}',${p},this)">👤${p}</span>`;
+      inner += `<span class="payer-chip${payers.includes(p) ? ' sel' : ''}" data-p="${p}" onclick="togglePayer('${id}',${p},this)">👤${p}</span>`;
     }
     chips.innerHTML = inner;
     div.appendChild(chips);
@@ -1996,14 +2037,36 @@ function renderSplitSummary() {
     totalRow.parentNode.insertBefore(box, totalRow.nextSibling);
   }
   box.style.display = 'block';
+  const letters = Array.from({ length: t.n }, (_, i) => String.fromCharCode(65 + i));
   let html = '<strong>💳 Podział rachunku / 支払いの内訳</strong><br>';
   t.finals.forEach((v, i) => {
-    html += `👤 Osoba ${i + 1} / 客${i + 1}: <strong>${fmtZl(v)}</strong>`;
-    if (t.persons[i] > 0 && t.shared > 0) html += ` <small>(własne ${fmtZl(t.persons[i])} + wspólne ${fmtZl(t.sharePerHead)})</small>`;
-    html += '<br>';
+    const p = i + 1;
+    const grpChips = letters.map(L =>
+      `<span class="grp-chip${getPayGroup(p) === L ? ' sel' : ''}" data-l="${L}"
+        onclick="setPayGroup(${p},'${L}',this)">${L}</span>`).join('');
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;gap:.4rem;flex-wrap:wrap">
+      <span>👤 客${p}: <strong>${fmtZl(v)}</strong>
+      ${t.persons[i] > 0 && t.shared > 0 ? `<small>(własne ${fmtZl(t.persons[i])} + wsp. ${fmtZl(t.sharePerHead)})</small>` : ''}</span>
+      <span class="grp-chips">🧾${grpChips}</span></div>`;
   });
   if (t.shared > 0) html += `<small>👥 Wspólne / みんなで: ${fmtZl(t.shared)} ÷ ${t.n}名</small><br>`;
-  html += '<small style="opacity:.75">※ Grosze zaokrągla kasa / 端数（グロシュ）はレジで調整します</small>';
+
+  // 伝票グループ集計（同じ文字の客をまとめて請求）
+  const groups = {};
+  t.finals.forEach((v, i) => {
+    const L = getPayGroup(i + 1);
+    (groups[L] = groups[L] || { total: 0, members: [] });
+    groups[L].total += v; groups[L].members.push(i + 1);
+  });
+  const merged = Object.keys(groups).filter(L => groups[L].members.length >= 2);
+  if (merged.length || Object.keys(groups).length < t.n) {
+    html += '<div style="margin-top:.4rem;padding-top:.4rem;border-top:1px dashed #2d7a3a"><strong>🧾 Rachunki / 伝票ごとの合計</strong><br>';
+    Object.keys(groups).sort().forEach(L => {
+      html += `Rachunek ${L}（👤${groups[L].members.join('+')}）: <strong>${fmtZl(groups[L].total)}</strong><br>`;
+    });
+    html += '</div>';
+  }
+  html += '<small style="opacity:.75">※ 🧾のA/B/Cで客を同じ伝票にまとめられます（例：客1+2=A、客3+4+5=B）<br>※ Grosze zaokrągla kasa / 端数はレジで調整します</small>';
   box.innerHTML = html;
 }
 
@@ -2219,8 +2282,14 @@ async function placeOrder() {
   let uwagi   = document.getElementById('uwagi-ta').value.trim();
   if (splitBill && (parseInt(guestNum,10)||1) >= 2) {
     const t = computeSplitTotals();
+    const groups = {};
+    t.finals.forEach((v,i)=>{ const L=getPayGroup(i+1);
+      (groups[L]=groups[L]||{total:0,members:[]}); groups[L].total+=v; groups[L].members.push(i+1); });
+    const useGroups = Object.keys(groups).length < t.n; // 誰かがまとめられている
     uwagi = '💳 RACHUNKI OSOBNE/個別会計: ' +
-      t.finals.map((v,i)=>'👤'+(i+1)+'→'+fmtZl(v)).join(' | ') +
+      (useGroups
+        ? Object.keys(groups).sort().map(L=>'🧾'+L+'(👤'+groups[L].members.join('+')+')→'+fmtZl(groups[L].total)).join(' | ')
+        : t.finals.map((v,i)=>'👤'+(i+1)+'→'+fmtZl(v)).join(' | ')) +
       (t.shared>0 ? '（wspólne '+fmtZl(t.shared)+'÷'+t.n+'）' : '') +
       (uwagi ? ' ｜ ' + uwagi : '');
   }
@@ -2238,8 +2307,9 @@ async function placeOrder() {
     const changedStr  = Object.values(o.toppingLabels).filter(Boolean).join(', ');
     const swapStr     = sw.disc > 0 ? ('Zamiana / 交換減額: −' + sw.disc + ' zł') : '';
     const customStr   = [removedStr, changedStr, swapStr].filter(Boolean).join(' | ');
+    const pl_ = getPayers(o);
     const payerTag = (splitBill && (parseInt(guestNum,10)||1) >= 2)
-      ? ('【' + (o.payer ? '👤' + o.payer : '👥wsp') + '】') : '';
+      ? ('【' + (pl_.length ? '👤' + pl_.join('+') : '👥wsp') + '】') : '';
     return { namePL: payerTag + item.namePL, nameEN:item.nameEN, qty:o.qty,
               unitPrice:unit, lineTotal:line, customizations:customStr };
   });
