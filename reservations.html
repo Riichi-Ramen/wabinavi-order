@@ -55,6 +55,11 @@ body{
 .res-name{font-size:.92rem;color:var(--text);font-weight:600;margin:.3rem 0 .1rem}
 .member-badge{display:inline-block;font-size:.68rem;background:rgba(45,122,58,0.1);border:1px solid rgba(45,122,58,0.4);
   color:#2d7a3a;border-radius:20px;padding:.1rem .5rem;margin-left:.3rem}
+/* 顧客履歴バッジ（🍜通算来店 / 👻通算No-show / 🆕初来店） */
+.hist-badge{display:inline-block;font-size:.68rem;background:rgba(120,90,40,0.08);border:1px solid rgba(120,90,40,0.35);
+  color:#7a5a28;border-radius:20px;padding:.1rem .5rem;margin-left:.3rem;font-weight:700}
+.hist-badge.new{background:rgba(41,98,180,0.08);border-color:rgba(41,98,180,0.4);color:#2962b4}
+.hist-badge.warn{background:rgba(192,57,43,0.08);border-color:rgba(192,57,43,0.5);color:var(--accent)}
 .res-meta{font-size:.76rem;color:var(--muted);line-height:1.6;word-break:break-word}
 .res-meta a{color:var(--accent);font-weight:700;text-decoration:none}
 .res-comment{font-size:.78rem;color:var(--text);background:rgba(192,57,43,0.06);border-radius:8px;
@@ -92,7 +97,6 @@ body{
   <div class="tabs">
     <button class="tab active" id="tab-today" onclick="setRange('today')">📅 Dziś / 今日</button>
     <button class="tab" id="tab-upcoming" onclick="setRange('upcoming')">🔜 Nadchodzące / 今後</button>
-    <button class="tab" id="tab-all" onclick="setRange('all')">🗂 Wszystkie / 全件</button>
   </div>
   <div class="summary">
     <span id="sum-text"></span>
@@ -132,7 +136,7 @@ function showLoginErr(m){ const e = document.getElementById('login-err'); e.text
 
 function setRange(r){
   RANGE = r;
-  ['today','upcoming','all'].forEach(x =>
+  ['today','upcoming'].forEach(x =>
     document.getElementById('tab-'+x).classList.toggle('active', x === r));
   load();
 }
@@ -195,6 +199,17 @@ function render(list){
   area.innerHTML = html;
 }
 
+// 顧客履歴バッジ：🆕初来店 / 🍜通算来店回数 / 👻通算No-show回数
+// （GAS v5.0がメール／電話一致で全期間を自動集計して返す）
+function histBadge(r){
+  if (r.hFirst) return '<span class="hist-badge new">🆕 Nowy gość / 初</span>';
+  const parts = [];
+  if (r.hVisits)  parts.push('🍜 ' + r.hVisits);
+  if (r.hNoshows) parts.push('👻 ' + r.hNoshows);
+  if (!parts.length) return '';
+  return `<span class="hist-badge ${r.hNoshows > 0 ? 'warn' : ''}">${parts.join(' · ')}</span>`;
+}
+
 function resCard(r){
   const sc = statusClass(r.status);
   const cancelled = sc === 'grey';
@@ -206,10 +221,11 @@ function resCard(r){
     </div>
     <div class="res-name">${esc(r.name)}
       ${r.memberId ? `<span class="member-badge">⭐ ${esc(r.memberRank)} ${esc(r.memberId)}</span>` : ''}
+      ${histBadge(r)}
     </div>
     <div class="res-meta">
       📞 <a href="tel:${esc(r.phone)}">${esc(r.phone)}</a> · 📧 ${esc(r.email)}<br>
-      🔖 ${esc(r.id)}${r.updatedAt ? ' · 🔄 ' + esc(r.updatedAt) : ''}
+      🔖 ${esc(r.id)}${r.updatedAt ? ' · 🔄 ' + esc(r.updatedAt) : ''}${r.hLastVisit ? ' · 🍜 ostatnio/前回 ' + esc(r.hLastVisit) : ''}
     </div>
     ${r.comment ? `<div class="res-comment">📝 ${esc(r.comment)}</div>` : ''}
     ${r.memo ? `<div class="res-comment">🗒 Staff: ${esc(r.memo)}</div>` : ''}
