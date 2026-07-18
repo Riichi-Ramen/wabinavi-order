@@ -374,6 +374,16 @@ body.show-config .config-bar{display:flex}
   .menu-grid{grid-template-columns:1fr}
   .mismatch-compare{flex-direction:column;align-items:center}
 }
+.serve-row{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem;padding:.5rem .55rem;
+  background:rgba(47,102,144,.06);border:1.5px dashed rgba(47,102,144,.35);border-radius:10px}
+.serve-chip{flex:1 1 100%;min-width:120px;text-align:center;padding:.45rem .3rem;border-radius:8px;
+  border:1.5px solid rgba(60,30,15,.25);font-size:.7rem;font-weight:600;cursor:pointer;
+  background:#fff;color:#3c1e0f;line-height:1.3;user-select:none}
+.serve-chip small{display:block;font-weight:400;font-size:.62rem;opacity:.8}
+.serve-chip.sel{border-color:#2f6690;background:linear-gradient(135deg,#e8f1f8,#d9e9f5);
+  color:#1f4b6e;box-shadow:0 2px 8px rgba(47,102,144,.25)}
+.serve-chip[data-m="wynos"].sel{border-color:#b93c3c;background:linear-gradient(135deg,#fdecec,#f9dcdc);color:#8e2418}
+.serve-chip[data-m="kasa"].sel{border-color:#b68a00;background:linear-gradient(135deg,#fdf6e3,#f7ecc8);color:#8e6b00}
 </style>
 </head>
 <body>
@@ -989,6 +999,42 @@ let urlTable  = "";
 let tableNum  = "";
 let guestNum  = "";
 let cart      = Object.create(null);
+
+// ══ 🛍️ v40: 商品ごとの提供方法（店内/持ち帰り/会計時渡し）＋容器代 ══
+// 容器代（1個あたり・カテゴリ別）。金額変更はこの1箇所だけでOK。
+// ラーメン→大容器2zł(tk1相当)、丼・おにぎり・前菜→小容器1zł(tk2相当)
+const SERVE_FEES     = { ramen: 2, onigiri: 1, przystawki: 1 };
+const SERVE_ELIGIBLE = ['ramen', 'onigiri', 'przystawki'];
+function serveFeeUnit(id) {
+  const cat = findCatOfItem(id);
+  return (cat && SERVE_FEES[cat.id]) || 0;
+}
+// カート1行あたりの容器代合計（店内なら0）
+function serveFee(id, o) {
+  if (!o || !o.serve || o.serve === 'lokal') return 0;
+  return serveFeeUnit(id) * (o.qty || 1);
+}
+function serveLabelText(mode, fee) {
+  if (mode === 'wynos') return '🛍️ NA WYNOS — odbiór przy kasie / 持ち帰り・会計時渡し' + (fee ? ` (+${fee} zł opak./容器代)` : '');
+  if (mode === 'kasa')  return '🧳 ODBIÓR PRZY KASIE / 会計時にお渡し' + (fee ? ` (+${fee} zł opak./容器代)` : '');
+  return '';
+}
+// チップをタップ：未選択商品なら自動でカートに追加してから記録
+function setServeMode(id, mode, el) {
+  if (!cart[id]) {
+    const chk = document.getElementById('chk-' + id);
+    if (chk && !chk.checked) { chk.checked = true; onCheck(id, true); }
+  }
+  if (!cart[id]) return;
+  // 同じチップをもう一度タップ → 解除して店内（既定）に戻す
+  if (cart[id].serve === mode) mode = 'lokal';
+  cart[id].serve = mode;
+  const wrap = el.closest('.serve-row');
+  if (wrap) wrap.querySelectorAll('.serve-chip').forEach(c =>
+    c.classList.toggle('sel', c.dataset.m === mode));
+  updateBadge();
+  if (typeof persistState === 'function') persistState();
+}
 let isMember  = false;
 let memberContact = "";
 let memberName    = "";
@@ -1455,6 +1501,9 @@ function restoreCartState(catId) {
     if (qty) qty.style.display = 'flex';
     const qn = document.getElementById('qn-' + item.id);
     if (qn) qn.textContent = c.qty;
+    const sv = document.getElementById('sv-' + item.id);
+    if (sv) sv.querySelectorAll('.serve-chip').forEach(ch =>
+      ch.classList.toggle('sel', c.serve === ch.dataset.m));  // lokal＝全て非選択
     refreshPrice(item.id);
   });
 }
@@ -1568,6 +1617,13 @@ function renderCard(item) {
     </div>` : '';
 
   const hasCustom = item.removable?.length || item.toppings?.length;
+  // 🛍️ v40: 対象カテゴリのみ「店内/持ち帰り/会計時渡し」チップを表示
+  const _svCat = findCatOfItem(item.id);
+  const _svFee = (_svCat && SERVE_FEES[_svCat.id]) || 0;
+  const serveHtml = (_svCat && SERVE_ELIGIBLE.includes(_svCat.id) && !item.comingSoon && !item.soldOut) ? `
+    <div class="serve-row" id="sv-${item.id}">
+      <span class="serve-chip" data-m="wynos" onclick="setServeMode('${item.id}','wynos',this)">🛍️ Na wynos +${_svFee} zł — odbiór przy kasie<small>お持ち帰り（会計時にお渡し・容器代込）／未選択＝店内🍽️</small></span>
+    </div>` : '';
   const nameJpHtml = item.nameJP ? `<span class="i-name-jp">${item.nameJP}</span>` : '';
   const spiceHtml = item.spice ? spiceMarks(item.spice) : '';
 
@@ -1601,6 +1657,7 @@ function renderCard(item) {
             <button class="qty-btn" onclick="chgQty('${item.id}',1)">+</button>
           </div>`}
         </div>
+        ${serveHtml}
         ${hasCustom ? `<div class="custom-section" id="cs-${item.id}">
           <div class="custom-head">✏️ Dostosuj / Customize / カスタマイズ</div>
           ${removableHtml}${toppingHtml}
@@ -1669,7 +1726,7 @@ function addRiceSet() {
   }
   if (riceItem) {
     if (!cart[riceItem.id]) {
-      cart[riceItem.id] = {qty:1, removed:[], toppingDeltas:Object.create(null), toppingLabels:Object.create(null)};
+      cart[riceItem.id] = {qty:1, removed:[], toppingDeltas:Object.create(null), toppingLabels:Object.create(null), serve:'lokal'};
       const chk = document.getElementById('chk-'+riceItem.id);
       if (chk) chk.checked = true;
       const qty = document.getElementById('qty-'+riceItem.id);
@@ -1694,12 +1751,13 @@ function onCheck(id, checked) {
     card.classList.add('selected');
     qty.style.display = 'flex';
     if (cs) cs.classList.add('open');
-    cart[id] = {qty:1, removed:[], toppingDeltas:Object.create(null), toppingLabels:Object.create(null)};
+    cart[id] = {qty:1, removed:[], toppingDeltas:Object.create(null), toppingLabels:Object.create(null), serve:'lokal'};
   } else {
     card.classList.remove('selected');
     qty.style.display = 'none';
     if (cs) cs.classList.remove('open');
     document.querySelectorAll(`#card-${id} .remove-chip`).forEach(c=>c.classList.remove('active'));
+    document.querySelectorAll(`#sv-${id} .serve-chip`).forEach(c=>c.classList.remove('sel'));
     delete cart[id];
   }
   updateBadge();
@@ -1910,7 +1968,8 @@ function updateOrderBar(n) {
   for (const id in cart) {
     const item = findItem(id);
     if (!item) continue;
-    total += (item.price + swapCalc(item, cart[id]).delta) * (cart[id].qty || 1);
+    total += (item.price + swapCalc(item, cart[id]).delta) * (cart[id].qty || 1)
+           + serveFee(id, cart[id]);
   }
   bar.innerHTML = `🛒 <strong>Przejdź do zamówienia / 注文の確認へ ▶</strong>
     &nbsp;<span style="opacity:.9">${n} poz. · ${total} zł</span>`;
@@ -2003,7 +2062,7 @@ function computeSplitTotals() {
     const item = findItem(id);
     if (!item) continue;
     const o = cart[id];
-    let line = (item.price + swapCalc(item, o).delta) * o.qty;
+    let line = (item.price + swapCalc(item, o).delta) * o.qty + serveFee(id, o);
     if (cc.discount > 0 && id === cc.targetId) line -= cc.discount;
     if (_perkAlloc[id]) line -= _perkAlloc[id];
     if (_riceAlloc[id]) line -= _riceAlloc[id];
@@ -2348,10 +2407,13 @@ function openConfirm() {
       const o     = cart[id];
       const sw = swapCalc(item, o); const delta = sw.delta;
       const unit  = item.price + delta;
-      const line  = unit * o.qty;
+      const sfee  = serveFee(id, o);
+      const line  = unit * o.qty + sfee;
       total += line;
       const removed  = o.removed?.length ? `<div class="conf-removed">🚫 Bez: ${o.removed.join(', ')}</div>` : '';
       const changed  = Object.values(o.toppingLabels||{}).filter(Boolean);
+      if (o.serve === 'wynos') changed.push(serveLabelText('wynos', sfee));
+      if (o.serve === 'kasa')  changed.push(serveLabelText('kasa', sfee));
       if (sw.disc > 0) changed.push('↩︎ Zamiana składnika / 具材交換: −' + sw.disc + ' zł');
       const changedHtml = changed.length ? `<div class="conf-changed">🔧 ${changed.join(', ')}</div>` : '';
       html += `<div class="conf-item" data-id="${id}">
@@ -2463,17 +2525,20 @@ async function placeOrder() {
     const o     = cart[id];
     const sw = swapCalc(item, o); const delta = sw.delta;
     const unit  = item.price + delta;
-    const line  = unit * o.qty;
+    const sfee  = serveFee(id, o);
+    const line  = unit * o.qty + sfee;
     total += line;
     const removedStr  = o.removed?.length ? `Bez: ${o.removed.join(', ')}` : '';
     const changedStr  = Object.values(o.toppingLabels).filter(Boolean).join(', ');
     const swapStr     = sw.disc > 0 ? ('Zamiana / 交換減額: −' + sw.disc + ' zł') : '';
-    const customStr   = [removedStr, changedStr, swapStr].filter(Boolean).join(' | ');
+    const serveStr    = (o.serve && o.serve !== 'lokal') ? serveLabelText(o.serve, sfee) : '';
+    const customStr   = [serveStr, removedStr, changedStr, swapStr].filter(Boolean).join(' | ');
     const pl_ = getPayers(o);
     const payerTag = (splitBill && (parseInt(guestNum,10)||1) >= 2)
       ? ('【' + (pl_.length ? '👤' + pl_.join('+') : '👥wsp') + '】') : '';
     return { namePL: payerTag + item.namePL, nameEN:item.nameEN, qty:o.qty,
-              unitPrice:unit, lineTotal:line, customizations:customStr };
+              unitPrice:unit, lineTotal:line, customizations:customStr,
+              serveMode: o.serve || 'lokal', serveFee: sfee };
   });
 
   // クーポン割引を合計に反映
