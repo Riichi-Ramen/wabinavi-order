@@ -107,6 +107,7 @@ body{
   border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:.5rem}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 </head>
 <body>
 
@@ -199,8 +200,8 @@ body{
     <small style="color:#7a6858">Zniżka studencka: -10% na ramen (legitymacja studencka)</small><br>
     🧓 <strong>シニア会員（65歳以上）:</strong> ラーメン10%引き<br>
     <small style="color:#7a6858">Zniżka seniora (65+): -10% na ramen (potwierdzenie wieku)</small><br>
-    ⚠️ <small style="color:#7a6858">学割・シニア割は半額（6・18杯目…）・無料（12・24杯目…）特典と併用不可<br>
-    Zniżka nie łączy się z bonusami −50% i gratis</small>
+    ⚠️ <small style="color:#7a6858">割引は6杯目半額・無料ボーナスとの併用不可<br>
+    Zniżka nie łączy się z bonusem za 6. i 11. miskę</small>
   </div>
   <label class="form-label">👤 氏名 / Imię i nazwisko <span style="color:var(--accent)">★</span></label>
   <input class="form-input" type="text" id="reg-name" placeholder="Imię i Nazwisko">
@@ -409,11 +410,24 @@ body{
   </button>
   <div id="staff-result" style="margin-top:.8rem;display:none"></div>
   <hr class="divider">
+  <div class="staff-title" style="font-size:.85rem">📷 会員QRスキャン付与 / Skanuj kod QR członka</div>
+  <p style="font-size:.72rem;color:var(--muted);margin:.3rem 0 .6rem;line-height:1.5">
+    お客様の会員カード画面のQRを読み取ると、当日注文を自動照合してポイントを付与します。<br>
+    Zeskanuj kod QR z karty członka — zamówienie zostanie zweryfikowane automatycznie.
+  </p>
+  <button class="btn btn-green" id="qr-scan-btn" onclick="startQrScan()">📷 スキャン開始 / Rozpocznij skanowanie</button>
+  <div id="qr-scan-area" style="display:none;margin-top:.6rem;text-align:center">
+    <video id="qr-video" playsinline style="width:100%;max-width:320px;border-radius:12px;border:2px solid var(--border)"></video><br>
+    <button class="btn btn-secondary" style="margin-top:.5rem" onclick="stopQrScan()">✖ 中止 / Anuluj</button>
+  </div>
+  <div id="qr-result" style="margin-top:.8rem;display:none"></div>
+  <hr class="divider">
   <button class="btn btn-secondary" onclick="showScreen('screen-email')">← 戻る / Back</button>
 </div>
 
 <script>
-const GAS_URL = localStorage.getItem('wabi_gas_url') || '';
+const GAS_URL = localStorage.getItem('wabi_gas_url') ||
+  'https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec';
 let stampTab = 'email'; // 'email' or 'phone'
 let cardTab  = 'email';
 
@@ -707,12 +721,10 @@ async function doRegister() {
           🎁 <strong>入会特典：ドリンク券1枚プレゼント！</strong><br>
           <small>Bonus powitalny: voucher na napój! / Welcome gift: free drink voucher!</small><br><br>
           <strong>🌸 会員特典一覧 / Twoje korzyści / Your benefits</strong><br>
-          🍜 1杯 = 10pt（半額・無料の丼はポイント対象外）<br>
-          <small>1 miska = 10 pkt (za miski −50%/gratis pkt nie są naliczane)</small><br>
-          ⭐ 50pt → 6杯目：半額 / 6. miska: pół ceny<br>
-          🎁 100pt → 12杯目：無料 / 12. miska: gratis<br>
-          🔁 以降50ptごとに交互（18杯目半額・24杯目無料…）<br>
-          <small>dalej co 50 pkt na przemian: 18. −50%, 24. gratis…</small><br>
+          🍜 1杯 = 10pt（100pt = ラーメン1杯無料！）<br>
+          <small>1 miska = 10 pkt → 100 pkt = ramen gratis!</small><br>
+          ⭐ 6杯目：ラーメン半額 / 6. miska: pół ceny<br>
+          🥉 11杯目：ラーメン無料 / 11. miska: gratis<br>
           🎂 誕生月：ドリンク1杯無料 / Urodziny: napój gratis<br>
           🎓 学生・🧓シニア：ラーメン10%引き<br>
           <small>Studenci i seniorzy: -10% na ramen</small><br>
@@ -777,6 +789,80 @@ function switchStaffPoints(pts) {
   document.getElementById('staff-add-btn').textContent =
     pts === 20 ? '＋20pt 追加（ダブル） / Dodaj 20 punktów'
                : '＋10pt 追加 / Dodaj 10 punktów';
+}
+
+// ── QRスキャン付与（会員カードQR＝会員IDを読み取り → 自動照合 → 付与） ──
+let qrStream = null, qrTimer = null;
+
+async function startQrScan() {
+  const password = document.getElementById('staff-password').value;
+  if (!password) { showError('staff-error','パスワードを入力してください / Wpisz hasło'); return; }
+  const video = document.getElementById('qr-video');
+  document.getElementById('qr-result').style.display = 'none';
+  document.getElementById('qr-scan-area').style.display = 'block';
+  try {
+    qrStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+    video.srcObject = qrStream;
+    await video.play();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently:true });
+    qrTimer = setInterval(() => {
+      if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(img.data, img.width, img.height);
+      if (code && code.data) {
+        const id = code.data.trim().toUpperCase().replace(/^WABINAVI:/, '');
+        if (/^WN-[A-Z]{1,4}-\d{4}$/.test(id)) { stopQrScan(); qrStamp(id, false); }
+      }
+    }, 250);
+  } catch(e) {
+    stopQrScan();
+    showError('staff-error','カメラを起動できません（ブラウザの許可を確認）/ Brak dostępu do kamery');
+  }
+}
+
+function stopQrScan() {
+  if (qrTimer) { clearInterval(qrTimer); qrTimer = null; }
+  if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
+  document.getElementById('qr-scan-area').style.display = 'none';
+}
+
+async function qrStamp(memberId, force) {
+  const password = document.getElementById('staff-password').value;
+  const area = document.getElementById('qr-result');
+  area.style.display = 'block';
+  area.innerHTML = '<div class="loading"><span class="spinner"></span>照合中 / Weryfikacja…</div>';
+  try {
+    const res = await postGAS({ action:'staffQrStamp', password, memberId, force: !!force });
+    if (res.status === 'ok') {
+      area.innerHTML = `<div class="rankup-box"><div class="rankup-text">
+        ✅ ${res.member.name}（${memberId}）<br>
+        ${res.oldPt}pt → <strong>${res.newPt}pt</strong>（+10）<br>
+        ${res.coseat ? '👥 同席救済・係員承認として記録' : '🍜 当日注文を自動確認済み / Zamówienie potwierdzone'}
+        ${res.rankUp ? '<br>🎉 ランクアップ！ ' + res.rank.icon + ' ' + res.rank.name : ''}
+        ${res.bonus ? '<br>🎫 クーポン獲得！ / Kupon zdobyty!' : ''}
+      </div></div>`;
+    } else if (res.status === 'needConfirm') {
+      area.innerHTML = `<div class="bonus-box"><div class="bonus-text">
+        ⚠️ ${res.member.name}（${memberId}）<br>
+        本日の注文にこの会員は紐付いていません。<br>
+        Brak zamówienia powiązanego z tym członkiem dzisiaj.<br><br>
+        <strong>同席者としてポイントを付与しますか？</strong><br>
+        <small>※ラーメン注文のテーブルに同席していたことを確認してから付与してください</small></div>
+        <button class="btn btn-green" style="margin-top:.6rem" onclick="qrStamp('${memberId}', true)">
+          ✅ 同席者として付与 / Przyznaj punkty
+        </button>
+        <button class="btn btn-secondary" onclick="document.getElementById('qr-result').style.display='none'">
+          ✖ キャンセル / Anuluj
+        </button></div>`;
+    } else {
+      area.innerHTML = `<div class="bonus-box"><div class="bonus-text">❌ ${res.message || res.status}</div></div>`;
+    }
+  } catch(e) {
+    area.innerHTML = '<div class="bonus-box"><div class="bonus-text">📡 通信エラー / Błąd połączenia</div></div>';
+  }
 }
 
 // ── 会員カードHTML生成 ────────────────────────────────────────────
