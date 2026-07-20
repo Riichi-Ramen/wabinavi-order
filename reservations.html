@@ -97,6 +97,7 @@ body{
   <div class="tabs">
     <button class="tab active" id="tab-today" onclick="setRange('today')">📅 Dziś / 今日</button>
     <button class="tab" id="tab-upcoming" onclick="setRange('upcoming')">🔜 Nadchodzące / 今後</button>
+    <button class="tab" id="tab-all" onclick="setRange('all')">🗂 Wszystkie / 全件</button>
   </div>
   <div class="summary">
     <span id="sum-text"></span>
@@ -136,7 +137,7 @@ function showLoginErr(m){ const e = document.getElementById('login-err'); e.text
 
 function setRange(r){
   RANGE = r;
-  ['today','upcoming'].forEach(x =>
+  ['today','upcoming','all'].forEach(x =>
     document.getElementById('tab-'+x).classList.toggle('active', x === r));
   load();
 }

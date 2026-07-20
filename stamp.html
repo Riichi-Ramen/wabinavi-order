@@ -108,6 +108,7 @@ body{
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -881,6 +882,22 @@ function renderCard(member) {
   const historyHtml = (member.history||[]).slice(-10).reverse().map(d =>
     `<span class="history-chip">${d}</span>`).join('');
 
+  // レジ用QR（会員IDのみ埋め込み。カードは複数画面で描画されるため一意IDで生成）
+  let qrHtml = '';
+  if (member.memberId) {
+    const qrId = 'qr-' + Math.random().toString(36).slice(2, 8);
+    qrHtml = `
+    <div style="text-align:center;margin-top:.8rem;padding:.8rem;background:rgba(255,255,255,0.7);
+                border:1.5px dashed var(--border);border-radius:12px">
+      <div style="font-size:.78rem;font-weight:700;color:var(--accent);margin-bottom:.4rem">
+        📷 レジ用QR / Kod QR do kasy</div>
+      <div id="${qrId}" style="display:inline-block;background:#fff;padding:8px;border-radius:8px"></div>
+      <div style="font-size:.68rem;color:var(--muted);margin-top:.3rem;line-height:1.4">
+        ポイント付与の際、スタッフにご提示ください<br>Pokaż obsłudze, aby otrzymać punkty</div>
+    </div>`;
+    setTimeout(() => generateMemberQr(qrId, member.memberId), 0);
+  }
+
   return `
     <div class="rank-card ${rank.cls}" style="margin-top:.8rem">
       <span class="rank-icon">${rank.icon}</span>
@@ -889,6 +906,7 @@ function renderCard(member) {
       <div class="rank-member">👤 ${member.name}</div>
       <div class="rank-pts">${pts} pt　（${visits}杯 / misek）</div>
     </div>
+    ${qrHtml}
     <div class="progress-wrap">
       <div class="progress-label">
         <span>現在 / Teraz: ${pts}pt</span>
@@ -904,6 +922,20 @@ function renderCard(member) {
     </div>
     ${historyHtml ? `<div class="history-title">来店履歴 / Historia wizyt</div>
     <div class="history-list">${historyHtml}</div>` : ''}`;
+}
+
+// ── レジ用QR生成（会員IDのみ。個人情報は含めない） ────────────────
+function generateMemberQr(elId, memberId) {
+  const el = document.getElementById(elId);
+  if (!el || !window.QRCode) return;
+  el.innerHTML = '';
+  try {
+    new QRCode(el, {
+      text: 'WABINAVI:' + memberId,
+      width: 150, height: 150,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) { /* QR生成失敗時もカード表示は継続 */ }
 }
 
 // ── GAS通信 ──────────────────────────────────────────────────────
