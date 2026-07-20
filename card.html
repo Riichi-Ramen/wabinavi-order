@@ -500,7 +500,7 @@ function renderFullCard(m) {
         別のアカウントでログイン / Zaloguj się na inne konto
       </button>
       <br>
-      <button onclick="showWithdrawFromCard('${m.email}')"
+      <button onclick="showWithdrawFromCard('${m.email}', '${m.memberId || ''}')"
         style="background:none;border:1px solid rgba(192,57,43,0.3);
                color:var(--accent);border-radius:8px;padding:.4rem 1rem;
                font-size:.72rem;cursor:pointer;margin-top:.5rem">
@@ -693,9 +693,11 @@ function logout() {
 
 <script>
 let withdrawEmail = '';
+let withdrawMemberId = '';
 
-function showWithdrawFromCard(email) {
+function showWithdrawFromCard(email, memberId) {
   withdrawEmail = email;
+  withdrawMemberId = memberId || '';
   document.getElementById('wd-confirm').style.display = 'block';
   document.getElementById('wd-done').style.display    = 'none';
   document.getElementById('withdraw-modal-card').classList.add('open');
@@ -706,18 +708,29 @@ function closeWithdrawCard() {
 }
 
 async function doWithdrawCard() {
-  const gasUrl = localStorage.getItem('wabi_gas_url') || '';
+  // v5.6修正：旧版はlocalStorage直読みでURL未設定端末ではサーバー削除されないのに
+  // 「消去完了」と表示していた。フォールバック込みのGAS_URLを使い、結果も検証する。
+  let serverOk = false;
   try {
-    if (gasUrl && withdrawEmail) {
-      await fetch(gasUrl, {
+    if (withdrawEmail) {
+      const res = await fetch(GAS_URL, {
         method:'POST', mode:'cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({ action:'withdraw', email: withdrawEmail })
+        body: JSON.stringify({ action:'withdraw', email: withdrawEmail, memberId: withdrawMemberId })
       });
+      const j = await res.json();
+      serverOk = (j.status === 'ok');
+      if (!serverOk) {
+        alert('❌ ' + (j.message || '退会処理に失敗しました。スタッフにお声がけください。\nWithdrawal failed — please ask our staff.'));
+        return;
+      }
     }
-  } catch(e) {}
+  } catch(e) {
+    alert('📡 通信エラーのため退会処理が完了していません。もう一度お試しください。\nBłąd połączenia — spróbuj ponownie.');
+    return;
+  }
 
-  // ローカルデータ削除
+  // ローカルデータ削除（サーバー側の削除成功後のみ）
   try {
     localStorage.removeItem('wabi_stamp_id');
     localStorage.removeItem('wabi_stamp_id_type');
