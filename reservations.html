@@ -118,7 +118,7 @@ document.getElementById('logo-tap').onclick = () => {
   }
 };
 
-let PW = sessionStorage.getItem('wabi_staff_pw') || '';
+let PW = localStorage.getItem('wabi_staff_pw') || '';
 let RANGE = 'today';
 let TODAY = '';
 
@@ -128,7 +128,7 @@ async function login(){
   PW = pw;
   const ok = await load(true);
   if (ok){
-    sessionStorage.setItem('wabi_staff_pw', pw);
+    localStorage.setItem('wabi_staff_pw', pw);
     document.getElementById('login-card').style.display = 'none';
     document.getElementById('panel').style.display = 'flex';
   }
@@ -150,7 +150,7 @@ async function load(silentAuth){
     const d = await (await fetch(url)).json();
     if (d.status === 'unauthorized'){
       if (silentAuth) showLoginErr('Nieprawidłowe hasło / パスワードが違います');
-      else { sessionStorage.removeItem('wabi_staff_pw'); location.reload(); }
+      else { localStorage.removeItem('wabi_staff_pw'); location.reload(); }
       area.innerHTML = '';
       return false;
     }

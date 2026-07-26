@@ -394,6 +394,12 @@ body{
   <div class="staff-title">🔒 係員専用パネル / Panel obsługi</div>
   <label class="form-label">🔑 パスワード / Hasło</label>
   <input class="form-input" type="password" id="staff-password" placeholder="パスワードを入力">
+  <label style="display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--muted);margin:.3rem 0 .5rem;cursor:pointer">
+    <input type="checkbox" id="staff-remember" style="width:16px;height:16px;accent-color:var(--accent)">
+    この端末を記憶する（スタッフ端末のみ）/ Zapamiętaj to urządzenie
+  </label>
+  <p style="font-size:.62rem;color:var(--muted);margin:0 0 .5rem;line-height:1.4">
+    ※チェックを外して操作すると記憶は消去されます。お客様の端末では使用しないでください。</p>
   <label class="form-label">📧 会員メールアドレス / E-mail członka</label>
   <input class="form-input" type="email" id="staff-email" placeholder="jan@email.com">
   <label class="form-label">🍜 ポイント数 / Liczba punktów</label>
@@ -402,13 +408,22 @@ body{
       🍜 +10pt<br><small>1杯 / 1 miska</small>
     </button>
     <button class="id-tab" id="tab-pts-20" onclick="switchStaffPoints(20)">
-      🍜🍜 +20pt ダブル<br><small>2杯 / 2 miski</small>
+      🍜🍜 +20pt<br><small>2杯 / 2 miski</small>
+    </button>
+    <button class="id-tab" id="tab-pts-5" onclick="switchStaffPoints(5)">
+      🎌 +5pt<br><small>クイズ / Quiz</small>
     </button>
   </div>
   <div class="error-msg" id="staff-error"></div>
   <button class="btn btn-green" onclick="doStaffAddPoint()" id="staff-add-btn">
     ＋10pt 追加 / Dodaj 10 punktów
   </button>
+  <div style="display:flex;gap:.5rem;margin-top:.5rem">
+    <button class="btn btn-secondary" style="flex:1;margin:0;font-size:.78rem;border-color:rgba(192,57,43,0.4);color:var(--accent)"
+      onclick="doStaffRemovePoint(10)">↩️ -10pt 取消</button>
+    <button class="btn btn-secondary" style="flex:1;margin:0;font-size:.78rem;border-color:rgba(192,57,43,0.4);color:var(--accent)"
+      onclick="doStaffRemovePoint(5)">↩️ -5pt 取消</button>
+  </div>
   <div id="staff-result" style="margin-top:.8rem;display:none"></div>
   <hr class="divider">
   <div class="staff-title" style="font-size:.85rem">📷 会員QRスキャン付与 / Skanuj kod QR członka</div>
@@ -764,6 +779,7 @@ async function doStaffAddPoint() {
 
   try {
     const res = await postGAS({action:'staffAddPoint', password, email, points: staffPoints});
+    maybeSavePw(password, res);
     const area = document.getElementById('staff-result');
     area.style.display = 'block';
     if (res.status === 'ok') {
@@ -780,16 +796,44 @@ async function doStaffAddPoint() {
   }
 }
 
-// ── 係員ポイント数切替（10pt / 20ptダブル） ──────────────────────
+// ── 係員ポイント数切替（10pt / 20ptダブル / 5ptクイズ） ──────────
 let staffPoints = 10;
 
 function switchStaffPoints(pts) {
   staffPoints = pts;
   document.getElementById('tab-pts-10').classList.toggle('active', pts === 10);
   document.getElementById('tab-pts-20').classList.toggle('active', pts === 20);
+  document.getElementById('tab-pts-5').classList.toggle('active',  pts === 5);
   document.getElementById('staff-add-btn').textContent =
-    pts === 20 ? '＋20pt 追加（ダブル） / Dodaj 20 punktów'
+    pts === 20 ? '＋20pt 追加（ダブル） / Dodaj 20 punktów' :
+    pts === 5  ? '＋5pt 追加（🎌クイズ正解） / Dodaj 5 punktów'
                : '＋10pt 追加 / Dodaj 10 punktów';
+}
+
+// ── 係員ポイント取消（-10pt / -5pt） ─────────────────────────────
+async function doStaffRemovePoint(amt) {
+  const password = document.getElementById('staff-password').value;
+  const email    = document.getElementById('staff-email').value.trim();
+  if (!password) { showError('staff-error','パスワードを入力してください'); return; }
+  if (!email)    { showError('staff-error','メールアドレスを入力してください'); return; }
+  if (!confirm('↩️ ' + email + ' から -' + amt + 'pt 取り消します。\n' +
+      (amt === 10 ? '（当日付与分のみ・来店履歴も1件削除されます）' : '（クイズ分・ポイントのみ減算）') +
+      '\nよろしいですか？')) return;
+
+  try {
+    const res = await postGAS({action:'staffRemovePoint', password, email, points: amt});
+    maybeSavePw(password, res);
+    const area = document.getElementById('staff-result');
+    area.style.display = 'block';
+    if (res.status === 'ok') {
+      area.innerHTML = `<div class="rankup-box"><div class="rankup-text">
+        ↩️ ${res.message}${res.rankDown ? '<br>⬇️ ランクダウン' : ''}</div></div>`;
+    } else {
+      area.innerHTML = `<div class="bonus-box"><div class="bonus-text">❌ ${res.message}</div></div>`;
+    }
+  } catch(e) {
+    showError('staff-error','通信エラー / Connection error');
+  }
 }
 
 // ── QRスキャン付与（会員カードQR＝会員IDを読み取り → 自動照合 → 付与） ──
@@ -830,6 +874,18 @@ function stopQrScan() {
   document.getElementById('qr-scan-area').style.display = 'none';
 }
 
+// パスワードが正しかった操作の後に端末記憶を保存/消去（v5.7）
+function maybeSavePw(pw, res) {
+  const badPw = res && (res.status === 'unauthorized' ||
+    (res.message && /パスワード|hasło|prób/i.test(res.message)));
+  if (badPw) return;
+  const box = document.getElementById('staff-remember');
+  try {
+    if (box && box.checked) localStorage.setItem('wabi_staff_pw_saved', pw);
+    else localStorage.removeItem('wabi_staff_pw_saved');
+  } catch(e) {}
+}
+
 async function qrStamp(memberId, force) {
   const password = document.getElementById('staff-password').value;
   const area = document.getElementById('qr-result');
@@ -837,6 +893,7 @@ async function qrStamp(memberId, force) {
   area.innerHTML = '<div class="loading"><span class="spinner"></span>照合中 / Weryfikacja…</div>';
   try {
     const res = await postGAS({ action:'staffQrStamp', password, memberId, force: !!force });
+    maybeSavePw(password, res);
     if (res.status === 'ok') {
       area.innerHTML = `<div class="rankup-box"><div class="rankup-text">
         ✅ ${res.member.name}（${memberId}）<br>
@@ -973,6 +1030,12 @@ window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('card-email-input').value = saved;
     }
     document.getElementById('staff-email').value = saved;
+  // スタッフ端末の記憶パスワードをプリフィル（v5.7）
+  const savedPw = localStorage.getItem('wabi_staff_pw_saved');
+  if (savedPw) {
+    document.getElementById('staff-password').value = savedPw;
+    document.getElementById('staff-remember').checked = true;
+  }
     document.getElementById('reg-email').value   = saved;
   }
 });
