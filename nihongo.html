@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Japoński przez jedzenie — 食で学ぶ日本語 | WABI NAVI</title>
+<meta property="og:title" content="Japoński przez jedzenie / 食で学ぶ日本語 — WABI NAVI">
+<meta property="og:description" content="Krótkie lekcje japońskiego przy ramenie. Rozwiąż quiz i zdobądź 5 punktów!">
+<style>
+:root{
+  --accent:#c0392b;--text:#2c1810;--muted:#7a6858;
+  --border:rgba(180,140,110,0.35);--green:#2d7a3a;--purple:#8e44ad;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Segoe UI',sans-serif;min-height:100vh;
+  background-color:#f7f0e6;
+  background-image:linear-gradient(160deg,#f7f0e6 0%,#ede0cc 40%,#f0e4d0 100%);
+  display:flex;flex-direction:column;align-items:center;
+  padding:1.5rem 1rem 3rem;color:var(--text);
+}
+.title{font-size:1.15rem;color:var(--accent);font-weight:700;text-align:center;margin-bottom:.25rem}
+.subtitle{font-size:.78rem;color:var(--muted);text-align:center;margin-bottom:1.2rem;line-height:1.6}
+.card{background:rgba(255,252,245,0.96);border:1px solid rgba(192,57,43,0.2);border-radius:16px;
+  padding:1.3rem;width:100%;max-width:520px;box-shadow:0 6px 30px rgba(120,60,40,0.12);margin-bottom:1rem}
+.card.latest{border:2px solid var(--purple);box-shadow:0 8px 34px rgba(142,68,173,0.18)}
+
+.lesson-no{display:inline-block;background:var(--purple);color:#fff;font-size:.7rem;font-weight:700;
+  border-radius:20px;padding:.15rem .65rem;margin-bottom:.5rem}
+.lesson-title{font-size:1rem;font-weight:700;line-height:1.4;margin-bottom:.1rem}
+.lesson-title-jp{font-size:.8rem;color:var(--muted);margin-bottom:.7rem}
+
+.video-wrap{position:relative;width:100%;padding-bottom:56.25%;height:0;border-radius:12px;
+  overflow:hidden;background:#000;margin-bottom:.9rem}
+.video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+
+.phrase-box{background:rgba(142,68,173,0.07);border:1.5px dashed rgba(142,68,173,0.4);
+  border-radius:12px;padding:.9rem;margin-bottom:.9rem;text-align:center}
+.phrase-jp{font-size:1.35rem;font-weight:700;color:var(--purple);line-height:1.5}
+.phrase-romaji{font-size:.82rem;color:var(--muted);font-style:italic;margin:.15rem 0 .35rem}
+.phrase-meaning{font-size:.85rem;line-height:1.5}
+
+.quiz-q{font-size:.92rem;font-weight:700;margin-bottom:.7rem;line-height:1.5}
+.opt{display:block;width:100%;text-align:left;background:rgba(255,252,248,0.9);
+  border:1.5px solid var(--border);border-radius:10px;padding:.75rem .9rem;font-size:.88rem;
+  font-family:inherit;color:var(--text);cursor:pointer;margin-bottom:.5rem;line-height:1.4}
+.opt:hover{border-color:var(--purple)}
+.opt.sel{background:rgba(142,68,173,0.12);border-color:var(--purple);font-weight:700}
+.opt:disabled{opacity:.55;cursor:default}
+
+.form-label{font-size:.72rem;color:var(--muted);margin-bottom:.3rem;display:block;
+  text-transform:uppercase;letter-spacing:.05em}
+.form-input{width:100%;background:rgba(255,252,248,0.9);border:1.5px solid rgba(192,57,43,0.3);
+  color:var(--text);border-radius:8px;padding:.7rem .9rem;font-size:.95rem;
+  font-family:inherit;margin-bottom:.8rem}
+.form-input:focus{outline:none;border-color:var(--purple)}
+
+.btn{width:100%;padding:.85rem;border:none;border-radius:10px;font-weight:700;
+  font-size:.95rem;cursor:pointer;margin-bottom:.5rem;font-family:inherit}
+.btn-purple{background:var(--purple);color:#fff;box-shadow:0 4px 14px rgba(142,68,173,0.3)}
+.btn-purple:hover{filter:brightness(1.08)}
+.btn-purple:disabled{opacity:.5;cursor:default;box-shadow:none}
+.btn-secondary{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+
+.result{border-radius:12px;padding:1rem;margin-top:.6rem;font-size:.9rem;line-height:1.6;text-align:center}
+.result.ok{background:rgba(45,122,58,0.1);border:1.5px solid rgba(45,122,58,0.45);color:var(--green)}
+.result.ng{background:rgba(192,57,43,0.08);border:1.5px solid rgba(192,57,43,0.4);color:var(--accent)}
+
+.meta{font-size:.72rem;color:var(--muted);line-height:1.6;margin-top:.5rem}
+.prize{background:rgba(200,169,110,0.18);border:1px solid rgba(200,169,110,0.6);border-radius:8px;
+  padding:.5rem .7rem;font-size:.78rem;margin:.6rem 0;line-height:1.5}
+.closed-note{font-size:.78rem;color:var(--muted);text-align:center;padding:.7rem;
+  background:rgba(0,0,0,0.03);border-radius:8px}
+.past-head{font-size:.85rem;font-weight:700;color:var(--muted);max-width:520px;width:100%;
+  margin:1.2rem 0 .5rem;padding-left:.2rem}
+.loading{text-align:center;padding:2rem;color:var(--muted);font-size:.85rem}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(142,68,173,0.25);
+  border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite;
+  vertical-align:middle;margin-right:.4rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.links{max-width:520px;width:100%;display:flex;gap:.5rem;margin-top:.5rem}
+.links a{flex:1;text-align:center;text-decoration:none;font-size:.78rem;padding:.6rem;
+  border:1.5px solid var(--border);border-radius:10px;color:var(--muted);background:rgba(255,252,245,0.7)}
+</style>
+</head>
+<body>
+
+<div class="title">🎌 Japoński przez jedzenie</div>
+<div class="subtitle">
+  食で学ぶ日本語 — Krótkie lekcje od szefa kuchni, 2× w miesiącu<br>
+  Rozwiąż quiz i zdobądź <strong>5 punktów</strong> do karty członkowskiej!
+</div>
+
+<div id="content">
+  <div class="loading"><span class="spinner"></span>Ładowanie / 読み込み中…</div>
+</div>
+
+<div class="links">
+  <a href="card.html">💳 Moja karta / 会員カード</a>
+  <a href="stamp.html">🍜 Stempel / スタンプ</a>
+</div>
+
+<script>
+const GAS_URL = localStorage.getItem('wabi_gas_url') ||
+  'https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec';
+
+let LESSONS = [];
+const picked = {};   // 回号 → 選んだ選択肢番号
+
+function esc(s){
+  return (s==null?'':String(s)).replace(/[&<>"']/g,
+    c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function load(){
+  try{
+    const res = await fetch(GAS_URL + '?action=getLessons');
+    const data = await res.json();
+    if (data.status !== 'ok' || !data.lessons || !data.lessons.length){
+      document.getElementById('content').innerHTML =
+        '<div class="card"><div class="closed-note">📚 Pierwsza lekcja już wkrótce!<br>' +
+        '第1回は近日公開です。お楽しみに。</div></div>';
+      return;
+    }
+    LESSONS = data.lessons;
+    render();
+  }catch(e){
+    document.getElementById('content').innerHTML =
+      '<div class="card"><div class="closed-note">📡 Błąd połączenia / 通信エラー<br>' +
+      'Odśwież stronę / ページを再読み込みしてください。</div></div>';
+  }
+}
+
+function render(){
+  let html = '';
+  LESSONS.forEach((L, idx) => {
+    if (idx === 1) html += '<div class="past-head">📖 Poprzednie lekcje / 過去の講座</div>';
+    html += lessonCard(L, idx === 0);
+  });
+  document.getElementById('content').innerHTML = html;
+
+  // 保存済みの会員IDを復元（stamp.htmlと共通）
+  const saved = localStorage.getItem('wabi_stamp_id') || '';
+  if (saved) document.querySelectorAll('.mid-input').forEach(el => { el.value = saved; });
+}
+
+function lessonCard(L, isLatest){
+  const video = L.youtube
+    ? `<div class="video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/${esc(L.youtube)}"
+         title="${esc(L.titlePL)}" allowfullscreen loading="lazy"></iframe></div>` : '';
+
+  const phrase = L.phraseJP ? `
+    <div class="phrase-box">
+      <div class="phrase-jp">${esc(L.phraseJP)}</div>
+      ${L.romaji ? `<div class="phrase-romaji">${esc(L.romaji)}</div>` : ''}
+      ${L.meaning ? `<div class="phrase-meaning">${esc(L.meaning)}</div>` : ''}
+    </div>` : '';
+
+  let quiz = '';
+  if (L.quiz && L.options.length){
+    if (!L.open){
+      quiz = `<div class="closed-note">⏰ Termin zgłoszeń minął / この回の応募は締め切りました
+        ${L.deadline ? '（～' + esc(L.deadline) + '）' : ''}</div>`;
+    } else {
+      quiz = `
+        <div class="quiz-q">❓ ${esc(L.quiz)}</div>
+        <div id="opts-${L.no}">
+          ${L.options.map((o,i) =>
+            `<button class="opt" id="opt-${L.no}-${i+1}" onclick="pick(${L.no},${i+1})">
+               ${i+1}. ${esc(o)}
+             </button>`).join('')}
+        </div>
+        ${L.prize ? `<div class="prize">🎁 Nagroda / 特典：${esc(L.prize)}
+          <br><small>Losowanie wśród poprawnych odpowiedzi / 正解者の中から抽選</small></div>` : ''}
+        <label class="form-label">🪪 ID członka / 会員ID（例 WN-MG-0001）</label>
+        <input class="form-input mid-input" id="mid-${L.no}"
+               placeholder="WN-XX-0000 lub e-mail / メールでも可" autocomplete="off">
+        <button class="btn btn-purple" id="send-${L.no}" onclick="submitQuiz(${L.no})">
+          ✅ Wyślij odpowiedź / 回答する（+5pt）
+        </button>
+        <div id="res-${L.no}"></div>
+        <div class="meta">
+          ${L.deadline ? '⏰ Termin / 締切：' + esc(L.deadline) + '　' : ''}
+          1 odpowiedź na osobę / お一人様1回まで
+        </div>`;
+    }
+  }
+
+  return `
+    <div class="card${isLatest ? ' latest' : ''}">
+      <span class="lesson-no">Lekcja ${L.no} / 第${L.no}回${isLatest ? ' ★ NOWA' : ''}</span>
+      <div class="lesson-title">${esc(L.titlePL)}</div>
+      ${L.titleJP ? `<div class="lesson-title-jp">${esc(L.titleJP)}</div>` : ''}
+      ${video}${phrase}${quiz}
+    </div>`;
+}
+
+function pick(no, n){
+  picked[no] = n;
+  const box = document.getElementById('opts-' + no);
+  if (!box) return;
+  box.querySelectorAll('.opt').forEach(b => b.classList.remove('sel'));
+  const el = document.getElementById(`opt-${no}-${n}`);
+  if (el) el.classList.add('sel');
+}
+
+async function submitQuiz(no){
+  const answer = picked[no];
+  const area   = document.getElementById('res-' + no);
+  const midEl  = document.getElementById('mid-' + no);
+  const memberId = midEl ? midEl.value.trim() : '';
+
+  if (!answer){
+    area.innerHTML = '<div class="result ng">⚠️ Wybierz odpowiedź / 答えを選んでください</div>';
+    return;
+  }
+  if (!memberId){
+    area.innerHTML = '<div class="result ng">⚠️ Wpisz ID członka / 会員IDを入力してください</div>';
+    return;
+  }
+
+  const btn = document.getElementById('send-' + no);
+  btn.disabled = true;
+  area.innerHTML = '<div class="loading"><span class="spinner"></span>Wysyłanie / 送信中…</div>';
+
+  try{
+    const res = await fetch(GAS_URL, {
+      method:'POST', mode:'cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'submitQuiz', memberId, lessonNo:no, answer })
+    });
+    const d = await res.json();
+
+    if (d.status === 'ok'){
+      try{ localStorage.setItem('wabi_stamp_id', memberId); }catch(e){}
+      document.querySelectorAll(`#opts-${no} .opt`).forEach(b => { b.disabled = true; });
+      if (d.correct){
+        area.innerHTML = `<div class="result ok">
+          🎉 Poprawnie! / 正解です！<br>
+          ${esc(d.memberName)} — <strong>+5 pkt</strong> → ${d.newPt} pkt
+          ${d.rankUp ? '<br>⬆️ Awans rangi! / ランクアップ！ ' + esc(d.rank.icon + ' ' + d.rank.name) : ''}
+          ${d.prize ? '<br>🎁 Bierzesz udział w losowaniu / 抽選対象になりました' : ''}
+        </div>`;
+      } else {
+        area.innerHTML = `<div class="result ng">
+          ❌ Niestety, błędna odpowiedź / 残念、不正解です<br>
+          <small>Spróbuj następnym razem! / 次回もぜひ挑戦してください</small>
+        </div>`;
+      }
+    } else {
+      area.innerHTML = `<div class="result ng">${esc(d.message || 'Błąd / エラー')}</div>`;
+      btn.disabled = false;
+    }
+  }catch(e){
+    area.innerHTML = '<div class="result ng">📡 Błąd połączenia / 通信エラー</div>';
+    btn.disabled = false;
+  }
+}
+
+load();
+</script>
+</body>
+</html>
