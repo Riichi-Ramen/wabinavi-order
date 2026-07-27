@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>WABI NAVI — 特典早見表 / Korzyści Members Club</title>
+<title>WABI NAVI — Korzyści Members Club / Member Benefits</title>
 <style>
 @page { size: A4; margin: 10mm; }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -35,50 +35,89 @@ tr:nth-child(even) td{background:#fdf3ea}
 .thanks{text-align:center;font-size:14pt;font-weight:700;color:#8e2418;line-height:1.9;margin-top:8mm}
 .rank-icon{font-size:15pt}
 .pageno{position:absolute;bottom:4mm;right:10mm;font-size:9pt;color:#a89888}
+/* 英語＝中位、日本語＝小さめ・控えめ */
+.en{font-size:.86em;font-weight:400;color:#5a4a3a}
+.jp{display:block;font-size:.74em;font-weight:400;color:#9a8878;margin-top:.6mm;line-height:1.5}
+td .jp{font-size:9pt}
 </style>
 </head>
 <body>
-<button class="print-btn" onclick="window.print()">🖨️ Drukuj / 印刷（A4×2枚）</button>
+<button class="print-btn" onclick="window.print()">🖨️ Drukuj / Print（A4×2）</button>
 
 <!-- ══════════ PAGE 1 ══════════ -->
 <div class="page">
   <div class="header">
-    <div class="logo">和美なび WABI NAVI</div>
-    <div class="title">🎁 Members Club — Korzyści / 会員特典 早見表</div>
-    <div class="subtitle">1 miska ramenu = 10 pkt（1 pieczątka na wizytę）<br>
-      ラーメン1杯＝10ポイント（1来店1スタンプ） / 1 bowl = 10 pts</div>
+    <div class="logo">WABI NAVI 和美なび</div>
+    <div class="title">🎁 Members Club — Korzyści / Member Benefits</div>
+    <div class="subtitle">
+      1 miska ramenu = 10 pkt（1 pieczątka na wizytę）<br>
+      <span class="en">1 bowl of ramen = 10 points (1 stamp per visit)</span>
+      <span class="jp">ラーメン1杯＝10ポイント（1来店1スタンプ）</span>
+    </div>
   </div>
 
-  <div class="sec-title">🎫 Kupony za punkty / ポイントクーポン</div>
+  <div class="sec-title">🎫 Kupony za punkty / Point coupons</div>
   <table>
-    <tr><th>Punkty<br>ポイント</th><th>Miska<br>杯目</th><th>Nagroda / 特典</th></tr>
-    <tr><td class="big">50 pt</td><td class="big">6.<br>6杯目</td><td class="big">RAMEN −50%<br>ラーメン半額</td></tr>
-    <tr><td class="big">100 pt</td><td class="big">12.<br>12杯目</td><td class="big">RAMEN GRATIS<br>ラーメン1杯無料</td></tr>
-    <tr><td class="big">150 pt</td><td>18. / 18杯目</td><td>−50% / 半額</td></tr>
-    <tr><td class="big">200 pt</td><td>24. / 24杯目</td><td>GRATIS / 無料</td></tr>
-    <tr><td colspan="3" style="font-size:11.5pt">…dalej co 50 pkt na przemian / 以降も50ptごとに半額⇔無料が交互に！</td></tr>
+    <tr>
+      <th>Punkty<br><span style="font-weight:400;font-size:10pt">Points</span></th>
+      <th>Miska<br><span style="font-weight:400;font-size:10pt">Bowl no.</span></th>
+      <th>Nagroda / Reward</th>
+    </tr>
+    <tr>
+      <td class="big">50 pt</td>
+      <td class="big">6.<span class="jp">6杯目</span></td>
+      <td class="big">RAMEN −50%<span class="jp">ラーメン半額</span></td>
+    </tr>
+    <tr>
+      <td class="big">100 pt</td>
+      <td class="big">12.<span class="jp">12杯目</span></td>
+      <td class="big">RAMEN GRATIS<span class="jp">ラーメン1杯無料</span></td>
+    </tr>
+    <tr>
+      <td class="big">150 pt</td>
+      <td>18.<span class="jp">18杯目</span></td>
+      <td>−50%<span class="jp">半額</span></td>
+    </tr>
+    <tr>
+      <td class="big">200 pt</td>
+      <td>24.<span class="jp">24杯目</span></td>
+      <td>GRATIS<span class="jp">無料</span></td>
+    </tr>
+    <tr><td colspan="3" style="font-size:11.5pt">
+      …dalej co 50 pkt na przemian
+      <span class="en">…and every 50 pts after that, alternating</span>
+      <span class="jp">以降も50ptごとに半額⇔無料が交互に！</span>
+    </td></tr>
   </table>
 
   <div class="note">
-    ✔ <strong>Zniżka = 1 miska (cena podstawowa). Dodatki i kaedama płatne osobno.</strong><br>
-    　<strong>割引はラーメン1杯の基本価格のみ。追加トッピング・替え玉は別料金です。</strong><br>
+    ✔ <strong>Zniżka obejmuje 1 miskę w cenie podstawowej. Dodatki i kaedama płatne osobno.</strong><br>
+    　<span class="en">The discount covers one bowl at base price. Extra toppings and kaedama are charged separately.</span>
+    　<span class="jp">割引はラーメン1杯の基本価格のみ。追加トッピング・替え玉は別料金です。</span><br>
     ✔ Przy wizycie z kuponem pieczątka nie jest przyznawana<br>
-    　クーポン（半額・無料）使用の来店はスタンプ対象外<br>
-    ✔ Nie łączy się ze zniżką studencką / seniorską ／ 学割・シニア割との併用不可<br>
+    　<span class="en">No stamp is given on a visit where a coupon is used.</span>
+    　<span class="jp">クーポン（半額・無料）使用の来店はスタンプ対象外</span><br>
+    ✔ Nie łączy się ze zniżką studencką / seniorską<br>
+    　<span class="en">Cannot be combined with the student or senior discount.</span>
+    　<span class="jp">学割・シニア割との併用不可</span><br>
     ✔ Kupon pojawia się <strong>automatycznie w aplikacji</strong> — zniżka od razu w sumie!<br>
-    　注文アプリの確認画面に自動表示、合計から自動割引されます
+    　<span class="en">The coupon appears automatically in the app and is deducted from the total.</span>
+    　<span class="jp">注文アプリの確認画面に自動表示、合計から自動割引されます</span>
   </div>
 
-  <div class="sec-title">🍚 Zestaw z ryżem / ライスセット割</div>
+  <div class="sec-title">🍚 Zestaw z ryżem / Rice set</div>
   <div class="note" style="font-size:12.5pt;text-align:center">
-    🍜＋🍚 Do każdego ramenu: <strong>ryż za pół ceny — tylko 6 zł</strong> (zamiast 12 zł)<br>
-    ラーメンをご注文の方は、<strong>ライスがセット価格半額の6zł</strong>（通常12zł）！<br>
-    <span style="font-size:10pt">Naliczane automatycznie w aplikacji / アプリで自動適用</span>
+    🍜＋🍚 Do każdego ramenu: <strong>ryż za pół ceny — tylko 6 zł</strong>（zamiast 12 zł）<br>
+    <span class="en">With any ramen: rice at half price — only 6 zł instead of 12 zł</span>
+    <span class="jp">ラーメンをご注文の方は、ライスがセット価格半額の6zł（通常12zł）！</span>
+    <span class="en" style="font-size:10pt">Naliczane automatycznie w aplikacji / Applied automatically in the app
+      <span class="jp">アプリで自動適用</span></span>
   </div>
 
   <div class="note" style="font-size:12.5pt;text-align:center">
     🍵 Do dań donburi: <strong>zupa miso GRATIS</strong> — poproś obsługę!<br>
-    丼物をご注文の方は<strong>みそ汁無料サービス</strong>（係員にお申し付けください）
+    <span class="en">Free miso soup with any donburi — just ask our staff.</span>
+    <span class="jp">丼物をご注文の方はみそ汁無料サービス（係員にお申し付けください）</span>
   </div>
   <div class="pageno">WABI NAVI Members Club — 1/2</div>
 </div>
@@ -86,43 +125,71 @@ tr:nth-child(even) td{background:#fdf3ea}
 <!-- ══════════ PAGE 2 ══════════ -->
 <div class="page">
   <div class="header">
-    <div class="logo">和美なび WABI NAVI</div>
-    <div class="title">🎁 Bonus rangi / ランク特典</div>
-    <div class="subtitle">Darmowe dodatki przy KAŻDEJ wizycie — aż do następnej rangi!<br>
-      次のランクに上がるまで、毎回トッピング無料</div>
+    <div class="logo">WABI NAVI 和美なび</div>
+    <div class="title">🎁 Bonus rangi / Rank bonus</div>
+    <div class="subtitle">
+      Darmowe dodatki przy KAŻDEJ wizycie — aż do następnej rangi!<br>
+      <span class="en">Free toppings on EVERY visit — all the way to the next rank.</span>
+      <span class="jp">次のランクに上がるまで、毎回トッピング無料</span>
+    </div>
   </div>
 
   <table>
-    <tr><th>Ranga / ランク</th><th>Punkty / pt</th><th>Darmowe dodatki<br>無料トッピング</th><th>Zakres cen<br>対象価格</th></tr>
-    <tr><td><span class="rank-icon">🌸</span> Sakura 桜</td><td>0–49</td><td>—</td><td>—</td></tr>
-    <tr><td><span class="rank-icon">🏅</span> Ume 梅</td><td>50–99</td><td class="big">1 szt. / 1品</td><td class="big">1–2 zł</td></tr>
-    <tr><td><span class="rank-icon">🥉</span> Take 竹</td><td>100–199</td><td class="big">2 szt. / 2品</td><td class="big">1–3 zł</td></tr>
-    <tr><td><span class="rank-icon">🥈</span> Matsu 松</td><td>200–499</td><td class="big">3 szt. / 3品</td><td class="big">1–4 zł</td></tr>
-    <tr class="gold"><td><span class="rank-icon">👑</span> Fuji 富士</td><td>500+</td><td class="big">3 szt. / 3品</td><td class="big">1–6 zł</td></tr>
+    <tr>
+      <th>Ranga / Rank</th>
+      <th>Punkty / Points</th>
+      <th>Darmowe dodatki<br><span style="font-weight:400;font-size:10pt">Free toppings</span></th>
+      <th>Zakres cen<br><span style="font-weight:400;font-size:10pt">Price range</span></th>
+    </tr>
+    <tr><td><span class="rank-icon">🌸</span> Sakura<span class="jp">桜</span></td><td>0–49</td><td>—</td><td>—</td></tr>
+    <tr><td><span class="rank-icon">🏅</span> Ume<span class="jp">梅</span></td><td>50–99</td>
+        <td class="big">1 szt.<span class="jp">1品</span></td><td class="big">1–2 zł</td></tr>
+    <tr><td><span class="rank-icon">🥉</span> Take<span class="jp">竹</span></td><td>100–199</td>
+        <td class="big">2 szt.<span class="jp">2品</span></td><td class="big">1–3 zł</td></tr>
+    <tr><td><span class="rank-icon">🥈</span> Matsu<span class="jp">松</span></td><td>200–499</td>
+        <td class="big">3 szt.<span class="jp">3品</span></td><td class="big">1–4 zł</td></tr>
+    <tr class="gold"><td><span class="rank-icon">👑</span> Fuji<span class="jp">富士</span></td><td>500+</td>
+        <td class="big">3 szt.<span class="jp">3品</span></td><td class="big">1–6 zł</td></tr>
   </table>
   <div class="note">
     ✔ W aplikacji naliczane automatycznie（najdroższe dodatki gratis）<br>
-    　アプリ注文なら自動適用（対象内の高い品から無料に）・レジ注文は係員へ<br>
-    ✔ Urodziny: dodatkowy bonus w miesiącu urodzin ／ 誕生月特典もあります（会員カード参照）
+    　<span class="en">Applied automatically in the app — the most expensive eligible toppings are free.
+      At the counter, please ask our staff.</span>
+    　<span class="jp">アプリ注文なら自動適用（対象内の高い品から無料に）・レジ注文は係員へ</span><br>
+    ✔ Urodziny: dodatkowy bonus w miesiącu urodzin<br>
+    　<span class="en">Birthday: an extra bonus during your birthday month (see your member card).</span>
+    　<span class="jp">誕生月特典もあります（会員カード参照）</span>
   </div>
 
-  <div class="sec-title">📱 Jak korzystać / ご利用方法</div>
+  <div class="sec-title">📱 Jak korzystać / How it works</div>
   <div class="flow">
-    <div class="step">1️⃣ Rejestracja<br><small>QR przy kasie（bezpłatna）<br>レジのQRで無料会員登録</small></div>
+    <div class="step">1️⃣ Rejestracja
+      <small>QR przy kasie（bezpłatna）<br>Register free — QR at the counter
+      <span class="jp">レジのQRで無料会員登録</span></small></div>
     <div class="arr">▶</div>
-    <div class="step">2️⃣ Zamów<br><small>QR na stoliku<br>テーブルQRからアプリ注文</small></div>
+    <div class="step">2️⃣ Zamów
+      <small>QR na stoliku<br>Order via the QR on your table
+      <span class="jp">テーブルQRからアプリ注文</span></small></div>
     <div class="arr">▶</div>
-    <div class="step">3️⃣ Pieczątka<br><small>QR przy kasie po posiłku<br>食後レジでスタンプ＝+10pt</small></div>
+    <div class="step">3️⃣ Pieczątka
+      <small>QR przy kasie po posiłku<br>Scan at the counter after your meal — +10 pts
+      <span class="jp">食後レジでスタンプ＝+10pt</span></small></div>
     <div class="arr">▶</div>
-    <div class="step">4️⃣ Nagrody!<br><small>Kupony automatycznie<br>特典が自動で貯まる</small></div>
+    <div class="step">4️⃣ Nagrody!
+      <small>Kupony automatycznie<br>Coupons arrive automatically
+      <span class="jp">特典が自動で貯まる</span></small></div>
   </div>
   <div class="note" style="text-align:center">
-    ⏰ Punkty wygasają po 8 miesiącach bez wizyty ／ ポイントは最終来店から8ヶ月で失効します
+    ⏰ Punkty wygasają po 8 miesiącach bez wizyty<br>
+    <span class="en">Points expire after 8 months without a visit.</span>
+    <span class="jp">ポイントは最終来店から8ヶ月で失効します</span>
   </div>
 
   <div class="thanks">
     Dziękujemy serdecznie i zapraszamy ponownie!<br>
-    ご来店誠にありがとうございます。<br>またのお越しをお待ちしております。🍜
+    <span class="en" style="font-size:12pt">Thank you for visiting — we look forward to seeing you again!</span>
+    <span class="jp" style="font-size:11pt">ご来店誠にありがとうございます。またのお越しをお待ちしております。</span>
+    🍜
   </div>
   <div class="pageno">WABI NAVI Members Club — 2/2</div>
 </div>
