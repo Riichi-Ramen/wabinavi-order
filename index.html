@@ -30,6 +30,50 @@ body{
 .logo-trio .lt-brush{width:66px;max-width:19vw;opacity:.9}
 .logo-trio .lt-pixel{width:56px;max-width:16vw;opacity:.85}
 .logo-jp{font-size:.92rem;color:#7a6858;margin-bottom:1.1rem}
+/* ── 日本なんでもクイズ（v6.7）── */
+.tv-box{background:rgba(255,252,245,.95);border:2px solid #1f6f8b;border-radius:14px;
+  padding:.9rem;text-align:left;box-shadow:0 4px 18px rgba(31,111,139,.15)}
+.tv-head{font-size:.86rem;font-weight:700;color:#1f6f8b;margin-bottom:.15rem}
+.tv-sub{font-size:.7rem;color:var(--muted);line-height:1.5;margin-bottom:.7rem}
+.tv-q{font-size:.88rem;font-weight:700;margin-bottom:.15rem;line-height:1.45}
+.tv-q-en{font-size:.74rem;color:var(--muted);margin-bottom:.55rem;line-height:1.4}
+.tv-opt{display:block;width:100%;text-align:left;background:rgba(255,252,248,.9);
+  border:1.5px solid rgba(180,140,110,.35);border-radius:9px;padding:.55rem .7rem;
+  font-size:.8rem;font-family:inherit;color:var(--text);cursor:pointer;margin-bottom:.4rem;line-height:1.35}
+.tv-opt:hover{border-color:#1f6f8b}
+.tv-opt:disabled{opacity:.5;cursor:default}
+.tv-res{border-radius:9px;padding:.7rem;margin-top:.5rem;font-size:.8rem;line-height:1.55}
+.tv-res.ok{background:rgba(45,122,58,.1);border:1.5px solid rgba(45,122,58,.4);color:#2d7a3a}
+.tv-res.ng{background:rgba(192,57,43,.08);border:1.5px solid rgba(192,57,43,.35);color:var(--accent)}
+.tv-next{width:100%;padding:.6rem;border:none;border-radius:9px;background:#1f6f8b;color:#fff;
+  font-weight:700;font-size:.82rem;font-family:inherit;cursor:pointer;margin-top:.5rem}
+.tv-count{font-size:.7rem;color:var(--muted);text-align:right;margin-top:.4rem}
+/* ── 待ち時間の日本語講座（v6.4）── */
+.wl-box{background:rgba(255,252,245,.95);border:2px solid #8e44ad;border-radius:14px;
+  padding:.9rem;text-align:left;box-shadow:0 4px 18px rgba(142,68,173,.15)}
+.wl-head{font-size:.86rem;font-weight:700;color:#8e44ad;margin-bottom:.15rem}
+.wl-sub{font-size:.7rem;color:var(--muted);line-height:1.5;margin-bottom:.6rem}
+.wl-video{position:relative;width:100%;padding-bottom:56.25%;height:0;border-radius:10px;
+  overflow:hidden;background:#000;margin-bottom:.7rem}
+.wl-video iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+.wl-phrase{background:rgba(142,68,173,.07);border:1.5px dashed rgba(142,68,173,.35);
+  border-radius:10px;padding:.6rem;text-align:center;margin-bottom:.7rem}
+.wl-jp{font-size:1.15rem;font-weight:700;color:#8e44ad;line-height:1.4}
+.wl-romaji{font-size:.74rem;color:var(--muted);font-style:italic;margin:.1rem 0 .2rem}
+.wl-mean{font-size:.78rem;line-height:1.45}
+.wl-q{font-size:.84rem;font-weight:700;margin-bottom:.5rem;line-height:1.45}
+.wl-opt{display:block;width:100%;text-align:left;background:rgba(255,252,248,.9);
+  border:1.5px solid rgba(180,140,110,.35);border-radius:9px;padding:.55rem .7rem;
+  font-size:.8rem;font-family:inherit;color:var(--text);cursor:pointer;margin-bottom:.4rem;line-height:1.35}
+.wl-opt.sel{background:rgba(142,68,173,.12);border-color:#8e44ad;font-weight:700}
+.wl-opt:disabled{opacity:.55}
+.wl-send{width:100%;padding:.65rem;border:none;border-radius:9px;background:#8e44ad;color:#fff;
+  font-weight:700;font-size:.84rem;font-family:inherit;cursor:pointer;margin-top:.2rem}
+.wl-send:disabled{opacity:.5}
+.wl-res{border-radius:9px;padding:.7rem;margin-top:.5rem;font-size:.8rem;line-height:1.55;text-align:center}
+.wl-res.ok{background:rgba(45,122,58,.1);border:1.5px solid rgba(45,122,58,.4);color:#2d7a3a}
+.wl-res.ng{background:rgba(192,57,43,.08);border:1.5px solid rgba(192,57,43,.35);color:var(--accent)}
+.wl-more{display:block;text-align:center;font-size:.72rem;color:#8e44ad;margin-top:.5rem}
 .welcome-form{background:rgba(255,252,245,0.90);backdrop-filter:blur(12px);border:1px solid rgba(192,57,43,0.25);border-radius:14px;padding:1.5rem;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(120,60,40,0.18)}
 .welcome-form h2{font-size:1.02rem;color:var(--accent);margin-bottom:1.1rem;font-weight:700}
 .form-row{margin-bottom:1.1rem;text-align:left}
@@ -889,6 +933,10 @@ body.show-config .config-bar{display:flex}
   <div id="session-orders" style="width:100%;max-width:420px;margin:.6rem 0;padding:.7rem .9rem;
     background:rgba(255,252,245,.9);border:1px solid rgba(192,57,43,.25);border-radius:12px;
     font-size:.8rem;text-align:left;color:var(--text)"></div>
+  <!-- ══ 待ち時間コンテンツ（v6.7）══ -->
+  <div id="wait-trivia" style="display:none;width:100%;max-width:420px;margin:.6rem 0 .2rem"></div>
+  <div id="wait-lesson" style="display:none;width:100%;max-width:420px;margin:.6rem 0 .2rem"></div>
+
   <button class="new-btn" style="background:linear-gradient(135deg,#2d7a3a,#3d9c4a)"
     onclick="backToMenuKeepSession()">➕ Zamów więcej / Order more / 追加注文する</button>
   <button class="new-btn" style="background:linear-gradient(135deg,#5b3b8e,#7a52b8);margin-top:.5rem"
@@ -1211,6 +1259,7 @@ async function verifyMemberAndOrder() {
         language:   m.language   || '',
         points:     m.points     || 0,
         rank:       m.rank       || 'Sakura',
+        memberId:   m.memberId   || '',
         coupons:    m.coupons    || []
       };
       saveReturningMember();  // 次回からワンタップ
@@ -2674,6 +2723,221 @@ async function placeOrder() {
   renderSessionOrders();
   document.getElementById('menu-screen').style.display = 'none';
   document.getElementById('success-screen').style.display = 'flex';
+  loadWaitLesson();   // 待ち時間の日本語講座を非同期で読み込む
+  loadTrivia();       // 日本なんでもクイズを非同期で読み込む
+}
+
+// ══════════════════════════════════════════════════════════════
+//  待ち時間の日本語講座＋クイズ（v6.4）
+//   料理を待つ間に3分の講座を見て、クイズ正解で +5pt。
+//   会員照合済みならID入力は不要（memberContact を自動送信）。
+//   1会員1回号1回まで（サーバー側で判定）。
+// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+//  日本なんでもクイズ（v6.7）
+//   料理を待つ間に出題。正解1問=1pt、1日3問まで、当日注文者のみ。
+//   判定・上限はすべてサーバー側で行う。
+// ══════════════════════════════════════════════════════════════
+let TV_Q = [];        // 本日出題できる問題
+let TV_I = 0;         // 何問目か
+let TV_PT = 1;
+let tvLoaded = false;
+
+async function loadTrivia() {
+  const box = document.getElementById('wait-trivia');
+  if (!box || tvLoaded || !isMember) return;   // 会員のみ
+  tvLoaded = true;
+  const mid = (memberInfo && memberInfo.memberId) || memberContact;
+  if (!mid) return;
+  try {
+    const res = await fetch(getGasUrl() + '?action=getTrivia&memberId=' + encodeURIComponent(mid));
+    const d = await res.json();
+    if (d.status === 'ok' && d.questions && d.questions.length) {
+      TV_Q = d.questions; TV_I = 0; TV_PT = d.point || 1;
+      renderTrivia();
+      box.style.display = 'block';
+    } else if (d.status === 'doneToday' || d.status === 'noMore') {
+      box.innerHTML = `<div class="tv-box"><div class="tv-head">🗾 Quiz o Japonii</div>
+        <div class="tv-sub">${d.message || ''}</div></div>`;
+      box.style.display = 'block';
+    }
+    // off / noOrder / notMember のときは何も出さない
+  } catch (e) { /* 失敗しても注文完了画面には影響させない */ }
+}
+
+function renderTrivia() {
+  const q = TV_Q[TV_I];
+  const box = document.getElementById('wait-trivia');
+  if (!q) {
+    box.innerHTML = `<div class="tv-box"><div class="tv-head">🗾 Quiz o Japonii</div>
+      <div class="tv-sub">Na dziś to wszystko — dziękujemy!<br>
+      That's all for today ・本日の分は終了です</div></div>`;
+    return;
+  }
+  box.innerHTML = `
+    <div class="tv-box">
+      <div class="tv-head">🗾 Quiz o Japonii — czekając na zamówienie</div>
+      <div class="tv-sub">Japan quiz while you wait
+        <span style="color:#9a8878">・お待ちの間に日本クイズ</span></div>
+      <div class="tv-q">❓ ${q.pl}</div>
+      ${q.en ? `<div class="tv-q-en">${q.en}</div>` : ''}
+      <div id="tv-opts">
+        ${q.options.map((o,i) =>
+          `<button class="tv-opt" onclick="tvAnswer('${q.id}',${i+1})">${i+1}. ${o}</button>`
+        ).join('')}
+      </div>
+      <div id="tv-res"></div>
+      <div class="tv-count">Pytanie ${TV_I+1} / ${TV_Q.length}　（+${TV_PT} pkt）</div>
+    </div>`;
+}
+
+async function tvAnswer(qid, ans) {
+  document.querySelectorAll('#tv-opts .tv-opt').forEach(b => b.disabled = true);
+  const area = document.getElementById('tv-res');
+  area.innerHTML = '<div class="tv-res">⏳ …</div>';
+  try {
+    const res = await fetch(getGasUrl(), {
+      method:'POST', mode:'cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'submitTrivia',
+        memberId: (memberInfo && memberInfo.memberId) || memberContact,
+        qid, answer: ans })
+    });
+    const d = await res.json();
+    if (d.status !== 'ok') {
+      area.innerHTML = `<div class="tv-res ng">${d.message || 'Błąd / Error'}</div>`;
+      return;
+    }
+    const more = (TV_I + 1 < TV_Q.length) && d.remaining > 0;
+    area.innerHTML = `
+      <div class="tv-res ${d.correct ? 'ok' : 'ng'}">
+        ${d.correct ? `⭕ Poprawnie! / Correct! <strong>+${d.awarded} pkt</strong> → ${d.newPt} pkt`
+                    : '❌ Błędna odpowiedź / Not quite'}
+        ${d.rankUp ? '<br>⬆️ Awans rangi! / Rank up!' : ''}
+        ${d.explainPL ? `<div style="margin-top:.4rem;font-size:.76rem;color:var(--text)">💡 ${d.explainPL}</div>` : ''}
+        ${d.explainEN ? `<div style="font-size:.72rem;color:var(--muted)">${d.explainEN}</div>` : ''}
+      </div>
+      ${more ? `<button class="tv-next" onclick="tvNext()">➡️ Następne pytanie / Next（${d.remaining}）</button>`
+             : `<div class="tv-count">Dziękujemy! / 本日の分は終了です</div>`}`;
+  } catch (e) {
+    area.innerHTML = '<div class="tv-res ng">📡 Błąd połączenia / Connection error</div>';
+  }
+}
+
+function tvNext() { TV_I++; renderTrivia(); }
+
+let WL_LESSON = null;
+let WL_QUIZ_PT = true;
+let wlPicked  = 0;
+let wlLoaded  = false;
+
+async function loadWaitLesson() {
+  const box = document.getElementById('wait-lesson');
+  if (!box || wlLoaded) return;
+  wlLoaded = true;
+  try {
+    const res  = await fetch(getGasUrl() + '?action=getLessons');
+    const data = await res.json();
+    // 準備中・非表示のときはパネルごと出さない（注文動線を邪魔しない）
+    if (data.mode && data.mode !== 'on') return;
+    if (data.status !== 'ok' || !data.lessons || !data.lessons.length) return;
+    WL_QUIZ_PT = (data.quizPoints !== false);
+    WL_LESSON  = data.lessons[0];         // 最新回
+    renderWaitLesson();
+    box.style.display = 'block';
+  } catch (e) { /* 失敗しても注文完了画面には影響させない */ }
+}
+
+function renderWaitLesson() {
+  const L = WL_LESSON;
+  if (!L) return;
+  const box = document.getElementById('wait-lesson');
+
+  const video = L.youtube
+    ? `<div class="wl-video"><iframe src="https://www.youtube-nocookie.com/embed/${L.youtube}"
+         title="lekcja" allowfullscreen loading="lazy"></iframe></div>` : '';
+
+  const phrase = L.phraseJP ? `
+    <div class="wl-phrase">
+      <div class="wl-jp">${L.phraseJP}</div>
+      ${L.romaji  ? `<div class="wl-romaji">${L.romaji}</div>` : ''}
+      ${L.meaning ? `<div class="wl-mean">${L.meaning}</div>` : ''}
+    </div>` : '';
+
+  let quiz = '';
+  if (L.quiz && L.options && L.options.length && L.open) {
+    quiz = `
+      <div class="wl-q">❓ ${L.quiz}</div>
+      <div id="wl-opts">
+        ${L.options.map((o,i) =>
+          `<button class="wl-opt" id="wl-opt-${i+1}" onclick="wlPick(${i+1})">${i+1}. ${o}</button>`
+        ).join('')}
+      </div>`;
+    if (isMember) {
+      quiz += `<button class="wl-send" id="wl-send" onclick="wlSubmit()">
+                 ✅ Odpowiedz / Answer${WL_QUIZ_PT ? '（+5 pkt）' : ''}</button>`;
+    } else {
+      quiz += `<div class="wl-res ng" style="margin-top:.4rem">
+        Quiz tylko dla członków klubu — rejestracja jest bezpłatna!<br>
+        <span style="font-size:.72rem">Members only — free to join ・ クイズは会員限定（登録無料）</span>
+      </div>`;
+    }
+    quiz += `<div id="wl-res"></div>`;
+  }
+
+  box.innerHTML = `
+    <div class="wl-box">
+      <div class="wl-head">🎌 Podczas oczekiwania — japoński przez jedzenie</div>
+      <div class="wl-sub">While you wait: a 3-minute Japanese lesson
+        <span style="color:#9a8878">・お待ちの間に「食で学ぶ日本語」</span></div>
+      ${video}${phrase}${quiz}
+      <a class="wl-more" href="nihongo.html" target="_blank">
+        📖 Poprzednie lekcje / Past lessons ・ 過去の講座</a>
+    </div>`;
+}
+
+function wlPick(n) {
+  wlPicked = n;
+  document.querySelectorAll('#wl-opts .wl-opt').forEach(b => b.classList.remove('sel'));
+  const el = document.getElementById('wl-opt-' + n);
+  if (el) el.classList.add('sel');
+}
+
+async function wlSubmit() {
+  const area = document.getElementById('wl-res');
+  if (!wlPicked) {
+    area.innerHTML = '<div class="wl-res ng">⚠️ Wybierz odpowiedź / Choose an answer</div>';
+    return;
+  }
+  const btn = document.getElementById('wl-send');
+  btn.disabled = true;
+  area.innerHTML = '<div class="wl-res">⏳ Wysyłanie / Sending…</div>';
+  try {
+    const res = await fetch(getGasUrl(), {
+      method:'POST', mode:'cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'submitQuiz',
+        memberId: (memberInfo && memberInfo.memberId) || memberContact,
+        lessonNo: WL_LESSON.no, answer: wlPicked })
+    });
+    const d = await res.json();
+    if (d.status === 'ok') {
+      document.querySelectorAll('#wl-opts .wl-opt').forEach(b => b.disabled = true);
+      area.innerHTML = d.correct
+        ? `<div class="wl-res ok">🎉 Poprawnie! / Correct!
+             ${d.awarded ? `<br><strong>+${d.awarded} pkt</strong> → ${d.newPt} pkt` : ''}
+             ${d.rankUp ? '<br>⬆️ Awans rangi! / Rank up!' : ''}
+             ${d.prize  ? '<br>🎁 Bierzesz udział w losowaniu / In the prize draw' : ''}</div>`
+        : `<div class="wl-res ng">❌ Błędna odpowiedź / Not quite<br>
+             <span style="font-size:.72rem">Spróbuj przy następnej lekcji! / 次回もぜひ挑戦を</span></div>`;
+    } else {
+      area.innerHTML = `<div class="wl-res ng">${d.message || 'Błąd / Error'}</div>`;
+      btn.disabled = false;
+    }
+  } catch (e) {
+    area.innerHTML = '<div class="wl-res ng">📡 Błąd połączenia / Connection error</div>';
+    btn.disabled = false;
+  }
 }
 
 function openCheckout() {
