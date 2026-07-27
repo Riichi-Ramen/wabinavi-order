@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>WABI NAVI — 特典早見表 / Korzyści Members Club</title>
+<style>
+@page { size: A4; margin: 10mm; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#fffdf8;color:#2c1810;width:210mm;margin:0 auto}
+.print-btn{position:fixed;top:10px;right:10px;background:#c0392b;color:#fff;border:none;
+  border-radius:8px;padding:.7rem 1.4rem;font-weight:700;cursor:pointer;font-size:1rem;z-index:9}
+@media print{.print-btn{display:none}}
+.page{width:210mm;min-height:277mm;padding:8mm 10mm;page-break-after:always;position:relative}
+.page:last-child{page-break-after:auto}
+.header{text-align:center;border-bottom:4px solid #c0392b;padding-bottom:4mm;margin-bottom:6mm}
+.logo{font-size:26pt;font-weight:700;color:#c0392b;letter-spacing:.18em}
+.title{font-size:17pt;font-weight:700;margin-top:2mm}
+.subtitle{font-size:11.5pt;color:#5a4a3a;margin-top:1.5mm;font-weight:600}
+.sec-title{font-size:16pt;font-weight:700;color:#c0392b;margin:5mm 0 3mm;
+  border-left:6px solid #c0392b;padding-left:3.5mm}
+table{width:100%;border-collapse:collapse;font-size:13pt}
+th{background:#c0392b;color:#fff;padding:3mm 2mm;text-align:center;font-size:12pt}
+td{border:1.5px solid rgba(192,57,43,.3);padding:3mm 2mm;text-align:center;vertical-align:middle;line-height:1.4}
+tr:nth-child(even) td{background:#fdf3ea}
+.big{font-size:15pt;font-weight:700;color:#c0392b}
+.note{font-size:10.5pt;color:#4a3a2a;line-height:1.7;margin-top:3mm;
+  background:#fdf3ea;border-radius:3mm;padding:3mm 4mm}
+.note strong{color:#a81f10}
+.gold td{background:linear-gradient(135deg,#fdf6e3,#faedc8)!important}
+.flow{display:flex;gap:2.5mm;text-align:center;margin-top:2mm}
+.flow .step{flex:1;background:#fdf3ea;border:2px solid rgba(192,57,43,.35);border-radius:3.5mm;
+  padding:4mm 2mm;line-height:1.5;font-size:11.5pt;font-weight:600}
+.flow .step small{font-weight:400;font-size:9.5pt;color:#5a4a3a;display:block;margin-top:1mm}
+.flow .arr{flex:0 0 6mm;align-self:center;color:#c0392b;font-weight:700;font-size:15pt}
+.thanks{text-align:center;font-size:14pt;font-weight:700;color:#8e2418;line-height:1.9;margin-top:8mm}
+.rank-icon{font-size:15pt}
+.pageno{position:absolute;bottom:4mm;right:10mm;font-size:9pt;color:#a89888}
+</style>
+</head>
+<body>
+<button class="print-btn" onclick="window.print()">🖨️ Drukuj / 印刷（A4×2枚）</button>
+
+<!-- ══════════ PAGE 1 ══════════ -->
+<div class="page">
+  <div class="header">
+    <div class="logo">和美なび WABI NAVI</div>
+    <div class="title">🎁 Members Club — Korzyści / 会員特典 早見表</div>
+    <div class="subtitle">1 miska ramenu = 10 pkt（1 pieczątka na wizytę）<br>
+      ラーメン1杯＝10ポイント（1来店1スタンプ） / 1 bowl = 10 pts</div>
+  </div>
+
+  <div class="sec-title">🎫 Kupony za punkty / ポイントクーポン</div>
+  <table>
+    <tr><th>Punkty<br>ポイント</th><th>Miska<br>杯目</th><th>Nagroda / 特典</th></tr>
+    <tr><td class="big">50 pt</td><td class="big">6.<br>6杯目</td><td class="big">RAMEN −50%<br>ラーメン半額</td></tr>
+    <tr><td class="big">100 pt</td><td class="big">12.<br>12杯目</td><td class="big">RAMEN GRATIS<br>ラーメン1杯無料</td></tr>
+    <tr><td class="big">150 pt</td><td>18. / 18杯目</td><td>−50% / 半額</td></tr>
+    <tr><td class="big">200 pt</td><td>24. / 24杯目</td><td>GRATIS / 無料</td></tr>
+    <tr><td colspan="3" style="font-size:11.5pt">…dalej co 50 pkt na przemian / 以降も50ptごとに半額⇔無料が交互に！</td></tr>
+  </table>
+
+  <div class="note">
+    ✔ <strong>Zniżka = 1 miska (cena podstawowa). Dodatki i kaedama płatne osobno.</strong><br>
+    　<strong>割引はラーメン1杯の基本価格のみ。追加トッピング・替え玉は別料金です。</strong><br>
+    ✔ Przy wizycie z kuponem pieczątka nie jest przyznawana<br>
+    　クーポン（半額・無料）使用の来店はスタンプ対象外<br>
+    ✔ Nie łączy się ze zniżką studencką / seniorską ／ 学割・シニア割との併用不可<br>
+    ✔ Kupon pojawia się <strong>automatycznie w aplikacji</strong> — zniżka od razu w sumie!<br>
+    　注文アプリの確認画面に自動表示、合計から自動割引されます
+  </div>
+
+  <div class="sec-title">🍚 Zestaw z ryżem / ライスセット割</div>
+  <div class="note" style="font-size:12.5pt;text-align:center">
+    🍜＋🍚 Do każdego ramenu: <strong>ryż za pół ceny — tylko 6 zł</strong> (zamiast 12 zł)<br>
+    ラーメンをご注文の方は、<strong>ライスがセット価格半額の6zł</strong>（通常12zł）！<br>
+    <span style="font-size:10pt">Naliczane automatycznie w aplikacji / アプリで自動適用</span>
+  </div>
+
+  <div class="note" style="font-size:12.5pt;text-align:center">
+    🍵 Do dań donburi: <strong>zupa miso GRATIS</strong> — poproś obsługę!<br>
+    丼物をご注文の方は<strong>みそ汁無料サービス</strong>（係員にお申し付けください）
+  </div>
+  <div class="pageno">WABI NAVI Members Club — 1/2</div>
+</div>
+
+<!-- ══════════ PAGE 2 ══════════ -->
+<div class="page">
+  <div class="header">
+    <div class="logo">和美なび WABI NAVI</div>
+    <div class="title">🎁 Bonus rangi / ランク特典</div>
+    <div class="subtitle">Darmowe dodatki przy KAŻDEJ wizycie — aż do następnej rangi!<br>
+      次のランクに上がるまで、毎回トッピング無料</div>
+  </div>
+
+  <table>
+    <tr><th>Ranga / ランク</th><th>Punkty / pt</th><th>Darmowe dodatki<br>無料トッピング</th><th>Zakres cen<br>対象価格</th></tr>
+    <tr><td><span class="rank-icon">🌸</span> Sakura 桜</td><td>0–49</td><td>—</td><td>—</td></tr>
+    <tr><td><span class="rank-icon">🏅</span> Ume 梅</td><td>50–99</td><td class="big">1 szt. / 1品</td><td class="big">1–2 zł</td></tr>
+    <tr><td><span class="rank-icon">🥉</span> Take 竹</td><td>100–199</td><td class="big">2 szt. / 2品</td><td class="big">1–3 zł</td></tr>
+    <tr><td><span class="rank-icon">🥈</span> Matsu 松</td><td>200–499</td><td class="big">3 szt. / 3品</td><td class="big">1–4 zł</td></tr>
+    <tr class="gold"><td><span class="rank-icon">👑</span> Fuji 富士</td><td>500+</td><td class="big">3 szt. / 3品</td><td class="big">1–6 zł</td></tr>
+  </table>
+  <div class="note">
+    ✔ W aplikacji naliczane automatycznie（najdroższe dodatki gratis）<br>
+    　アプリ注文なら自動適用（対象内の高い品から無料に）・レジ注文は係員へ<br>
+    ✔ Urodziny: dodatkowy bonus w miesiącu urodzin ／ 誕生月特典もあります（会員カード参照）
+  </div>
+
+  <div class="sec-title">📱 Jak korzystać / ご利用方法</div>
+  <div class="flow">
+    <div class="step">1️⃣ Rejestracja<br><small>QR przy kasie（bezpłatna）<br>レジのQRで無料会員登録</small></div>
+    <div class="arr">▶</div>
+    <div class="step">2️⃣ Zamów<br><small>QR na stoliku<br>テーブルQRからアプリ注文</small></div>
+    <div class="arr">▶</div>
+    <div class="step">3️⃣ Pieczątka<br><small>QR przy kasie po posiłku<br>食後レジでスタンプ＝+10pt</small></div>
+    <div class="arr">▶</div>
+    <div class="step">4️⃣ Nagrody!<br><small>Kupony automatycznie<br>特典が自動で貯まる</small></div>
+  </div>
+  <div class="note" style="text-align:center">
+    ⏰ Punkty wygasają po 8 miesiącach bez wizyty ／ ポイントは最終来店から8ヶ月で失効します
+  </div>
+
+  <div class="thanks">
+    Dziękujemy serdecznie i zapraszamy ponownie!<br>
+    ご来店誠にありがとうございます。<br>またのお越しをお待ちしております。🍜
+  </div>
+  <div class="pageno">WABI NAVI Members Club — 2/2</div>
+</div>
+</body>
+</html>
