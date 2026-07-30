@@ -749,6 +749,18 @@ async function doRegister() {
           🎉 会員限定プロモ・イベント招待<br>
           <small>Promocje i wydarzenia tylko dla członków</small>
         </div></div>
+        ${res.whatsapp ? `
+        <a href="${res.whatsapp}" target="_blank" rel="noopener"
+           style="display:block;text-decoration:none;margin-top:.8rem">
+          <button class="btn" style="width:100%;background:#25D366;color:#fff;
+            box-shadow:0 4px 14px rgba(37,211,102,.35)">
+            💬 Dołącz na WhatsApp / Join us on WhatsApp
+          </button>
+        </a>
+        <div style="font-size:.7rem;color:var(--muted);text-align:center;margin-top:.3rem;line-height:1.6">
+          Nowości, oferty i wydarzenia / News, offers and events<br>
+          <span style="color:#9a8878">最新情報・特典・イベントのご案内</span>
+        </div>` : ''}
         <a href="index.html" style="display:block;text-decoration:none;margin-top:.8rem">
           <button class="btn btn-primary" style="width:100%">
             🍜 注文に進む / Przejdź do zamówienia / Proceed to order
