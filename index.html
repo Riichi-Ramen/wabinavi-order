@@ -390,6 +390,30 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
 .s-title{font-size:1.3rem;color:#2d7a3a;font-weight:700;margin-bottom:1rem}
 .s-msg{color:var(--text);font-size:.95rem;line-height:1.7;max-width:420px;background:rgba(255,252,245,0.85);border-radius:12px;padding:1.2rem;backdrop-filter:blur(8px);box-shadow:0 4px 20px rgba(120,60,40,0.12)}
 .s-en{color:var(--muted);font-size:.85rem;margin-top:.5rem}
+
+/* ⭐ お得額カード：確定直後、控えめだが目に留まるトーン */
+@keyframes savingsIn{
+  0%{opacity:0;transform:translateY(10px) scale(.97)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+.savings-box{
+  width:100%;max-width:420px;margin:.7rem 0;padding:1rem 1.1rem;
+  background:linear-gradient(135deg,rgba(45,122,58,.10),rgba(45,122,58,.04));
+  border:1.5px solid rgba(45,122,58,.35);border-radius:14px;
+  animation:savingsIn .45s cubic-bezier(.2,.8,.3,1);
+  box-shadow:0 3px 14px rgba(45,122,58,.10);
+}
+.savings-head{display:flex;align-items:center;gap:.5rem;font-size:.82rem;
+  color:var(--green);font-weight:700;letter-spacing:.01em}
+.savings-amt{font-size:1.7rem;font-weight:800;color:var(--green);margin:.25rem 0 .15rem;
+  font-variant-numeric:tabular-nums}
+.savings-amt small{font-size:1rem;font-weight:700;opacity:.85}
+.savings-sub{font-size:.78rem;color:var(--muted)}
+.savings-list{margin-top:.55rem;padding-top:.55rem;border-top:1px dashed rgba(45,122,58,.3);
+  display:flex;flex-direction:column;gap:.28rem}
+.savings-row{display:flex;justify-content:space-between;font-size:.78rem;color:var(--text)}
+.savings-row b{color:var(--green);font-variant-numeric:tabular-nums}
+
 .new-btn{margin-top:2rem;padding:.8rem 2rem;background:var(--accent);color:#fff;font-weight:700;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 16px rgba(192,57,43,0.3)}
 .member-divider{margin-top:2.2rem;border-top:1px solid rgba(192,57,43,0.25);padding-top:2rem;width:100%;max-width:420px}
 .member-teaser{font-size:.82rem;color:var(--muted);line-height:1.7;margin-bottom:1.1rem;background:rgba(255,252,245,0.85);border-radius:10px;padding:.8rem;backdrop-filter:blur(8px)}
@@ -929,6 +953,7 @@ body.show-config .config-bar{display:flex}
     <div class="s-en">Thank you! Our staff will deliver your order to the kitchen. Please wait a moment.</div>
     <div style="margin-top:.8rem;font-size:.8rem;color:var(--muted)" id="order-id-display"></div>
   </div>
+  <div id="savings-card" style="display:none"></div>
   <div id="coseat-result-area" style="display:none;width:100%;max-width:420px"></div>
   <div id="session-orders" style="width:100%;max-width:420px;margin:.6rem 0;padding:.7rem .9rem;
     background:rgba(255,252,245,.9);border:1px solid rgba(192,57,43,.25);border-radius:12px;
@@ -2567,6 +2592,27 @@ function closeConfirm() {
   document.getElementById('confirm-modal').classList.remove('open');
 }
 
+// ⭐ 確定直後の「お得額」カードを描画する。値引きが無ければ何も出さない。
+function renderSavingsCard(totalSavings, breakdown) {
+  const box = document.getElementById('savings-card');
+  if (!totalSavings || totalSavings <= 0) { box.style.display = 'none'; box.innerHTML = ''; return; }
+
+  const rows = (breakdown || []).map(b => `
+    <div class="savings-row">
+      <span>${b.label} ${b.pl} <span style="opacity:.7">/ ${b.jp}</span></span>
+      <b>−${b.amt} zł</b>
+    </div>`).join('');
+
+  box.innerHTML = `
+    <div class="savings-box">
+      <div class="savings-head">🎉 Zaoszczędziłeś! / お得になりました！</div>
+      <div class="savings-amt">−${totalSavings} <small>zł</small></div>
+      <div class="savings-sub">Taniej niż w cenie regularnej / 通常価格より、これだけお得です</div>
+      ${rows ? `<div class="savings-list">${rows}</div>` : ''}
+    </div>`;
+  box.style.display = 'block';
+}
+
 async function placeOrder() {
   const gasUrl  = getGasUrl();
   let uwagi   = document.getElementById('uwagi-ta').value.trim();
@@ -2615,6 +2661,27 @@ async function placeOrder() {
   if (perkCalc && perkCalc.discount > 0) total -= perkCalc.discount;
   const riceCalc = computeRiceSetDiscount();
   if (riceCalc.discount > 0) total -= riceCalc.discount;
+
+  // ⭐Polecane（おすすめ特価）の値引き額を集計。
+  //   origPriceは通常価格、priceは特価。カート内の数量ぶん差額を合計する。
+  //   （totalの計算には既にitem.priceが使われているため、ここではtotalを
+  //   変更せず「お得表示」用の金額だけを別に求める）
+  let polecaneDiscount = 0;
+  for (const id in cart) {
+    const item = findItem(id);
+    if (item && item.origPrice) {
+      polecaneDiscount += (item.origPrice - item.price) * (cart[id].qty || 1);
+    }
+  }
+
+  // 今回の注文で発生した「お得額」の合計（完了画面での演出に使う）
+  const totalSavings = polecaneDiscount + couponCalc.discount +
+    (perkCalc ? perkCalc.discount : 0) + riceCalc.discount;
+  const savingsBreakdown = [];
+  if (polecaneDiscount > 0) savingsBreakdown.push({ label: '⭐ Polecane', pl: 'Oferta specjalna', jp: 'おすすめ特価', amt: polecaneDiscount });
+  if (couponCalc.discount > 0) savingsBreakdown.push({ label: '🎫', pl: 'Kupon', jp: 'クーポン', amt: couponCalc.discount });
+  if (perkCalc && perkCalc.discount > 0) savingsBreakdown.push({ label: '🎁', pl: 'Bonus rangi', jp: 'ランク特典', amt: perkCalc.discount });
+  if (riceCalc.discount > 0) savingsBreakdown.push({ label: '🍚', pl: 'Zestaw z ryżem', jp: 'ライスセット', amt: riceCalc.discount });
 
   document.getElementById('confirm-modal').classList.remove('open');
   document.getElementById('btn-order').disabled = true;
@@ -2675,6 +2742,9 @@ async function placeOrder() {
   document.getElementById('btn-order').disabled = false;
 
   document.getElementById('order-id-display').textContent = `Nr zamówienia / Order ID: ${orderId}`;
+
+  // ⭐ お得額カード：合計値引きがあれば、確定直後にそっと見せる
+  renderSavingsCard(totalSavings, savingsBreakdown);
 
   // 同席会員のスタンプ結果を表示
   const coseatResultsData = res && res.coseatResults ? res.coseatResults : [];
@@ -2942,6 +3012,7 @@ async function wlSubmit() {
 
 function openCheckout() {
   document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('savings-card').style.display = 'none';
   document.getElementById('menu-screen').style.display = 'none';
   const bar = document.getElementById('order-bar');
   if (bar) bar.style.display = 'none';
@@ -3048,6 +3119,7 @@ function renderSessionOrders() {
 // 追加注文：セッション（テーブル・会員情報・注文履歴）を保持したままメニューへ
 function backToMenuKeepSession() {
   document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('savings-card').style.display = 'none';
   document.getElementById('menu-screen').style.display = 'block';
   updateBadge();
   window.scrollTo(0, 0);
@@ -3152,6 +3224,7 @@ function resetApp() {
   isMember=false; memberContact=""; memberName=""; memberInfo=Object.create(null);
   coseatMembers = [];
   document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('savings-card').style.display = 'none';
   document.getElementById('member-check-screen').style.display = 'none';
   document.getElementById('register-prompt-screen').style.display = 'none';
   document.getElementById('welcome-screen').style.display = 'flex';
