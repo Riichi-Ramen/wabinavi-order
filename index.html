@@ -421,6 +421,10 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
 .om-wrap{width:100%;max-width:420px;text-align:center}
 .om-title{font-size:1.25rem;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:.4rem}
 .om-jp{font-size:.85rem;color:var(--muted);font-weight:400}
+.om-en{font-size:.85rem;color:var(--muted);font-weight:400}
+/* ボタン内の2行目以降（EN/JP）は少し小さく・控えめに */
+.om-next-btn small{display:block;font-size:.8rem;font-weight:600;opacity:.9;margin-top:.15rem}
+.om-label small{display:block;font-weight:400;color:var(--muted);font-size:.78rem}
 .om-sub{font-size:.85rem;color:var(--muted);margin-bottom:1.6rem}
 .om-choices{display:flex;gap:.9rem}
 .om-choice{flex:1;background:var(--card);border:2px solid var(--border);border-radius:16px;
@@ -429,7 +433,6 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
 .om-choice:active{transform:scale(.97);border-color:var(--accent)}
 .om-icon{font-size:2.4rem}
 .om-label{font-size:.95rem;font-weight:700;color:var(--text);line-height:1.5}
-.om-label small{font-weight:400;color:var(--muted);font-size:.8rem}
 
 .person-grid{display:flex;flex-wrap:wrap;gap:.7rem;justify-content:center;margin-bottom:1.6rem}
 .person-pill{width:64px;height:64px;border-radius:50%;background:var(--card);
@@ -453,10 +456,11 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
   justify-content:space-between;gap:.7rem;position:fixed;top:0;left:0;right:0;z-index:200;
   box-shadow:0 3px 12px rgba(0,0,0,.25)}
 .gpb-current{font-size:.92rem;font-weight:800;color:#fff}
-.gpb-current small{display:block;font-size:.7rem;font-weight:400;color:rgba(255,255,255,.85)}
+.gpb-current small{display:block;font-size:.63rem;font-weight:400;color:rgba(255,255,255,.8);line-height:1.35}
 .gpb-next-btn{background:var(--green);color:#fff;border:none;border-radius:10px;
-  padding:.55rem .95rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;
-  white-space:nowrap}
+  padding:.5rem .8rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;
+  white-space:nowrap;line-height:1.3;text-align:center}
+.gpb-next-btn small{display:block;font-size:.66rem;font-weight:500;opacity:.9}
 .gpb-next-btn:active{transform:scale(.96)}
 
 /* ── 📋 グループ一覧（編集可能） ─────────────────────────── */
@@ -794,16 +798,18 @@ body.show-config .config-bar{display:flex}
      ══════════════════════════════════════════════════════════════ -->
 <div id="order-mode-screen" style="display:none">
   <div class="om-wrap">
-    <div class="om-title">👥 Jak zamawiacie?<br><span class="om-jp">どのように注文しますか？</span></div>
+    <div class="om-title">👥 Jak zamawiacie?<br>
+      <span class="om-en">How would you like to order?</span><br>
+      <span class="om-jp">どのように注文しますか？</span></div>
     <div class="om-sub" id="om-sub"></div>
     <div class="om-choices">
       <button class="om-choice" onclick="chooseOrderMode('together')">
         <span class="om-icon">🍽️</span>
-        <span class="om-label">Razem<br><small>まとめて</small></span>
+        <span class="om-label">Razem<br><small>Together</small><br><small>まとめて</small></span>
       </button>
       <button class="om-choice" onclick="chooseOrderMode('groups')">
         <span class="om-icon">👤</span>
-        <span class="om-label">Osobno<br><small>グループごとに</small></span>
+        <span class="om-label">Osobno<br><small>By group</small><br><small>グループごとに</small></span>
       </button>
     </div>
   </div>
@@ -812,10 +818,14 @@ body.show-config .config-bar{display:flex}
 <div id="group-setup-screen" style="display:none">
   <div class="om-wrap">
     <div class="om-title" id="gs-title"></div>
-    <div class="om-sub">Zaznacz osoby w tej grupie / このグループの人を選んでください</div>
+    <div class="om-sub">Zaznacz osoby w tej grupie<br>
+      <span class="om-en">Select people in this group</span><br>
+      <span class="om-jp">このグループの人を選んでください</span></div>
     <div class="person-grid" id="person-grid"></div>
     <button class="om-next-btn" id="gs-confirm-btn" onclick="confirmCurrentGroup()" disabled>
-      Zacznij zamawiać dla tej grupy / このグループで注文を始める
+      Zacznij zamawiać dla tej grupy<br>
+      <small>Start ordering for this group</small><br>
+      <small>このグループで注文を始める</small>
     </button>
     <div class="gs-remaining" id="gs-remaining"></div>
   </div>
@@ -823,10 +833,16 @@ body.show-config .config-bar{display:flex}
 
 <div id="group-summary-screen" style="display:none">
   <div class="om-wrap">
-    <div class="om-title">✅ Grupy gotowe<br><span class="om-jp">グループ分け完了</span></div>
-    <div class="om-sub">Rozpoczniemy zamawianie po kolei / 順番に注文していきます</div>
+    <div class="om-title">✅ Grupy gotowe<br>
+      <span class="om-en">Groups ready</span><br>
+      <span class="om-jp">グループ分け完了</span></div>
+    <div class="om-sub">Rozpoczniemy zamawianie po kolei<br>
+      <span class="om-en">We'll order group by group</span><br>
+      <span class="om-jp">順番に注文していきます</span></div>
     <div class="group-list" id="group-list-preview"></div>
-    <button class="om-next-btn" onclick="startGroupOrdering()">Zaczynamy! / 始める ▶</button>
+    <button class="om-next-btn" onclick="startGroupOrdering()">
+      Zaczynamy!<br><small>Let's start</small><br><small>始める ▶</small>
+    </button>
   </div>
 </div>
 
@@ -834,11 +850,17 @@ body.show-config .config-bar{display:flex}
      各グループを個別に開いて商品を追加/変更できる目次画面。 -->
 <div id="group-review-screen" style="display:none">
   <div class="om-wrap" style="max-width:460px">
-    <div class="om-title">📋 Wszystkie grupy<br><span class="om-jp">グループ一覧</span></div>
-    <div class="om-sub">Możesz wrócić i dodać coś jeszcze / 追加・変更したいグループがあれば戻れます</div>
+    <div class="om-title">📋 Wszystkie grupy<br>
+      <span class="om-en">All groups</span><br>
+      <span class="om-jp">グループ一覧</span></div>
+    <div class="om-sub">Możesz wrócić i dodać coś jeszcze<br>
+      <span class="om-en">You can go back and add more</span><br>
+      <span class="om-jp">追加・変更したいグループがあれば戻れます</span></div>
     <div class="group-review-list" id="group-review-list"></div>
     <button class="om-next-btn" onclick="finishAllGroupsAndConfirm()">
-      ✅ Wszystko gotowe, sprawdź zamówienie / 確認画面へ進む
+      ✅ Wszystko gotowe, sprawdź zamówienie<br>
+      <small>All done, check the order</small><br>
+      <small>確認画面へ進む</small>
     </button>
   </div>
 </div>
@@ -1629,7 +1651,9 @@ function openGroupSetup() {
   groupSetupSelection = [];
   document.getElementById('group-setup-screen').style.display = 'flex';
   document.getElementById('gs-title').innerHTML =
-    `👥 Grupa ${orderGroups.length + 1}<br><span class="om-jp">グループ${orderGroups.length + 1}の人を選ぶ</span>`;
+    `👥 Grupa ${orderGroups.length + 1}<br>` +
+    `<span class="om-en">Group ${orderGroups.length + 1}</span><br>` +
+    `<span class="om-jp">グループ${orderGroups.length + 1}の人を選ぶ</span>`;
 
   const grid = document.getElementById('person-grid');
   grid.innerHTML = '';
@@ -1655,13 +1679,27 @@ function togglePersonInSetup(p, el) {
 
 function updateGroupSetupUI() {
   const btn = document.getElementById('gs-confirm-btn');
-  btn.disabled = groupSetupSelection.length === 0;
+  const nothingSelected = groupSetupSelection.length === 0;
+  btn.disabled = nothingSelected;
   const n = Math.max(parseInt(guestNum, 10) || 1, 1);
   const remaining = n - groupSetupAssigned.length - groupSetupSelection.length;
   const remainEl = document.getElementById('gs-remaining');
-  remainEl.textContent = remaining > 0
-    ? `Pozostało ${remaining} os. do przydzielenia / 残り${remaining}名`
-    : '';
+
+  // 何も選んでいないとボタンが押せないので、その理由をはっきり伝える
+  if (nothingSelected) {
+    remainEl.innerHTML =
+      `<span style="color:var(--accent);font-weight:700">👆 Najpierw wybierz osobę powyżej</span><br>` +
+      `<span style="color:var(--accent)">Please select a person above</span><br>` +
+      `<span style="color:var(--accent)">まず上の👤を押して人を選んでください</span>`;
+    return;
+  }
+  remainEl.innerHTML = remaining > 0
+    ? `Pozostało ${remaining} os. do przydzielenia<br>` +
+      `<span class="om-en">${remaining} person(s) left to assign</span><br>` +
+      `<span class="om-jp">残り${remaining}名</span>`
+    : `<span style="color:var(--green,#2d7a3a);font-weight:700">✅ Wszyscy przydzieleni</span><br>` +
+      `<span class="om-en">Everyone assigned</span><br>` +
+      `<span class="om-jp">全員の割り当て完了</span>`;
 }
 
 // このグループを確定。全員割り当て済みならグループ一覧（確認）画面へ、
@@ -1684,7 +1722,7 @@ function showGroupSummary() {
   document.getElementById('group-summary-screen').style.display = 'flex';
   const list = document.getElementById('group-list-preview');
   list.innerHTML = orderGroups.map((g, i) =>
-    `<div class="group-list-item">👤${g.join('+')} <span style="opacity:.6;font-weight:400">— Grupa ${i + 1}</span></div>`
+    `<div class="group-list-item">👤${g.join('+')} <span style="opacity:.6;font-weight:400">— Grupa / Group ${i + 1}</span></div>`
   ).join('');
 }
 
@@ -1708,11 +1746,15 @@ function updateGroupProgressBar() {
   const isLast = currentGroupIndex === orderGroups.length - 1;
   bar.style.display = 'flex';
   const btnLabel = reviewEditMode
-    ? '✅ Powrót do listy grup / 一覧へ戻る'
-    : (isLast ? '✅ Zakończ i sprawdź / 確認画面へ' : '➡️ Następna grupa / 次のグループへ');
+    ? '✅ Powrót do listy<br><small>Back to list</small><br><small>一覧へ戻る</small>'
+    : (isLast ? '✅ Zakończ<br><small>Finish</small><br><small>確認画面へ</small>'
+              : '➡️ Następna grupa<br><small>Next group</small><br><small>次のグループへ</small>');
   const btnAction = reviewEditMode ? 'finishEditingGroup()' : 'nextGroup()';
   bar.innerHTML = `
-    <div class="gpb-current">👤${g.join('+')} <small>Grupa ${currentGroupIndex + 1}/${orderGroups.length} · 今この人たちの注文中</small></div>
+    <div class="gpb-current">👤${g.join('+')}
+      <small>Grupa ${currentGroupIndex + 1}/${orderGroups.length} · zamawia teraz</small>
+      <small>Group ${currentGroupIndex + 1}/${orderGroups.length} · ordering now</small>
+      <small>グループ${currentGroupIndex + 1}/${orderGroups.length}・注文中</small></div>
     <button class="gpb-next-btn" onclick="${btnAction}">${btnLabel}</button>`;
   // fixed配置のバーにコンテンツが隠れないよう、バーの実高さぶん上部余白を確保
   if (ms) requestAnimationFrame(() => { ms.style.paddingTop = bar.offsetHeight + 'px'; });
@@ -1749,7 +1791,7 @@ function nextGroup() {
   backToCategoryGrid();
   updateGroupProgressBar();
   window.scrollTo(0, 0);
-  showToast(`👤${orderGroups[currentGroupIndex].join('+')} さんの番です / Twoja kolej!`, false);
+  showToast(`👤${orderGroups[currentGroupIndex].join('+')} — Twoja kolej! / Your turn! / の番です`, false);
 }
 
 // ── 📋 グループ一覧（編集可能）画面 ─────────────────────────
@@ -1777,15 +1819,15 @@ function showGroupReview() {
           const name = item ? item.namePL : id;
           return `<div>${escGroupText(name)} <span style="color:var(--muted)">×${cart[id].qty}</span></div>`;
         }).join('')
-      : `<div class="empty">Nic nie wybrano / まだ何も選んでいません</div>`;
+      : `<div class="empty">Nic nie wybrano<br>Nothing selected<br>まだ何も選んでいません</div>`;
     return `
       <div class="group-review-card">
         <div class="grc-head">
           <span class="grc-people">👤${g.join('+')}</span>
-          <span class="grc-count">${ids.length} poz. / 品</span>
+          <span class="grc-count">${ids.length} poz. / items / 品</span>
         </div>
         <div class="grc-items">${itemsHtml}</div>
-        <button class="grc-edit-btn" onclick="editGroup(${i})">✏️ Dodaj / zmień / 追加・編集</button>
+        <button class="grc-edit-btn" onclick="editGroup(${i})">✏️ Dodaj / zmień<br><small style="font-weight:400">Add / change</small><br><small style="font-weight:400">追加・編集</small></button>
       </div>`;
   }).join('');
 }
@@ -1837,8 +1879,8 @@ function launchMenu() {
   const n = Math.max(parseInt(guestNum, 10) || 1, 1);
   if (n < 2 || orderModeDecided) { launchMenuReal(); return; }
   document.getElementById('order-mode-screen').style.display = 'flex';
-  document.getElementById('om-sub').textContent =
-    `Stolik ${tableNum} · ${n} os. / ${n}名`;
+  document.getElementById('om-sub').innerHTML =
+    `Stolik / Table ${tableNum} · ${n} os. / ${n} guests / ${n}名`;
 }
 
 function buildTabs() {
