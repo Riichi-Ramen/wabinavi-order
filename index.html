@@ -414,6 +414,68 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
 .savings-row{display:flex;justify-content:space-between;font-size:.78rem;color:var(--text)}
 .savings-row b{color:var(--green);font-variant-numeric:tabular-nums}
 
+/* ── 👥 グループ注文モード（v7.11） ─────────────────────── */
+#order-mode-screen,#group-setup-screen,#group-summary-screen,#group-review-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:2rem 1.2rem;background:var(--bg)}
+.om-wrap{width:100%;max-width:420px;text-align:center}
+.om-title{font-size:1.25rem;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:.4rem}
+.om-jp{font-size:.85rem;color:var(--muted);font-weight:400}
+.om-sub{font-size:.85rem;color:var(--muted);margin-bottom:1.6rem}
+.om-choices{display:flex;gap:.9rem}
+.om-choice{flex:1;background:var(--card);border:2px solid var(--border);border-radius:16px;
+  padding:1.6rem 1rem;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;
+  align-items:center;gap:.5rem;transition:.15s}
+.om-choice:active{transform:scale(.97);border-color:var(--accent)}
+.om-icon{font-size:2.4rem}
+.om-label{font-size:.95rem;font-weight:700;color:var(--text);line-height:1.5}
+.om-label small{font-weight:400;color:var(--muted);font-size:.8rem}
+
+.person-grid{display:flex;flex-wrap:wrap;gap:.7rem;justify-content:center;margin-bottom:1.6rem}
+.person-pill{width:64px;height:64px;border-radius:50%;background:var(--card);
+  border:2.5px solid var(--border);display:flex;align-items:center;justify-content:center;
+  font-size:1.05rem;font-weight:800;color:var(--muted);cursor:pointer;transition:.15s}
+.person-pill.sel{background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-color:var(--accent);color:#fff;transform:scale(1.08)}
+.person-pill.used{opacity:.3;pointer-events:none}
+.om-next-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;border-radius:14px;padding:1rem;font-size:1rem;font-weight:800;
+  cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(192,57,43,.35)}
+.om-next-btn:disabled{opacity:.35;pointer-events:none;box-shadow:none}
+.gs-remaining{margin-top:1rem;font-size:.8rem;color:var(--muted)}
+
+.group-list{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.6rem}
+.group-list-item{background:var(--card);border:1.5px solid var(--border);border-radius:12px;
+  padding:.8rem 1rem;font-size:.92rem;font-weight:700;color:var(--text);text-align:left}
+
+#group-progress-bar{background:linear-gradient(135deg,#c0392b,#e74c3c);
+  border-bottom:2px solid var(--gold);padding:.6rem 1rem;display:flex;align-items:center;
+  justify-content:space-between;gap:.7rem;position:fixed;top:0;left:0;right:0;z-index:200;
+  box-shadow:0 3px 12px rgba(0,0,0,.25)}
+.gpb-current{font-size:.92rem;font-weight:800;color:#fff}
+.gpb-current small{display:block;font-size:.7rem;font-weight:400;color:rgba(255,255,255,.85)}
+.gpb-next-btn{background:var(--green);color:#fff;border:none;border-radius:10px;
+  padding:.55rem .95rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;
+  white-space:nowrap}
+.gpb-next-btn:active{transform:scale(.96)}
+
+/* ── 📋 グループ一覧（編集可能） ─────────────────────────── */
+.group-review-list{display:flex;flex-direction:column;gap:.8rem;margin-bottom:1.6rem;
+  max-height:55vh;overflow-y:auto}
+.group-review-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;
+  padding:1rem;text-align:left}
+.grc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.grc-people{font-size:1rem;font-weight:800;color:var(--accent)}
+.grc-count{font-size:.76rem;color:var(--muted)}
+.grc-items{font-size:.82rem;color:var(--text);line-height:1.7;margin-bottom:.5rem}
+.grc-items .empty{color:var(--muted);font-style:italic}
+.grc-edit-btn{width:100%;background:var(--card2,rgba(192,57,43,.08));border:1.5px solid var(--accent);
+  color:var(--accent);border-radius:10px;padding:.55rem;font-size:.85rem;font-weight:700;
+  cursor:pointer;font-family:inherit}
+.grc-edit-btn:active{background:var(--accent);color:#fff}
+
+
+
 .new-btn{margin-top:2rem;padding:.8rem 2rem;background:var(--accent);color:#fff;font-weight:700;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 16px rgba(192,57,43,0.3)}
 .member-divider{margin-top:2.2rem;border-top:1px solid rgba(192,57,43,0.25);padding-top:2rem;width:100%;max-width:420px}
 .member-teaser{font-size:.82rem;color:var(--muted);line-height:1.7;margin-bottom:1.1rem;background:rgba(255,252,245,0.85);border-radius:10px;padding:.8rem;backdrop-filter:blur(8px)}
@@ -724,10 +786,70 @@ body.show-config .config-bar{display:flex}
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════════
+     👥 グループ注文モード（v7.11）
+     人数2名以上のとき「まとめて／グループごとに」を尋ね、
+     グループごとに選ぶ場合はここでグループ構成→順次入力へ進む。
+     「まとめて」を選んだ場合は今まで通りlaunchMenuへ直行（挙動変更なし）。
+     ══════════════════════════════════════════════════════════════ -->
+<div id="order-mode-screen" style="display:none">
+  <div class="om-wrap">
+    <div class="om-title">👥 Jak zamawiacie?<br><span class="om-jp">どのように注文しますか？</span></div>
+    <div class="om-sub" id="om-sub"></div>
+    <div class="om-choices">
+      <button class="om-choice" onclick="chooseOrderMode('together')">
+        <span class="om-icon">🍽️</span>
+        <span class="om-label">Razem<br><small>まとめて</small></span>
+      </button>
+      <button class="om-choice" onclick="chooseOrderMode('groups')">
+        <span class="om-icon">👤</span>
+        <span class="om-label">Osobno<br><small>グループごとに</small></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="group-setup-screen" style="display:none">
+  <div class="om-wrap">
+    <div class="om-title" id="gs-title"></div>
+    <div class="om-sub">Zaznacz osoby w tej grupie / このグループの人を選んでください</div>
+    <div class="person-grid" id="person-grid"></div>
+    <button class="om-next-btn" id="gs-confirm-btn" onclick="confirmCurrentGroup()" disabled>
+      Zacznij zamawiać dla tej grupy / このグループで注文を始める
+    </button>
+    <div class="gs-remaining" id="gs-remaining"></div>
+  </div>
+</div>
+
+<div id="group-summary-screen" style="display:none">
+  <div class="om-wrap">
+    <div class="om-title">✅ Grupy gotowe<br><span class="om-jp">グループ分け完了</span></div>
+    <div class="om-sub">Rozpoczniemy zamawianie po kolei / 順番に注文していきます</div>
+    <div class="group-list" id="group-list-preview"></div>
+    <button class="om-next-btn" onclick="startGroupOrdering()">Zaczynamy! / 始める ▶</button>
+  </div>
+</div>
+
+<!-- 👥 グループ一覧（全グループ入力後・編集可能）。
+     各グループを個別に開いて商品を追加/変更できる目次画面。 -->
+<div id="group-review-screen" style="display:none">
+  <div class="om-wrap" style="max-width:460px">
+    <div class="om-title">📋 Wszystkie grupy<br><span class="om-jp">グループ一覧</span></div>
+    <div class="om-sub">Możesz wrócić i dodać coś jeszcze / 追加・変更したいグループがあれば戻れます</div>
+    <div class="group-review-list" id="group-review-list"></div>
+    <button class="om-next-btn" onclick="finishAllGroupsAndConfirm()">
+      ✅ Wszystko gotowe, sprawdź zamówienie / 確認画面へ進む
+    </button>
+  </div>
+</div>
+
 <div id="menu-screen">
+  <!-- 👥グループ注文モード進行バー：常に画面最上部に固定表示（カテゴリー画面でも商品画面でも見える） -->
+  <div id="group-progress-bar" style="display:none"></div>
   <!-- ══ カテゴリー選択グリッド（最初に表示） ══ -->
   <div id="category-grid-screen">
     <div class="cg-title">🍽️ Menu — Wybierz kategorię</div>
+
     <div class="cg-sub">Choose a category / カテゴリーを選択</div>
     <div class="cg-grid">
       <div class="cg-card cg-promo" id="cg-promo" style="display:none" onclick="enterCategory('osusume')">
@@ -879,6 +1001,7 @@ body.show-config .config-bar{display:flex}
       <span class="cart-badge" id="cart-badge"></span>
     </button>
   </div>
+
   <div class="cat-tabs" id="cat-tabs"></div>
   <div class="menu-wrap" id="menu-wrap" style="position:relative"></div>
 </div>
@@ -1486,7 +1609,214 @@ function backToCategoryGrid() {
   window.scrollTo(0,0);
 }
 
-function launchMenu() {
+// ── ①「まとめて」か「グループごとに」かを選ぶ ────────────────
+function chooseOrderMode(mode) {
+  document.getElementById('order-mode-screen').style.display = 'none';
+  orderModeDecided = true;
+  if (mode === 'together') {
+    launchMenuReal();
+    return;
+  }
+  // グループごとに → グループ構成画面へ
+  orderGroups = [];
+  groupSetupAssigned = [];
+  openGroupSetup();
+}
+
+// ── ② グループ構成画面（人を選んで1グループを作る） ──────────
+function openGroupSetup() {
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  groupSetupSelection = [];
+  document.getElementById('group-setup-screen').style.display = 'flex';
+  document.getElementById('gs-title').innerHTML =
+    `👥 Grupa ${orderGroups.length + 1}<br><span class="om-jp">グループ${orderGroups.length + 1}の人を選ぶ</span>`;
+
+  const grid = document.getElementById('person-grid');
+  grid.innerHTML = '';
+  for (let p = 1; p <= n; p++) {
+    const used = groupSetupAssigned.includes(p);
+    const pill = document.createElement('div');
+    pill.className = 'person-pill' + (used ? ' used' : '');
+    pill.textContent = '👤' + p;
+    pill.dataset.p = p;
+    if (!used) pill.onclick = () => togglePersonInSetup(p, pill);
+    grid.appendChild(pill);
+  }
+  updateGroupSetupUI();
+}
+
+function togglePersonInSetup(p, el) {
+  const idx = groupSetupSelection.indexOf(p);
+  if (idx === -1) groupSetupSelection.push(p);
+  else groupSetupSelection.splice(idx, 1);
+  el.classList.toggle('sel');
+  updateGroupSetupUI();
+}
+
+function updateGroupSetupUI() {
+  const btn = document.getElementById('gs-confirm-btn');
+  btn.disabled = groupSetupSelection.length === 0;
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  const remaining = n - groupSetupAssigned.length - groupSetupSelection.length;
+  const remainEl = document.getElementById('gs-remaining');
+  remainEl.textContent = remaining > 0
+    ? `Pozostało ${remaining} os. do przydzielenia / 残り${remaining}名`
+    : '';
+}
+
+// このグループを確定。全員割り当て済みならグループ一覧（確認）画面へ、
+// まだ未割り当ての人がいれば次のグループ構成へ進む。
+function confirmCurrentGroup() {
+  if (!groupSetupSelection.length) return;
+  orderGroups.push(groupSetupSelection.slice());
+  groupSetupAssigned = groupSetupAssigned.concat(groupSetupSelection);
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  document.getElementById('group-setup-screen').style.display = 'none';
+  if (groupSetupAssigned.length >= n) {
+    showGroupSummary();
+  } else {
+    openGroupSetup();
+  }
+}
+
+// ── ③ グループ一覧の確認画面（始める前の最終チェック） ─────────
+function showGroupSummary() {
+  document.getElementById('group-summary-screen').style.display = 'flex';
+  const list = document.getElementById('group-list-preview');
+  list.innerHTML = orderGroups.map((g, i) =>
+    `<div class="group-list-item">👤${g.join('+')} <span style="opacity:.6;font-weight:400">— Grupa ${i + 1}</span></div>`
+  ).join('');
+}
+
+// ── ④ 実際の注文入力へ：グループを1つずつ順番に回す ───────────
+function startGroupOrdering() {
+  document.getElementById('group-summary-screen').style.display = 'none';
+  currentGroupIndex = 0;
+  launchMenuReal();
+  updateGroupProgressBar();
+}
+
+function updateGroupProgressBar() {
+  const bar = document.getElementById('group-progress-bar');
+  const ms  = document.getElementById('menu-screen');
+  if (currentGroupIndex < 0 || currentGroupIndex >= orderGroups.length) {
+    bar.style.display = 'none';
+    if (ms) ms.style.paddingTop = '';
+    return;
+  }
+  const g = orderGroups[currentGroupIndex];
+  const isLast = currentGroupIndex === orderGroups.length - 1;
+  bar.style.display = 'flex';
+  const btnLabel = reviewEditMode
+    ? '✅ Powrót do listy grup / 一覧へ戻る'
+    : (isLast ? '✅ Zakończ i sprawdź / 確認画面へ' : '➡️ Następna grupa / 次のグループへ');
+  const btnAction = reviewEditMode ? 'finishEditingGroup()' : 'nextGroup()';
+  bar.innerHTML = `
+    <div class="gpb-current">👤${g.join('+')} <small>Grupa ${currentGroupIndex + 1}/${orderGroups.length} · 今この人たちの注文中</small></div>
+    <button class="gpb-next-btn" onclick="${btnAction}">${btnLabel}</button>`;
+  // fixed配置のバーにコンテンツが隠れないよう、バーの実高さぶん上部余白を確保
+  if (ms) requestAnimationFrame(() => { ms.style.paddingTop = bar.offsetHeight + 'px'; });
+}
+
+// 現在のグループ用に選んだ商品全部に、そのグループの客番号をpayersとして付与する。
+// （個別会計の仕組みをそのまま流用。1人グループならpayers=[1]、2人なら[1,2]のように入る）
+// 現在のグループ用に選んだ商品全部に、そのグループの客番号をpayersとして付与する。
+// （個別会計の仕組みをそのまま流用。1人グループならpayers=[1]、2人なら[1,2]のように入る）
+// ⚠️ _groupTaggedはグループ番号（0始まり）を入れるため、falsy判定（!cart[id]._groupTagged）
+//    だとグループ1(index=0)がタグ付け済みでも「未タグ」と誤判定されてしまう。
+//    必ず undefined との厳密比較を使うこと。
+function tagCartItemsForCurrentGroup() {
+  if (currentGroupIndex < 0 || currentGroupIndex >= orderGroups.length) return;
+  const group = orderGroups[currentGroupIndex];
+  for (const id in cart) {
+    if (cart[id]._groupTagged === undefined) {
+      cart[id].payers = group.slice();
+      cart[id]._groupTagged = currentGroupIndex;   // どのグループで選んだか記録
+    }
+  }
+}
+
+function nextGroup() {
+  tagCartItemsForCurrentGroup();
+  if (currentGroupIndex >= orderGroups.length - 1) {
+    // 最後のグループ完了 → いきなり確認画面ではなく、グループ一覧（編集可）を挟む
+    splitBill = true;   // グループ分けされている＝個別会計表示を有効化
+    showGroupReview();
+    return;
+  }
+  currentGroupIndex++;
+  // 次のグループのためにカテゴリー選択に戻す（前グループの選択はcartに残ったまま）
+  backToCategoryGrid();
+  updateGroupProgressBar();
+  window.scrollTo(0, 0);
+  showToast(`👤${orderGroups[currentGroupIndex].join('+')} さんの番です / Twoja kolej!`, false);
+}
+
+// ── 📋 グループ一覧（編集可能）画面 ─────────────────────────
+// 各グループが今カートに何を持っているかを一覧表示し、
+// 「+ 追加/編集」でそのグループの入力画面に戻れる。
+function showGroupReview() {
+  reviewEditMode = false;      // 一覧画面自体は編集モードではない
+  currentGroupIndex = -1;
+  updateGroupProgressBar();    // 進行バーは一覧中は隠す
+  document.getElementById('group-progress-bar').style.display = 'none';
+  document.getElementById('menu-screen').style.display = 'none';
+  document.getElementById('menu-screen').style.paddingTop = '';
+  document.getElementById('group-review-screen').style.display = 'flex';
+  // カートダイジェストバーは「押すと即確認画面」に飛んでしまうため、一覧表示中は隠す
+  const ob = document.getElementById('order-bar');
+  if (ob) ob.style.display = 'none';
+
+  const list = document.getElementById('group-review-list');
+  list.innerHTML = orderGroups.map((g, i) => {
+    // このグループ（_groupTagged===i）に属する商品を集める
+    const ids = Object.keys(cart).filter(id => cart[id]._groupTagged === i);
+    const itemsHtml = ids.length
+      ? ids.map(id => {
+          const item = findItem(id);
+          const name = item ? item.namePL : id;
+          return `<div>${escGroupText(name)} <span style="color:var(--muted)">×${cart[id].qty}</span></div>`;
+        }).join('')
+      : `<div class="empty">Nic nie wybrano / まだ何も選んでいません</div>`;
+    return `
+      <div class="group-review-card">
+        <div class="grc-head">
+          <span class="grc-people">👤${g.join('+')}</span>
+          <span class="grc-count">${ids.length} poz. / 品</span>
+        </div>
+        <div class="grc-items">${itemsHtml}</div>
+        <button class="grc-edit-btn" onclick="editGroup(${i})">✏️ Dodaj / zmień / 追加・編集</button>
+      </div>`;
+  }).join('');
+}
+
+// 特定のグループの入力画面に戻る（グループ一覧の「追加・編集」ボタンから）
+function editGroup(index) {
+  currentGroupIndex = index;
+  reviewEditMode = true;   // 「次のグループへ」ではなく「一覧へ戻る」ボタンにする
+  document.getElementById('group-review-screen').style.display = 'none';
+  document.getElementById('menu-screen').style.display = 'block';
+  backToCategoryGrid();
+  updateGroupProgressBar();
+  updateBadge();   // カートダイジェストバーを再表示（グループ一覧表示中は隠していたため）
+  window.scrollTo(0, 0);
+}
+
+// 個別グループの編集を終えて、一覧画面に戻る（進行バーの「一覧へ戻る」ボタンから）
+function finishEditingGroup() {
+  tagCartItemsForCurrentGroup();   // 編集中に新しく追加した商品をこのグループにタグ付け
+  showGroupReview();
+}
+
+// グループ一覧から「確認画面へ進む」。
+function finishAllGroupsAndConfirm() {
+  document.getElementById('group-review-screen').style.display = 'none';
+  openConfirm();
+}
+
+// launchMenu()の実体。旧来の「メニュー画面を直接開く」処理はそのまま。
+// 呼び出し元（会員確認の各分岐など5箇所）は一切変更していない。
+function launchMenuReal() {
   document.getElementById('menu-screen').style.display = 'block';
   document.getElementById('top-table-chip').textContent = `Stolik ${tableNum} | ${guestNum} os.`;
   buildTabs();
@@ -1498,6 +1828,17 @@ function launchMenu() {
   if (tabs) tabs.style.display = 'none';
   const wrap = document.getElementById('menu-wrap');
   if (wrap) wrap.style.display = 'none';
+}
+
+// launchMenu()：v7.11で追加した関門。
+// 2名以上なら「まとめて／グループごとに」を尋ねる。1名なら今まで通り即メニューへ。
+// 呼び出し元は変更していない（この名前のまま差し替えるため、5箇所の呼び出しに影響なし）。
+function launchMenu() {
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  if (n < 2 || orderModeDecided) { launchMenuReal(); return; }
+  document.getElementById('order-mode-screen').style.display = 'flex';
+  document.getElementById('om-sub').textContent =
+    `Stolik ${tableNum} · ${n} os. / ${n}名`;
 }
 
 function buildTabs() {
@@ -2078,6 +2419,26 @@ function findCatOfItem(id) {
   for (const cat of MENU) {
     if (cat.items.find(i=>i.id===id)) return cat;
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  👥 グループ注文モード（v7.11）
+//  人数2名以上のとき「まとめて／グループごとに」を尋ね、
+//  グループごとに選ぶ場合はグループ構成→順次入力で進める。
+//  各グループの商品は、既存の個別会計の仕組み（cart[id].payers配列）に
+//  そのグループの客番号を入れることで表現する（新しいデータ構造は作らない）。
+// ══════════════════════════════════════════════════════════════
+let orderModeDecided = false;   // 「まとめて/グループごとに」を決めたか（決めたら再度聞かない）
+let orderGroups = [];           // 確定したグループ一覧。例: [[1,2],[3]]
+let groupSetupSelection = [];   // グループ構成画面で今チェックしている人番号
+let groupSetupAssigned = [];    // 既に他のグループに割り当て済みの人番号
+let currentGroupIndex = -1;     // 現在入力中のグループ（orderGroupsのインデックス）
+let reviewEditMode = false;     // グループ一覧から個別グループを編集中か（trueなら「一覧へ戻る」ボタンにする）
+
+// グループ一覧画面で商品名を表示する際のHTMLエスケープ（このファイルに汎用escが無いため専用に用意）
+function escGroupText(s) {
+  return String(s ?? '').replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3215,6 +3576,12 @@ function finishWithdraw() {
 function resetApp() {
   cart = Object.create(null);
   sessionOrders = []; payGroups = {}; splitBill = false;
+  orderModeDecided = false; orderGroups = []; groupSetupSelection = [];
+  groupSetupAssigned = []; currentGroupIndex = -1; reviewEditMode = false;
+  const gpb = document.getElementById('group-progress-bar');
+  if (gpb) { gpb.style.display = 'none'; gpb.innerHTML = ''; }
+  { const grs = document.getElementById('group-review-screen'); if (grs) grs.style.display = 'none'; }
+  { const ms = document.getElementById('menu-screen'); if (ms) ms.style.paddingTop = ''; }
   window._ricePromoShown = false;
   const bar = document.getElementById('order-bar');
   if (bar) { bar.style.display = 'none'; bar.innerHTML = ''; }
