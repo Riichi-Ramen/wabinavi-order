@@ -551,7 +551,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v41</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v42</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -3314,9 +3314,10 @@ async function placeOrder() {
     const pl_ = getPayers(o);
     const payerTag = (splitBill && (parseInt(guestNum,10)||1) >= 2)
       ? ('【' + (pl_.length ? '👤' + pl_.join('+') : '👥wsp') + '】') : '';
-    return { namePL: payerTag + item.namePL, nameEN:item.nameEN, qty:o.qty,
+    return { id: id, namePL: payerTag + item.namePL, nameEN:item.nameEN, qty:o.qty,
               unitPrice:unit, lineTotal:line, customizations:customStr,
-              serveMode: o.serve || 'lokal', serveFee: sfee };
+              serveMode: o.serve || 'lokal', serveFee: sfee,
+              payers: pl_.slice() };   // v42: キッチン表示用に商品IDと負担者を送る
   });
 
   // クーポン割引を合計に反映
