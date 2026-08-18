@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🍳 Kuchnia / キッチン — WABI NAVI</title>
+<style>
+:root{
+  --bg:#14100d;--panel:#1f1a16;--panel2:#292320;--line:rgba(255,255,255,.10);
+  --txt:#f4ede4;--muted:#a9998a;--accent:#e0563f;--ok:#2fa15a;--warn:#e8b32a;--danger:#e0433a;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;overscroll-behavior:none}
+
+/* ── ログイン ── */
+#lock{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);z-index:900;padding:1.5rem}
+.lock-box{background:var(--panel);border:1px solid var(--line);border-radius:18px;
+  padding:2rem 1.6rem;width:100%;max-width:400px;text-align:center}
+.lock-box h1{font-size:1.15rem;margin-bottom:.3rem}
+.lock-box p{font-size:.8rem;color:var(--muted);margin-bottom:1.3rem;line-height:1.7}
+.lock-box input{width:100%;padding:.85rem;border-radius:10px;border:1.5px solid var(--line);
+  background:var(--panel2);color:var(--txt);font-size:1.05rem;text-align:center;margin-bottom:.8rem}
+.lock-box input:focus{outline:none;border-color:var(--accent)}
+.lock-box button{width:100%;padding:.85rem;border:none;border-radius:10px;background:var(--accent);
+  color:#fff;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit}
+#lock-err{display:none;background:rgba(224,67,58,.12);border:1px solid var(--danger);
+  color:#ff9b93;border-radius:10px;padding:.6rem;font-size:.8rem;margin-bottom:.8rem;line-height:1.6}
+
+/* ── 上部バー ── */
+#bar{position:sticky;top:0;z-index:100;background:rgba(20,16,13,.96);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:.55rem .8rem;display:flex;align-items:center;
+  gap:.6rem;flex-wrap:wrap}
+.brand{font-size:1rem;font-weight:800;white-space:nowrap}
+.brand small{display:block;font-size:.62rem;font-weight:400;color:var(--muted)}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:.3rem .7rem;font-size:.78rem;white-space:nowrap;line-height:1.35}
+.stat b{font-size:1.15rem;display:block}
+.spacer{flex:1}
+.tab{background:transparent;border:1.5px solid var(--line);color:var(--muted);border-radius:10px;
+  padding:.45rem .9rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+#clock{font-variant-numeric:tabular-nums;font-size:1.05rem;font-weight:700}
+#pulse{width:9px;height:9px;border-radius:50%;background:var(--ok);opacity:.35;transition:opacity .2s}
+#pulse.live{opacity:1;box-shadow:0 0 8px var(--ok)}
+
+/* ── まとめ調理パネル ── */
+#agg{padding:.6rem .8rem;display:flex;gap:.55rem;flex-wrap:wrap;align-items:stretch;
+  border-bottom:1px solid var(--line);background:var(--panel)}
+.agg-empty{color:var(--muted);font-size:.82rem;padding:.4rem}
+.agg-grp{background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+  padding:.45rem .7rem;min-width:118px}
+.agg-grp .agg-h{font-size:.66rem;color:var(--muted);margin-bottom:.25rem;letter-spacing:.03em}
+.agg-row{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem;
+  font-size:.82rem;line-height:1.6}
+.agg-row b{font-size:1.3rem;font-variant-numeric:tabular-nums}
+.agg-grp.hot{border-color:var(--accent)}
+
+/* ── ボード ── */
+#board{padding:.7rem;display:grid;gap:.7rem;
+  grid-template-columns:repeat(auto-fill,minmax(290px,1fr));align-items:start}
+.card{background:var(--panel);border:1.5px solid var(--line);border-radius:16px;overflow:hidden;
+  position:relative;touch-action:pan-y;transition:transform .18s ease,opacity .18s ease}
+.card.lead{grid-column:span 2}
+@media(max-width:700px){.card.lead{grid-column:span 1}}
+.card.swiping{transition:none}
+.card.gone{transform:translateX(-120%);opacity:0}
+.c-head{display:flex;align-items:center;gap:.5rem;padding:.55rem .75rem;
+  background:var(--panel2);border-bottom:1px solid var(--line)}
+.c-table{font-size:1.5rem;font-weight:800;line-height:1}
+.card.lead .c-table{font-size:2rem}
+.c-sub{font-size:.66rem;color:var(--muted);line-height:1.4}
+.c-timer{margin-left:auto;font-size:1rem;font-weight:800;font-variant-numeric:tabular-nums;
+  border-radius:9px;padding:.25rem .6rem;background:rgba(255,255,255,.07)}
+.card.warn{border-color:var(--warn)}
+.card.warn .c-timer{background:var(--warn);color:#2c1810;animation:blink 1.1s ease-in-out infinite}
+.card.late{border-color:var(--danger)}
+.card.late .c-timer{background:var(--danger);color:#fff;animation:blink .62s ease-in-out infinite}
+.card.late .c-head{background:rgba(224,67,58,.18)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+.c-note{margin:.5rem .75rem 0;padding:.45rem .6rem;border-radius:10px;font-size:.78rem;
+  line-height:1.6;background:rgba(232,179,42,.12);border:1px solid rgba(232,179,42,.45);color:#ffdf9b}
+.items{padding:.45rem .5rem .2rem}
+.it{display:flex;align-items:flex-start;gap:.55rem;padding:.5rem .3rem;border-radius:10px;
+  border-bottom:1px solid var(--line);cursor:pointer}
+.it:last-child{border-bottom:none}
+.it:active{background:rgba(255,255,255,.05)}
+.it-q{min-width:2.3rem;text-align:center;font-size:1.15rem;font-weight:800;
+  background:rgba(255,255,255,.08);border-radius:8px;padding:.15rem 0;font-variant-numeric:tabular-nums}
+.card.lead .it-q{font-size:1.35rem}
+.it-b{flex:1;min-width:0}
+.it-n{font-size:.95rem;font-weight:700;line-height:1.35;word-break:break-word}
+.card.lead .it-n{font-size:1.08rem}
+.it-jp{font-size:.72rem;color:var(--muted)}
+.it-memo{font-size:.75rem;line-height:1.55;margin-top:.2rem;color:#ffcf7a;white-space:pre-line}
+.it-memo .rm{color:#ff9b93}
+.it-tag{display:inline-block;font-size:.64rem;font-weight:700;border-radius:6px;
+  padding:.06rem .4rem;margin-right:.25rem;vertical-align:1px}
+.tag-broth{background:rgba(255,255,255,.13);color:var(--txt)}
+.tag-wynos{background:#5b2b26;color:#ffb3ab}
+.tag-kae{background:#5a4a1e;color:#ffd98a}
+.tag-split{background:#1e3f5a;color:#9fd8ff}
+.agg-row.sum{border-top:1px solid var(--line);margin-top:.25rem;padding-top:.25rem}
+.agg-row .u{font-size:.66rem;opacity:.8;margin-left:.1rem}
+.it.doing{background:rgba(47,161,90,.12)}
+.it.doing .it-n::after{content:" ● 調理中";font-size:.68rem;color:var(--ok);font-weight:700}
+.it-x{width:34px;height:34px;flex-shrink:0;border-radius:9px;border:1.5px solid var(--line);
+  background:transparent;color:var(--muted);font-size:1rem;cursor:pointer;font-family:inherit}
+.it-x:active{background:var(--ok);border-color:var(--ok);color:#fff}
+
+.c-foot{display:flex;gap:.45rem;padding:.5rem .6rem .6rem}
+.btn{flex:1;padding:.6rem .3rem;border:none;border-radius:11px;font-size:.85rem;font-weight:800;
+  cursor:pointer;font-family:inherit;line-height:1.3}
+.btn small{display:block;font-size:.62rem;font-weight:400;opacity:.85}
+.btn-go{background:rgba(255,255,255,.09);color:var(--txt);border:1.5px solid var(--line)}
+.btn-done{background:var(--ok);color:#fff}
+.btn-undo{background:rgba(255,255,255,.09);color:var(--txt);border:1.5px solid var(--line)}
+.swipe-hint{position:absolute;inset:0;display:flex;align-items:center;padding-left:1.2rem;
+  font-size:1.5rem;color:var(--ok);opacity:0;pointer-events:none}
+.card.swiping .swipe-hint{opacity:1}
+
+#empty{padding:3rem 1rem;text-align:center;color:var(--muted);font-size:1rem;line-height:2}
+#toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);background:#2fa15a;
+  color:#fff;padding:.65rem 1.2rem;border-radius:12px;font-size:.9rem;font-weight:700;
+  z-index:800;display:none;box-shadow:0 6px 20px rgba(0,0,0,.4);max-width:92vw;text-align:center}
+#toast.err{background:var(--danger)}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="lock-box">
+    <h1>🍳 Kuchnia / キッチン</h1>
+    <p>Wprowadź hasło obsługi.<br>Enter the staff password.<br>係員パスワードを入力してください。</p>
+    <div id="lock-err"></div>
+    <input type="password" id="pw" placeholder="Hasło / パスワード" autocomplete="current-password">
+    <button onclick="doLogin()">🔓 Otwórz / 開く</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div id="bar">
+    <div class="brand">🍳 Kuchnia<small>WABI NAVI — キッチン</small></div>
+    <div class="stat">Stoliki<b id="s-tables">0</b></div>
+    <div class="stat">Pozycje<b id="s-items">0</b></div>
+    <div class="stat" id="s-late-box">Ponad 20 min<b id="s-late">0</b></div>
+    <div class="spacer"></div>
+    <div id="pulse"></div>
+    <div id="clock">--:--</div>
+    <button class="tab on" id="tab-active" onclick="setView('active')">🍜 W kuchni<br><small>調理中</small></button>
+    <button class="tab" id="tab-history" onclick="setView('history')">📋 Gotowe<br><small>完了・履歴</small></button>
+  </div>
+  <div id="agg"></div>
+  <div id="board"></div>
+  <div id="empty" style="display:none"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════
+//  🍳 WABI NAVI — Kitchen Display System v1.0
+//  注文アプリ（index.html）が送った注文を、キッチンのタブレットで表示する。
+//  ・卓ごとのカード（先頭は大きく、次の卓以降は小さく同一画面に）
+//  ・まとめ調理用の集計（だし別のラーメン杯数・餃子/唐揚げの皿数）
+//  ・10分で黄色点滅、20分で赤色点滅
+//  ・カードを左にスワイプ＝その卓を「調理済み・配膳OK」にして非表示
+//  ・「完了・履歴」タブで、非表示にしたものを後から確認・差し戻し
+// ════════════════════════════════════════════════════════════════════
+
+const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec";
+function gasUrl(){ try{ return localStorage.getItem('wabi_gas_url') || DEFAULT_GAS_URL; }catch(e){ return DEFAULT_GAS_URL; } }
+
+const POLL_MS   = 12000;   // 何ミリ秒ごとに注文を取りに行くか
+const WARN_MIN  = 10;      // 黄色点滅（分）
+const LATE_MIN  = 20;      // 赤色点滅（分）
+const LEAD_CNT  = 1;       // 大きく表示する先頭カードの数
+
+const ST = { NEW:"NOWE / NEW", DOING:"W TRAKCIE / IN PROGRESS",
+             READY:"GOTOWE / READY", SERVED:"WYDANE / SERVED" };
+
+// だしベースの表示名（index.html と同じ分類）
+const BROTH = {
+  tori:  { icon:"🐔", pl:"Bulion drobiowy", jp:"鶏だし" },
+  buta:  { icon:"🐖", pl:"Bulion wieprzowy", jp:"豚だし" },
+  oferta:{ icon:"⭐", pl:"Oferta specjalna", jp:"特選・うどん/そば" },
+  zimne: { icon:"❄️", pl:"Na zimno", jp:"冷やし" },
+  inne:  { icon:"🍥", pl:"Inne", jp:"その他" }
+};
+// 同時着手したい品のまとめ方（商品IDの先頭で判定）
+const AGG_GROUPS = [
+  { key:"ramen",   icon:"🍜", pl:"Ramen — makaron", jp:"ラーメン（麺）", test:it=>it.cat==="ramen" },
+  { key:"gyoza",   icon:"🥟", pl:"Gyoza",           jp:"餃子",           test:it=>/gyoza/i.test(it.name) },
+  { key:"karaage", icon:"🍗", pl:"Smażone",         jp:"揚げ物",
+    test:it=>/karaage|tempura|panko|frytk|krewetki w ziemniakach|takoyaki/i.test(it.name) },
+  { key:"don",     icon:"🍚", pl:"Dania z ryżem",   jp:"丼・ごはん",     test:it=>it.cat==="onigiri" },
+  { key:"inne",    icon:"🍽",  pl:"Pozostałe",       jp:"その他",         test:()=>true }
+];
+
+// ── 替え玉・取分けの判定 ──────────────────────────────────────
+//   注文アプリはオプションの「選んだ選択肢のラベル」だけをメモ欄に残す。
+//     替え玉  … "Pół porcji / Half 半替え玉 +4 zł" / "Pełna porcja / Full 替え玉 +7 zł"
+//     取分け  … "Tak, podziel! / Yes, split! — polecane dla par i rodzin"
+//   「半替え玉」は「替え玉」を含むので、必ず半を先に判定する。
+function kaedamaBalls(memo) {
+  const m = String(memo || '');
+  if (/半替え玉|Pół porcji/i.test(m)) return 0.5;
+  if (/替え玉|Pełna porcja/i.test(m)) return 1;
+  return 0;
+}
+function isSplitBowl(memo) {
+  return /Tak,\s*podziel|2杯に分割|2 bowls/i.test(String(memo || ''));
+}
+function numBall(n) { return (n % 1 === 0) ? String(n) : n.toFixed(1); }
+
+let PASSWORD = "";
+let VIEW = "active";
+let ORDERS = [];
+let MENU_IDX = {};        // 商品ID → {cat, broth, jp}
+let MENU_BY_NAME = {};    // 商品名PL（小文字） → 同上
+let timer = null, clockTimer = null, busy = false;
+
+// ── ログイン ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  let saved = "";
+  try { saved = sessionStorage.getItem('wabi_kds_pw') || ""; } catch(e){}
+  if (saved) { document.getElementById('pw').value = saved; doLogin(true); }
+  document.getElementById('pw').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+});
+
+async function doLogin(silent) {
+  const pw = document.getElementById('pw').value.trim();
+  const err = document.getElementById('lock-err');
+  if (!pw) { if(!silent){ err.textContent = "Wpisz hasło / パスワードを入力してください"; err.style.display='block'; } return; }
+  PASSWORD = pw;
+  err.style.display = 'none';
+  const res = await fetchKitchen('active');
+  if (!res || res.status === 'unauthorized') {
+    err.innerHTML = (res && res.message) ? res.message
+      : "Błąd logowania / ログインできませんでした";
+    err.style.display = 'block';
+    PASSWORD = "";
+    return;
+  }
+  try { sessionStorage.setItem('wabi_kds_pw', pw); } catch(e){}
+  document.getElementById('lock').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  applyData(res);
+  loadMenuIndex();
+  startTimers();
+}
+
+// ── メニュー索引（だしベース・分類を引くため）────────────────────
+async function loadMenuIndex() {
+  try {
+    const r = await fetch(gasUrl() + '?action=getMenu');
+    const d = await r.json();
+    if (d.status !== 'ok' || !Array.isArray(d.menu)) return;
+    MENU_IDX = {}; MENU_BY_NAME = {};
+    d.menu.forEach(cat => (cat.items || []).forEach(it => {
+      const rec = { cat: cat.id, broth: it.brothBase || 'inne',
+                    jp: it.nameJP || '', name: it.namePL || '' };
+      MENU_IDX[it.id] = rec;
+      // ⭐おすすめは p_ 接頭辞で複製されるため、元IDでも引けるようにする
+      if (/^p_/.test(it.id)) MENU_IDX[it.id.replace(/^p_/, '')] = rec;
+      if (it.namePL) MENU_BY_NAME[it.namePL.toLowerCase()] = rec;
+    }));
+    render();
+  } catch(e){ /* メニューが取れなくてもキッチン表示自体は動く */ }
+}
+
+// 注文行から商品情報を引く（商品ID優先・なければ商品名で照合）
+function lookup(item) {
+  if (item.itemId && MENU_IDX[item.itemId]) return MENU_IDX[item.itemId];
+  const clean = (item.namePL || '').replace(/^【[^】]*】\s*/, '').trim().toLowerCase();
+  if (MENU_BY_NAME[clean]) return MENU_BY_NAME[clean];
+  return { cat:'', broth:'inne', jp:'', name:'' };
+}
+
+// ── データ取得 ──────────────────────────────────────────────────
+async function fetchKitchen(mode) {
+  try {
+    const u = gasUrl() + '?action=getKitchen&mode=' + encodeURIComponent(mode) +
+              '&password=' + encodeURIComponent(PASSWORD) + '&_=' + Date.now();
+    const r = await fetch(u);
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function poll() {
+  if (busy) return;
+  const res = await fetchKitchen(VIEW);
+  pulse(!!res);
+  if (res && res.status === 'ok') applyData(res);
+}
+
+function pulse(ok) {
+  const p = document.getElementById('pulse');
+  p.style.background = ok ? 'var(--ok)' : 'var(--danger)';
+  p.classList.add('live');
+  setTimeout(() => p.classList.remove('live'), 600);
+}
+
+function applyData(res) {
+  ORDERS = res.orders || [];
+  render();
+}
+
+function startTimers() {
+  if (timer) clearInterval(timer);
+  if (clockTimer) clearInterval(clockTimer);
+  timer = setInterval(poll, POLL_MS);
+  clockTimer = setInterval(() => { tickClock(); render(true); }, 15000);
+  tickClock();
+}
+
+function tickClock() {
+  const d = new Date();
+  document.getElementById('clock').textContent =
+    ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
+}
+
+function setView(v) {
+  VIEW = v;
+  document.getElementById('tab-active').classList.toggle('on', v === 'active');
+  document.getElementById('tab-history').classList.toggle('on', v === 'history');
+  document.getElementById('board').innerHTML =
+    '<div style="color:var(--muted);padding:1rem">Ładowanie… / 読み込み中…</div>';
+  poll();
+}
+
+// ── 経過時間 ────────────────────────────────────────────────────
+function minutesSince(ts) { return Math.max(0, Math.floor((Date.now() - ts) / 60000)); }
+function fmtElapsed(m) { return m < 60 ? m + "′" : Math.floor(m/60) + "h" + ('0'+(m%60)).slice(-2); }
+
+// ── 描画 ────────────────────────────────────────────────────────
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,
+  c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function render(timeOnly) {
+  const board = document.getElementById('board');
+  const emptyEl = document.getElementById('empty');
+
+  // ── 統計 ──
+  let itemCount = 0, lateCount = 0;
+  ORDERS.forEach(o => {
+    o.items.forEach(i => { itemCount += (i.qty || 1); });
+    if (VIEW === 'active' && minutesSince(o.ts) >= LATE_MIN) lateCount++;
+  });
+  document.getElementById('s-tables').textContent = ORDERS.length;
+  document.getElementById('s-items').textContent  = itemCount;
+  document.getElementById('s-late').textContent   = lateCount;
+  document.getElementById('s-late-box').style.borderColor =
+    lateCount ? 'var(--danger)' : 'var(--line)';
+
+  renderAgg();
+
+  if (!ORDERS.length) {
+    board.innerHTML = '';
+    emptyEl.style.display = 'block';
+    emptyEl.innerHTML = VIEW === 'active'
+      ? '🍃<br>Brak zamówień w kuchni<br>No orders in the kitchen<br>調理待ちの注文はありません'
+      : '📋<br>Nic jeszcze nie ukończono dziś<br>Nothing completed yet today<br>本日の完了分はまだありません';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  board.innerHTML = ORDERS.map((o, i) => cardHtml(o, i)).join('');
+  if (VIEW === 'active') ORDERS.forEach(o => attachSwipe(o.orderId));
+}
+
+// ── まとめ調理パネル ────────────────────────────────────────────
+function renderAgg() {
+  const el = document.getElementById('agg');
+  if (VIEW !== 'active' || !ORDERS.length) { el.innerHTML = ''; el.style.display='none'; return; }
+  el.style.display = 'flex';
+
+  const buckets = {};   // groupKey → { label → qty }
+  let bowls = 0;        // ラーメン・うどん等の杯数（＝標準の麺1玉）
+  let extraBalls = 0;   // 替え玉ぶんの玉数（0.5玉単位）
+  let splitBowls = 0;   // 「一人前を2杯に分ける」注文の数（＝器が1つ余分に要る）
+
+  ORDERS.forEach(o => o.items.forEach(it => {
+    const info = lookup(it);
+    const name = (it.namePL || '').replace(/^【[^】]*】\s*/, '');
+    const q = it.qty || 1;
+
+    // 単品として注文された替え玉（Dodatki の麺）も玉数に足す
+    if (it.itemId === 'd_noodle1' || /dodatkowa porcja makaronu/i.test(name)) {
+      extraBalls += q; return;
+    }
+    if (it.itemId === 'd_noodle2' || /pół porcji makaronu/i.test(name)) {
+      extraBalls += 0.5 * q; return;
+    }
+
+    const probe = { cat: info.cat, name: name };
+    const g = AGG_GROUPS.find(x => x.test(probe)) || AGG_GROUPS[AGG_GROUPS.length - 1];
+    let label;
+    if (g.key === 'ramen') {
+      const b = BROTH[info.broth] || BROTH.inne;
+      label = b.icon + ' ' + b.jp;
+      bowls      += q;
+      extraBalls += kaedamaBalls(it.memo) * q;
+      if (isSplitBowl(it.memo)) splitBowls += q;
+    } else if (g.key === 'inne') {
+      return;                                  // その他はカード側だけで十分
+    } else {
+      label = name.replace(/\s*[—–-]\s*/, ' ').slice(0, 22);
+    }
+    if (!buckets[g.key]) buckets[g.key] = {};
+    buckets[g.key][label] = (buckets[g.key][label] || 0) + q;
+  }));
+
+  // 替え玉だけの注文（ラーメン本体が別会計・別注文のとき）でも麺枠を出す
+  if (extraBalls > 0 && !buckets.ramen) buckets.ramen = {};
+
+  const html = AGG_GROUPS.filter(g => buckets[g.key]).map(g => {
+    const b = buckets[g.key];
+    let rows = Object.keys(b).sort((x, y) => b[y] - b[x])
+      .map(k => `<div class="agg-row"><span>${esc(k)}</span><b>${b[k]}</b></div>`)
+      .join('');
+    let total = Object.values(b).reduce((a, c) => a + c, 0);
+
+    if (g.key === 'ramen') {
+      if (extraBalls > 0) {
+        rows += `<div class="agg-row" style="color:#ffd98a">
+          <span>＋ Kaedama / 替え玉</span><b>${numBall(extraBalls)}<span class="u">玉</span></b></div>`;
+      }
+      if (splitBowls > 0) {
+        rows += `<div class="agg-row" style="color:#9fd8ff">
+          <span>✌️ 2 miski / 取分け2器</span><b>${splitBowls}</b></div>`;
+      }
+      total = bowls + extraBalls;
+      rows += `<div class="agg-row sum"><span>🍜 Makaron razem / 麺 合計</span>
+        <b>${numBall(total)}<span class="u">玉</span></b></div>`;
+    }
+    return `<div class="agg-grp${total >= 3 ? ' hot' : ''}">
+      <div class="agg-h">${g.icon} ${esc(g.pl)} / ${esc(g.jp)}</div>${rows}</div>`;
+  }).join('');
+
+  el.innerHTML = html || '<div class="agg-empty">—</div>';
+}
+
+// ── カード ──────────────────────────────────────────────────────
+function cardHtml(o, idx) {
+  const mins = minutesSince(o.ts);
+  const cls = [];
+  if (idx < LEAD_CNT) cls.push('lead');
+  if (VIEW === 'active') {
+    if (mins >= LATE_MIN) cls.push('late');
+    else if (mins >= WARN_MIN) cls.push('warn');
+  }
+
+  const items = o.items.map(it => itemHtml(o, it)).join('');
+  const note = o.uwagi
+    ? `<div class="c-note">📝 ${esc(o.uwagi)}</div>` : '';
+  const member = o.member && /Członek|Member/i.test(o.member)
+    ? ` · ⭐${esc(o.memberName || 'Członek')}` : '';
+
+  const foot = VIEW === 'active'
+    ? `<div class="c-foot">
+         <button class="btn btn-go" onclick="markOrder('${o.orderId}','${ST.DOING}')">
+           👨‍🍳 Zaczynam<small>調理開始</small></button>
+         <button class="btn btn-done" onclick="markOrder('${o.orderId}','${ST.READY}')">
+           ✅ Gotowe — wydać<small>調理済み・配膳OK</small></button>
+       </div>`
+    : `<div class="c-foot">
+         <button class="btn btn-undo" onclick="markOrder('${o.orderId}','${ST.NEW}')">
+           ↩︎ Cofnij do kuchni<small>キッチンに戻す</small></button>
+       </div>`;
+
+  return `<div class="card ${cls.join(' ')}" id="card-${o.orderId}" data-oid="${o.orderId}">
+    <div class="swipe-hint">✅ Gotowe / 完了</div>
+    <div class="c-head">
+      <div>
+        <div class="c-table">🪑 ${o.table || '?'}</div>
+        <div class="c-sub">${esc(o.hhmm)} · ${esc(o.guests)}${member}<br>${esc(o.orderId)}</div>
+      </div>
+      <div class="c-timer">${VIEW === 'active' ? fmtElapsed(mins) : '✓'}</div>
+    </div>
+    ${note}
+    <div class="items">${items}</div>
+    ${foot}
+  </div>`;
+}
+
+function itemHtml(o, it) {
+  const info = lookup(it);
+  const name = (it.namePL || '').replace(/^【[^】]*】\s*/, '');
+  const payer = (it.namePL || '').match(/^【([^】]*)】/);
+  const doing = /W TRAKCIE|IN PROGRESS/i.test(it.status || '');
+
+  let tags = '';
+  if (info.cat === 'ramen') {
+    const b = BROTH[info.broth] || BROTH.inne;
+    tags += `<span class="it-tag tag-broth">${b.icon} ${esc(b.jp)}</span>`;
+  }
+  if (/NA WYNOS|ODBIÓR PRZY KASIE|持ち帰り/i.test(it.memo || '')) {
+    tags += `<span class="it-tag tag-wynos">🥡 na wynos</span>`;
+  }
+  const kae = kaedamaBalls(it.memo);
+  if (kae) tags += `<span class="it-tag tag-kae">🍜＋${numBall(kae)}玉</span>`;
+  if (isSplitBowl(it.memo)) tags += `<span class="it-tag tag-split">✌️ 2器</span>`;
+  if (payer) tags += `<span class="it-tag tag-broth">${esc(payer[1])}</span>`;
+
+  const memo = (it.memo && it.memo !== '—')
+    ? `<div class="it-memo">${it.memo.split('\n').map(l =>
+        /POMIŃ|REMOVE/.test(l) ? `<span class="rm">${esc(l)}</span>` : esc(l)).join('<br>')}</div>`
+    : '';
+
+  const btn = VIEW === 'active'
+    ? `<button class="it-x" onclick="event.stopPropagation();markItem('${o.orderId}',${it.no},'${ST.READY}')"
+         title="Ta pozycja gotowa / この品だけ完了">✓</button>` : '';
+
+  return `<div class="it${doing ? ' doing' : ''}"
+      onclick="markItem('${o.orderId}',${it.no},'${doing ? ST.NEW : ST.DOING}')">
+    <div class="it-q">×${it.qty}</div>
+    <div class="it-b">
+      <div class="it-n">${tags}${esc(name)}</div>
+      <div class="it-jp">${esc(info.jp || it.nameEN || '')}</div>
+      ${memo}
+    </div>${btn}
+  </div>`;
+}
+
+// ── 状態更新 ────────────────────────────────────────────────────
+async function sendUpdate(payload) {
+  busy = true;
+  try {
+    const r = await fetch(gasUrl(), {
+      method: 'POST', mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action: 'kitchenUpdate', password: PASSWORD }, payload))
+    });
+    const d = await r.json();
+    busy = false;
+    if (d.status !== 'ok') { toast(d.message || 'Błąd / エラー', true); return false; }
+    return true;
+  } catch(e) {
+    busy = false;
+    toast('📡 Brak połączenia / 通信エラー', true);
+    return false;
+  }
+}
+
+async function markOrder(orderId, newStatus) {
+  const card = document.getElementById('card-' + orderId);
+  const leaving = (newStatus === ST.READY || newStatus === ST.NEW);
+  if (card && leaving) card.classList.add('gone');
+  const ok = await sendUpdate({ orderId, newStatus });
+  if (!ok) { if (card) card.classList.remove('gone'); return; }
+  if (leaving) {
+    ORDERS = ORDERS.filter(o => o.orderId !== orderId);
+    setTimeout(render, 160);
+    toast(newStatus === ST.READY
+      ? '✅ Wydać / 配膳へ — ' + orderId
+      : '↩︎ Wrócono do kuchni / キッチンに戻しました');
+  } else {
+    const o = ORDERS.find(x => x.orderId === orderId);
+    if (o) o.items.forEach(i => i.status = newStatus);
+    render();
+    toast('👨‍🍳 W trakcie / 調理開始 — ' + orderId);
+  }
+}
+
+async function markItem(orderId, itemNo, newStatus) {
+  const ok = await sendUpdate({ orderId, itemNo, newStatus });
+  if (!ok) return;
+  const o = ORDERS.find(x => x.orderId === orderId);
+  if (!o) return;
+  if (newStatus === ST.READY) {
+    o.items = o.items.filter(i => i.no !== itemNo);
+    if (!o.items.length) ORDERS = ORDERS.filter(x => x.orderId !== orderId);
+  } else {
+    const it = o.items.find(i => i.no === itemNo);
+    if (it) it.status = newStatus;
+  }
+  render();
+}
+
+// ── スワイプ（左に流して完了）──────────────────────────────────
+function attachSwipe(orderId) {
+  const el = document.getElementById('card-' + orderId);
+  if (!el || el.dataset.sw) return;
+  el.dataset.sw = '1';
+  let x0 = 0, y0 = 0, dx = 0, active = false;
+
+  el.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; active = true;
+  }, { passive: true });
+
+  el.addEventListener('touchmove', e => {
+    if (!active) return;
+    const cx = e.touches[0].clientX, cy = e.touches[0].clientY;
+    if (Math.abs(cy - y0) > Math.abs(cx - x0)) { active = false; el.style.transform = ''; return; }
+    dx = cx - x0;
+    if (dx > 0) dx = dx * 0.25;                 // 右方向は抵抗をつけて誤操作を防ぐ
+    el.classList.add('swiping');
+    el.style.transform = 'translateX(' + dx + 'px)';
+    el.style.opacity = String(Math.max(0.35, 1 - Math.abs(dx) / 380));
+  }, { passive: true });
+
+  const end = () => {
+    if (!active) return;
+    active = false;
+    el.classList.remove('swiping');
+    el.style.transform = ''; el.style.opacity = '';
+    if (dx < -130) markOrder(orderId, ST.READY);
+  };
+  el.addEventListener('touchend', end, { passive: true });
+  el.addEventListener('touchcancel', end, { passive: true });
+}
+
+// ── トースト ────────────────────────────────────────────────────
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = isErr ? 'err' : '';
+  t.style.display = 'block';
+  clearTimeout(t._h);
+  t._h = setTimeout(() => { t.style.display = 'none'; }, 2600);
+}
+
+// 画面を復帰したら即取得（タブレットのスリープ明け対策）
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && PASSWORD) poll();
+});
+</script>
+</body>
+</html>
