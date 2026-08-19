@@ -94,6 +94,22 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 .it-n{font-size:.95rem;font-weight:700;line-height:1.35;word-break:break-word}
 .card.lead .it-n{font-size:1.08rem}
 .it-jp{font-size:.72rem;color:var(--muted)}
+/* v1.1: 既定トッピングの一覧と、その変更点を一目で分かるように */
+.tp-row{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.3rem}
+.tp{display:inline-flex;align-items:baseline;gap:.2rem;font-size:.72rem;line-height:1.35;
+  border-radius:6px;padding:.12rem .4rem;background:rgba(120,180,255,.15);color:#bcdcff}
+.card.lead .tp{font-size:.8rem;padding:.16rem .5rem}
+.tp i{font-style:normal;opacity:.75;font-size:.92em}
+.tp.gone{background:rgba(224,67,58,.14);color:#ff9b93;text-decoration:line-through;
+  text-decoration-thickness:2px;opacity:.85}
+.tp.add{background:rgba(232,179,42,.28);color:#ffe08a;font-weight:800}
+.tp.base{background:rgba(200,169,110,.22);color:#f0d9a8;font-weight:700}
+.tp-lbl{font-size:.62rem;letter-spacing:.06em;color:var(--muted);align-self:center;
+  padding:.1rem .25rem 0 0}
+.tp.chg{background:rgba(232,179,42,.20);color:#ffdf9b;font-weight:700}
+.c-guests{font-size:.82rem;font-weight:700;color:#ffd7a1;background:rgba(255,255,255,.09);
+  border-radius:8px;padding:.1rem .45rem;margin-left:.35rem}
+.card.lead .c-guests{font-size:.95rem}
 .it-memo{font-size:.75rem;line-height:1.55;margin-top:.2rem;color:#ffcf7a;white-space:pre-line}
 .it-memo .rm{color:#ff9b93}
 .it-tag{display:inline-block;font-size:.64rem;font-weight:700;border-radius:6px;
@@ -161,7 +177,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 
 <script>
 // ════════════════════════════════════════════════════════════════════
-//  🍳 WABI NAVI — Kitchen Display System v1.0
+//  🍳 WABI NAVI — Kitchen Display System v1.1
 //  注文アプリ（index.html）が送った注文を、キッチンのタブレットで表示する。
 //  ・卓ごとのカード（先頭は大きく、次の卓以降は小さく同一画面に）
 //  ・まとめ調理用の集計（だし別のラーメン杯数・餃子/唐揚げの皿数）
@@ -182,12 +198,13 @@ const ST = { NEW:"NOWE / NEW", DOING:"W TRAKCIE / IN PROGRESS",
              READY:"GOTOWE / READY", SERVED:"WYDANE / SERVED" };
 
 // だしベースの表示名（index.html と同じ分類）
+// ラベルはポーランド語を主に。日本語は補助として小さく添える。
 const BROTH = {
-  tori:  { icon:"🐔", pl:"Bulion drobiowy", jp:"鶏だし" },
-  buta:  { icon:"🐖", pl:"Bulion wieprzowy", jp:"豚だし" },
-  oferta:{ icon:"⭐", pl:"Oferta specjalna", jp:"特選・うどん/そば" },
-  zimne: { icon:"❄️", pl:"Na zimno", jp:"冷やし" },
-  inne:  { icon:"🍥", pl:"Inne", jp:"その他" }
+  tori:  { icon:"🐔", pl:"Bulion drobiowy",  short:"Drobiowy",  jp:"鶏だし" },
+  buta:  { icon:"🐖", pl:"Bulion wieprzowy", short:"Wieprzowy", jp:"豚だし" },
+  oferta:{ icon:"⭐", pl:"Oferta specjalna", short:"Specjalne", jp:"特選・うどん/そば" },
+  zimne: { icon:"❄️", pl:"Na zimno",         short:"Zimne",     jp:"冷やし" },
+  inne:  { icon:"🍥", pl:"Inne",             short:"Inne",      jp:"その他" }
 };
 // 同時着手したい品のまとめ方（商品IDの先頭で判定）
 const AGG_GROUPS = [
@@ -214,6 +231,149 @@ function isSplitBowl(memo) {
   return /Tak,\s*podziel|2杯に分割|2 bowls/i.test(String(memo || ''));
 }
 function numBall(n) { return (n % 1 === 0) ? String(n) : n.toFixed(1); }
+
+// ── 具材名のポーランド語→日本語（キッチン表示用の補助）────────────
+const TOP_JP = {
+  'karkówka':'チャーシュー','chashu':'チャーシュー','pork neck':'チャーシュー',
+  'jajko':'たまご','egg':'たまご','kiełki':'もやし','sprouts':'もやし',
+  'kukurydza':'コーン','corn':'コーン','masło':'バター','butter':'バター',
+  'imbir':'しょうが','ginger':'しょうが','por':'ねぎ','leek':'ねぎ',
+  'szpinak':'ほうれん草','spinach':'ほうれん草','wakame':'わかめ','nori':'のり',
+  'menma':'メンマ','naruto':'なると','shiitake':'しいたけ','pak choi':'チンゲン菜',
+  'kimchi':'キムチ','surimi':'カニカマ','sezam':'ごま','sesame':'ごま',
+  'grzyby mun':'きくらげ','kikurage':'きくらげ','kurczak':'鶏肉','chicken':'鶏肉',
+  'mięso mielone':'そぼろ肉','minced pork':'そぼろ肉','mabo':'麻婆豆腐','tofu':'豆腐',
+  'krewetki':'エビ','shrimp':'エビ','cebula':'たまねぎ','onion':'たまねぎ',
+  'ser':'チーズ','cheese':'チーズ','czosnek':'にんにく','garlic':'にんにく',
+  'bambusa':'たけのこ','bamboo':'たけのこ','yuzu':'ゆず','mizuna':'水菜',
+  'pomidor':'トマト','sałata':'レタス','tempura':'天ぷら','inari':'いなり',
+  'mule':'ムール貝','mussels':'ムール貝','nameko':'なめこ','pieczarki':'マッシュルーム',
+  'grzyby słomkowe':'ふくろたけ','straw mushrooms':'ふくろたけ','goma wakame':'ゴマわかめ'
+};
+// メニューの具材欄「Baza: sos sojowy, paitan | Dodatki: …」から
+// たれ・調味料の部分だけを取り出す。Baza が無い商品は空。
+function parseBase(it) {
+  const src = [(it.ingPL || ''), (it.ingEN || '')];
+  for (const txt of src) {
+    for (const seg of String(txt).split('|')) {
+      const m = seg.match(/^\s*(?:Baza|Base|ベース|たれ)\s*[:：]\s*(.+)$/i);
+      if (m) return m[1].split(/,\s*/).map(x => x.trim()).filter(Boolean);
+    }
+  }
+  return [];
+}
+
+const BASE_JP = {
+  'sos sojowy':'醤油','soy sauce':'醤油','shoyu':'醤油',
+  'pasta miso':'味噌だれ','miso':'味噌','paitan':'白湯','hondashi':'和風だし',
+  'konbudashi':'昆布だし','kombu':'昆布だし',
+  'orzechowa pasta chili':'ゴマ辣油だれ','peanut chili paste':'ゴマ辣油だれ',
+  'pasta chili':'チリだれ','chili bean':'豆板醤','toban':'豆板醤',
+  'chili':'チリ','curry':'カレー',
+  'mleko kokosowe':'ココナッツミルク','coconut milk':'ココナッツミルク','kokos':'ココナッツ',
+  'mleko sojowe':'豆乳','soy milk':'豆乳',
+  'sos sezamowy':'ごまだれ','sesame sauce':'ごまだれ',
+  'kabayaki':'蒲焼のタレ','teriyaki':'照り焼きだれ',
+  'wywar z muli':'貝だし','mussel':'貝だし','przegrzebk':'ホタテだし','scallop':'ホタテだし',
+  'solny':'塩だれ','sól':'塩','salt':'塩','yuzu':'ゆず','shio':'塩だれ'
+};
+// 単語の途中で誤って一致しないよう、語の切れ目で照合する。
+//   （例：「Minced pork」の "por" が「ねぎ」と誤判定されるのを防ぐ）
+//   長い語から順に見るので「mięso mielone」が「miso」より先に当たる。
+const WORD = '[0-9a-z\\u0104-\\u017c]';
+function buildMatcher(dict) {
+  const keys = Object.keys(dict).sort((a, b) => b.length - a.length);
+  const res = keys.map(k => ({
+    jp: dict[k],
+    re: new RegExp('(^|[^' + WORD.slice(1, -1) + '])' +
+                   k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+                   '([^' + WORD.slice(1, -1) + ']|$)', 'i')
+  }));
+  return s => {
+    const t = String(s || '').toLowerCase();
+    for (const r of res) if (r.re.test(t)) return r.jp;
+    return '';
+  };
+}
+const matchBase = buildMatcher(BASE_JP);
+function baseJp(s) { return matchBase(s) || jpOf(s); }
+
+let matchTop = null;
+function jpOf(s) {
+  if (!matchTop) matchTop = buildMatcher(TOP_JP);
+  return matchTop(s);
+}
+function shortName(s) { return String(s || '').split(' / ')[0].trim(); }
+function norm(s) { return String(s || '').toLowerCase().replace(/\s+/g, ''); }
+
+// 注文票のメモを「抜いた具材／足した具材／その他の変更」に分ける
+function parseMemo(memo) {
+  const removed = [], adds = [], other = [];
+  String(memo || '').split('\n').forEach(raw => {
+    const l = raw.trim();
+    if (!l || l === '—') return;
+    if (l.indexOf('🚫') === 0) { removed.push(l.replace(/^🚫[^:]*:\s*/, '').trim()); return; }
+    const t = l.replace(/^🔧[^:]*:\s*/, '').trim();
+    const m = t.match(/トッピング追加:\s*(.+?)\s*\(\+\s*\d+\s*z/);
+    if (m) { m[1].split(/,\s*/).forEach(x => { if (x.trim()) adds.push(x.trim()); }); return; }
+    if (/NA WYNOS|ODBIÓR PRZY KASIE|持ち帰り/i.test(t)) return;   // 別途タグで表示済み
+    if (/Zamiana|交換減額/.test(t)) return;                        // 金額のみ・調理に不要
+    // 1行に複数の変更がまとまって入る。タグで既に出しているものを先に取り除く。
+    //   選択肢は「…, 替え玉, 2杯に分割」の順に並ぶため、末尾から削るのが安全。
+    //   （「Tak, podziel!」のように選択肢自体にカンマを含むものがあるので、
+    //     先に分割してしまうと文章が途中で切れてしまう）
+    let q = t
+      .replace(/Tak,\s*podziel!.*$/i, '')                                  // ✌️2器 のタグで表示済み
+      .replace(/(Pół porcji|Pełna porcja)\s*\/\s*(Half|Full)[^,]*/i, '')   // 🍜＋N玉 のタグで表示済み
+      .replace(/^[\s,]+|[\s,]+$/g, '');
+    if (!q) return;
+    q.split(/,\s*/).forEach(part => {
+      const v = part.trim();
+      if (!v) return;
+      if (/^(Nie|No|Bez|Standard)\b/i.test(v)) return;                     // 既定のまま
+      other.push(v.replace(/\s*[+＋]\s*\d+\s*zł/gi, '').trim());
+    });
+  });
+  return { removed, adds, other };
+}
+
+// 既定の具材を薄青で並べ、抜いたものに取り消し線、足したものを黄色で表示
+function toppingBar(info, memo) {
+  const p = parseMemo(memo);
+  const base = (info.removable || []);
+  const tare = (info.base || []);
+  if (!base.length && !tare.length && !p.adds.length && !p.other.length && !p.removed.length) return '';
+  // たれ・調味料（ベース）を先に出す
+  const tareHtml = tare.length
+    ? `<div class="tp-row"><span class="tp-lbl">TARE / たれ</span>` +
+      tare.map(b => {
+        const jp = baseJp(b);
+        return `<span class="tp base">${esc(b)}${jp ? `<i>${esc(jp)}</i>` : ''}</span>`;
+      }).join('') + `</div>` : '';
+  const rem = p.removed.map(norm);
+  let html = base.map(b => {
+    const gone = rem.some(r => norm(b).indexOf(r) >= 0 || r.indexOf(norm(b)) >= 0);
+    const jp = jpOf(b);
+    return `<span class="tp${gone ? ' gone' : ''}">${esc(shortName(b))}${jp ? `<i>${esc(jp)}</i>` : ''}</span>`;
+  }).join('');
+  // 既定に無いものを抜いた場合も落とさず出す
+  p.removed.forEach(r => {
+    if (base.some(b => norm(b).indexOf(norm(r)) >= 0 || norm(r).indexOf(norm(b)) >= 0)) return;
+    const jp = jpOf(r);
+    html += `<span class="tp gone">${esc(shortName(r))}${jp ? `<i>${esc(jp)}</i>` : ''}</span>`;
+  });
+  html += p.adds.map(a => {
+    // 「Jajko (Połowa) ×2（味玉（半分））」を 名前 / 日本語 / 個数 に分解して整える
+    const m = String(a).match(/^(.*?)(?:\s*×\s*(\d+))?\s*（(.*)）\s*$/);
+    const nm = m ? m[1].trim() : String(a).trim();
+    const cnt = m && m[2] ? m[2] : '';
+    const jp = m ? m[3].trim() : jpOf(a);
+    return `<span class="tp add">＋ ${esc(nm)}${jp ? `<i>${esc(jp)}</i>` : ''}${cnt ? ' ×' + cnt : ''}</span>`;
+  }).join('');
+  html += p.other.map(o => `<span class="tp chg">${esc(o)}</span>`).join('');
+  const topHtml = html ? `<div class="tp-row"><span class="tp-lbl">TOP / 具材</span>${html}</div>` : '';
+  return tareHtml + topHtml;
+}
 
 let PASSWORD = "";
 let VIEW = "active";
@@ -263,7 +423,9 @@ async function loadMenuIndex() {
     MENU_IDX = {}; MENU_BY_NAME = {};
     d.menu.forEach(cat => (cat.items || []).forEach(it => {
       const rec = { cat: cat.id, broth: it.brothBase || 'inne',
-                    jp: it.nameJP || '', name: it.namePL || '' };
+                    jp: it.nameJP || '', name: it.namePL || '',
+                    removable: (it.removable || []).slice(),   // 既定で載せる具材
+                    base: parseBase(it) };                     // たれ・調味料（ベース）
       MENU_IDX[it.id] = rec;
       // ⭐おすすめは p_ 接頭辞で複製されるため、元IDでも引けるようにする
       if (/^p_/.test(it.id)) MENU_IDX[it.id.replace(/^p_/, '')] = rec;
@@ -401,7 +563,7 @@ function renderAgg() {
     let label;
     if (g.key === 'ramen') {
       const b = BROTH[info.broth] || BROTH.inne;
-      label = b.icon + ' ' + b.jp;
+      label = b.icon + ' ' + b.short + ' / ' + b.jp;
       bowls      += q;
       extraBalls += kaedamaBalls(it.memo) * q;
       if (isSplitBowl(it.memo)) splitBowls += q;
@@ -476,8 +638,9 @@ function cardHtml(o, idx) {
     <div class="swipe-hint">✅ Gotowe / 完了</div>
     <div class="c-head">
       <div>
-        <div class="c-table">🪑 ${o.table || '?'}</div>
-        <div class="c-sub">${esc(o.hhmm)} · ${esc(o.guests)}${member}<br>${esc(o.orderId)}</div>
+        <div class="c-table">🪑 ${o.table || '?'}<span class="c-guests">👥 ${
+          ((String(o.guests || '').match(/\d+/) || ['?'])[0])} os.</span></div>
+        <div class="c-sub">🕐 ${esc(o.hhmm)} przyjęto / 受付${member}<br>${esc(o.orderId)}</div>
       </div>
       <div class="c-timer">${VIEW === 'active' ? fmtElapsed(mins) : '✓'}</div>
     </div>
@@ -496,7 +659,7 @@ function itemHtml(o, it) {
   let tags = '';
   if (info.cat === 'ramen') {
     const b = BROTH[info.broth] || BROTH.inne;
-    tags += `<span class="it-tag tag-broth">${b.icon} ${esc(b.jp)}</span>`;
+    tags += `<span class="it-tag tag-broth">${b.icon} ${esc(b.short)}</span>`;
   }
   if (/NA WYNOS|ODBIÓR PRZY KASIE|持ち帰り/i.test(it.memo || '')) {
     tags += `<span class="it-tag tag-wynos">🥡 na wynos</span>`;
@@ -506,10 +669,15 @@ function itemHtml(o, it) {
   if (isSplitBowl(it.memo)) tags += `<span class="it-tag tag-split">✌️ 2器</span>`;
   if (payer) tags += `<span class="it-tag tag-broth">${esc(payer[1])}</span>`;
 
-  const memo = (it.memo && it.memo !== '—')
-    ? `<div class="it-memo">${it.memo.split('\n').map(l =>
-        /POMIŃ|REMOVE/.test(l) ? `<span class="rm">${esc(l)}</span>` : esc(l)).join('<br>')}</div>`
-    : '';
+  // v1.1: ラーメン・丼は「既定の具材＋変更点」を色分けで表示。他は従来どおりメモ表示。
+  const isBowl = info.cat === 'ramen' ||
+    /(^|[^a-z])don($|[^a-z])|rice bowl/i.test(it.nameEN || '') || /丼/.test(info.jp || '');
+  const memo = isBowl
+    ? toppingBar(info, it.memo)
+    : ((it.memo && it.memo !== '—')
+        ? `<div class="it-memo">${it.memo.split('\n').map(l =>
+            /POMIŃ|REMOVE/.test(l) ? `<span class="rm">${esc(l)}</span>` : esc(l)).join('<br>')}</div>`
+        : '');
 
   const btn = VIEW === 'active'
     ? `<button class="it-x" onclick="event.stopPropagation();markItem('${o.orderId}',${it.no},'${ST.READY}')"
