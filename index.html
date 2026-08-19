@@ -259,6 +259,54 @@ body{
   font-size:.9rem;font-weight:700;cursor:pointer;line-height:1.4}
 .co-btn small{font-weight:400;color:#7a6858;font-size:.72rem}
 .co-btn:active{filter:brightness(.96)}
+/* v44: 商品カード内でトッピングを追加する枠（写真なし・その丼に紐づく） */
+/* v47: Dodatkiページから「どの丼に乗せるか」を選ぶ */
+.tg-area{margin:.5rem 0 .2rem;padding:.55rem .6rem;border-radius:10px;
+  background:rgba(45,122,58,.07);border:1.5px dashed rgba(45,122,58,.45)}
+.tg-h{font-size:.72rem;font-weight:700;color:#2d7a3a;margin-bottom:.35rem;line-height:1.45}
+.tg-h small{display:block;font-weight:400;color:var(--muted);font-size:.66rem}
+.tg-chips{display:flex;flex-wrap:wrap;gap:.3rem}
+.tg-chip{display:inline-flex;align-items:center;gap:.3rem;border:1.5px solid rgba(45,122,58,.4);
+  background:#fffcf5;color:#2c1810;border-radius:14px;padding:.32rem .6rem;font-size:.74rem;
+  line-height:1.3;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.tg-chip:active{transform:scale(.96)}
+.tg-chip small{opacity:.7;font-size:.64rem}
+.tg-chip .tg-n{font-weight:700;color:#2d7a3a;font-variant-numeric:tabular-nums}
+.tg-chip .tg-minus{display:none;width:18px;height:18px;border-radius:50%;background:#c0392b;
+  color:#fff;font-size:.75rem;font-weight:700;align-items:center;justify-content:center;line-height:1}
+.tg-chip.on{background:#2d7a3a;border-color:#2d7a3a;color:#fff;font-weight:700}
+.tg-chip.on .tg-n{color:#fff}
+.tg-chip.on small{opacity:.85;color:#fff}
+.tg-chip.on .tg-minus{display:inline-flex}
+/* v45: 1杯＝1行（ラーメン・丼）の切り替えタブ */
+.lines-bar{display:flex;flex-wrap:wrap;gap:.35rem;width:100%;align-items:center}
+.line-tab{display:inline-flex;align-items:center;gap:.25rem;border:1.5px solid rgba(192,57,43,.4);
+  background:#fffcf5;color:#8e2418;border-radius:14px;padding:.35rem .7rem;font-size:.78rem;
+  font-weight:700;cursor:pointer;user-select:none;line-height:1.3}
+.line-tab small{font-weight:400;opacity:.75;font-size:.66rem}
+.line-tab.on{background:var(--accent);border-color:var(--accent);color:#fff;
+  box-shadow:0 2px 8px rgba(192,57,43,.3)}
+.line-tab.other{opacity:.55}
+.line-add{border-style:dashed;border-color:#2d7a3a;color:#2d7a3a;background:#f5fbf2}
+.line-del{border-color:#b0a396;color:#8a7c6e;background:transparent;margin-left:auto}
+.line-hint{width:100%;font-size:.68rem;color:var(--muted);line-height:1.5;margin-top:.25rem}
+.extras-area{margin-top:.6rem;border-top:1px dashed rgba(45,122,58,.4);padding-top:.55rem}
+.extras-note{font-size:.68rem;color:var(--muted);line-height:1.5;margin:.15rem 0 .5rem}
+.ex-tier{margin-bottom:.45rem}
+.ex-tier-h{display:inline-block;font-size:.66rem;font-weight:700;color:#2d7a3a;
+  background:rgba(45,122,58,.12);border-radius:6px;padding:.1rem .45rem;margin-bottom:.28rem}
+.ex-chips{display:flex;flex-wrap:wrap;gap:.3rem}
+.ex-chip{display:inline-flex;align-items:center;gap:.3rem;border:1.5px solid rgba(45,122,58,.35);
+  background:#fffcf5;color:#2c1810;border-radius:16px;padding:.32rem .6rem;font-size:.76rem;
+  line-height:1.3;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.ex-chip:active{transform:scale(.96)}
+.ex-chip .ex-n{font-weight:700;color:#2d7a3a;font-variant-numeric:tabular-nums}
+.ex-chip .ex-minus{display:none;width:19px;height:19px;border-radius:50%;background:#c0392b;
+  color:#fff;font-size:.8rem;font-weight:700;align-items:center;justify-content:center;line-height:1}
+.ex-chip.on{background:#2d7a3a;border-color:#2d7a3a;color:#fff;font-weight:700}
+.ex-chip.on .ex-n{color:#fff}
+.ex-chip.on .ex-minus{display:inline-flex}
+.ex-sum{margin-top:.35rem;font-size:.76rem;font-weight:700;color:#2d7a3a}
 .onigiri-chips{display:flex;flex-direction:column;gap:.35rem;width:100%}
 .onigiri-chip{display:block;border:1.5px solid rgba(192,57,43,.45);color:#8e2418;background:#fffcf5;
   border-radius:12px;padding:.45rem .7rem;font-size:.8rem;font-weight:700;line-height:1.35;
@@ -420,7 +468,7 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
 .savings-row b{color:var(--green);font-variant-numeric:tabular-nums}
 
 /* ── 👥 グループ注文モード（v7.11） ─────────────────────── */
-#order-mode-screen,#group-setup-screen,#group-summary-screen,#group-review-screen{
+#order-mode-screen,#group-setup-screen,#group-summary-screen,#group-review-screen,#addorder-screen{
   min-height:100vh;display:flex;align-items:center;justify-content:center;
   padding:2rem 1.2rem;background:var(--bg)}
 .om-wrap{width:100%;max-width:420px;text-align:center}
@@ -468,6 +516,10 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
 .conf-bill-head{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;
   font-size:.8rem;font-weight:700;color:var(--accent);margin:.9rem 0 .25rem;padding:.35rem .55rem;
   background:rgba(192,57,43,.08);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+/* v43：誰の料理か指定してもらうための案内 */
+.assign-hint{margin:.3rem 0 .6rem;padding:.6rem .7rem;border-radius:10px;font-size:.78rem;
+  line-height:1.65;background:rgba(184,134,11,.10);border:1.5px solid #b8860b;color:#8e6b00}
+.assign-hint b{color:#8e2418}
 .group-list-item{background:var(--card);border:1.5px solid var(--border);border-radius:12px;
   padding:.8rem 1rem;font-size:.92rem;font-weight:700;color:var(--text);text-align:left}
 
@@ -551,7 +603,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v42</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v48</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -894,6 +946,22 @@ body.show-config .config-bar{display:flex}
       <small>All done, check the order</small><br>
       <small>確認画面へ進む</small>
     </button>
+  </div>
+</div>
+
+<!-- ➕ 追加注文：誰の注文かを先に選んでもらう（v43）
+     これを挟まないと、追加分が全部「みんなで」になり、
+     どの客の会計に足すのか、前菜がどのラーメンの連れなのかが分からなくなる。 -->
+<div id="addorder-screen" style="display:none">
+  <div class="om-wrap">
+    <div class="om-title">➕ Zamówienie dodatkowe<br>
+      <span class="om-en">Additional order</span><br>
+      <span class="om-jp">追加注文</span></div>
+    <div class="om-sub">Kto zamawia? / Who is ordering?<br>
+      <span class="om-jp">どなたの追加注文ですか？</span></div>
+    <div id="addorder-list"></div>
+    <button class="co-btn" style="margin-top:.8rem;border-color:var(--border);color:var(--muted)"
+      onclick="cancelAddOrder()">← Wróć / Back / 戻る</button>
   </div>
 </div>
 
@@ -1316,14 +1384,11 @@ function serveLabelText(mode, fee) {
 }
 // チップをタップ：未選択商品なら自動でカートに追加してから記録
 function setServeMode(id, mode, el) {
-  if (!cart[id]) {
-    const chk = document.getElementById('chk-' + id);
-    if (chk && !chk.checked) { chk.checked = true; onCheck(id, true); }
-  }
-  if (!cart[id]) return;
+  const key = ensureLine(id);
+  if (!key) return;
   // 同じチップをもう一度タップ → 解除して店内（既定）に戻す
-  if (cart[id].serve === mode) mode = 'lokal';
-  cart[id].serve = mode;
+  if (cart[key].serve === mode) mode = 'lokal';
+  cart[key].serve = mode;
   const wrap = el.closest('.serve-row');
   if (wrap) wrap.querySelectorAll('.serve-chip').forEach(c =>
     c.classList.toggle('sel', c.dataset.m === mode));
@@ -1663,6 +1728,7 @@ function enterCategory(catId) {
   if (tabs) tabs.style.display = 'flex';
   const wrap = document.getElementById('menu-wrap');
   if (wrap) wrap.style.display = 'block';
+  restoreCartState(catId);   // v46: いまの客の状態に合わせ直す
   requestAnimationFrame(updateStickyOffsets);
   // 該当カテゴリーへスクロール
   const target = document.getElementById('sec-' + catId);
@@ -1875,12 +1941,34 @@ if (typeof ResizeObserver !== 'undefined') {
 function updateGroupProgressBar() {
   const bar = document.getElementById('group-progress-bar');
   const ms  = document.getElementById('menu-screen');
+
+  // v43：追加注文中は「誰の追加分か」を常に画面上部に出しておく
+  if (addOrderMode) {
+    const who = defaultPayers.length ? '👤' + defaultPayers.join('+')
+                                     : '👥 wspólne / みんなで';
+    const tw = (currentGroupIndex >= 0 && groupTakeaway[currentGroupIndex])
+      ? '<span class="gpb-tag">🥡 na wynos / 持ち帰り</span>' : '';
+    bar.style.display = 'flex';
+    bar.innerHTML = `
+      <div class="gpb-current">➕ ${who}${tw}
+        <small>Zamówienie dodatkowe — dopiszemy do tego rachunku</small>
+        <small>Additional order — added to this bill</small>
+        <small>追加注文（この会計に加算されます）</small></div>
+      <button class="gpb-next-btn" onclick="openConfirm()">
+        ✅ Do zamówienia<br><small>Confirm</small><br><small>注文の確認へ</small></button>`;
+    requestAnimationFrame(updateStickyOffsets);
+    return;
+  }
+
   if (currentGroupIndex < 0 || currentGroupIndex >= orderGroups.length) {
     bar.style.display = 'none';
+    defaultPayers = [];
     requestAnimationFrame(updateStickyOffsets);
     return;
   }
   const g = orderGroups[currentGroupIndex];
+  if (defaultPayers.join('+') !== g.join('+')) activeLine = Object.create(null);  // v45
+  defaultPayers = g.slice();   // このグループで選んだ品には自動で客番号が付く
   const isLast = currentGroupIndex === orderGroups.length - 1;
   bar.style.display = 'flex';
   const btnLabel = reviewEditMode
@@ -2103,22 +2191,23 @@ function renderCategoryItems(catId) {
 }
 
 // ── カート状態の復元（別カテゴリーで追加された商品の表示同期） ──
+// v46: カテゴリーを開くたびに「いま注文中の客」の状態へカードを合わせ直す。
+//   これをしないと、客1が選んだ状態のまま客2の画面に出てしまう。
 function restoreCartState(catId) {
   const cat = MENU.find(c => c.id === catId);
   if (!cat) return;
   cat.items.forEach(item => {
-    const c = cart[item.id];
-    if (!c) return;
-    const chk = document.getElementById('chk-' + item.id);
-    if (chk) chk.checked = true;
-    const qty = document.getElementById('qty-' + item.id);
-    if (qty) qty.style.display = 'flex';
-    const qn = document.getElementById('qn-' + item.id);
-    if (qn) qn.textContent = c.qty;
-    const sv = document.getElementById('sv-' + item.id);
-    if (sv) sv.querySelectorAll('.serve-chip').forEach(ch =>
-      ch.classList.toggle('sel', c.serve === ch.dataset.m));  // lokal＝全て非選択
-    refreshPrice(item.id);
+    if (isLineItem(item.id)) {
+      const cur = activeLine[item.id];
+      const mineNow = cur && cart[cur] &&
+        (cart[cur].payers || []).join('+') === defaultPayers.join('+');
+      if (!mineNow) {
+        const mine = lineKeys(item.id).filter(k =>
+          (cart[k].payers || []).join('+') === defaultPayers.join('+'));
+        activeLine[item.id] = mine.length ? mine[mine.length - 1] : null;
+      }
+    }
+    syncCard(item.id);
   });
 }
 // オプション描画：おにぎり(o1/o1b)はチップボタン、他はプルダウン
@@ -2155,19 +2244,52 @@ function renderToppingRows(item) {
 
 // おにぎりチップ選択：未チェックなら自動でカートに追加してから記録
 function selectOnigiriChip(itemId, ti, oi, el) {
-  if (!cart[itemId]) {
-    const chk = document.getElementById('chk-' + itemId);
-    if (chk && !chk.checked) { chk.checked = true; onCheck(itemId, true); }
-  }
-  if (!cart[itemId]) return;
+  const key = ensureLine(itemId);
+  if (!key) return;
   const item = findItem(itemId);
   const t = item.toppings[ti];
-  cart[itemId].toppingDeltas[ti] = t.priceDeltas[oi] || 0;
-  cart[itemId].toppingLabels[ti] = t.options[oi];  // a〜kは常に明示記録（厨房伝票用）
+  cart[key].toppingDeltas[ti] = t.priceDeltas[oi] || 0;
+  cart[key].toppingLabels[ti] = t.options[oi];  // a〜kは常に明示記録（厨房伝票用）
+  cart[key].toppingIdx[ti]    = oi;
   el.parentNode.querySelectorAll('.onigiri-chip').forEach(c => c.classList.remove('sel'));
   el.classList.add('sel');
-  refreshPrice(itemId);
+  refreshPrice(key);
   if (typeof persistState === 'function') persistState();
+}
+
+// v44: カード内トッピング枠。価格帯ごとにまとめ、写真は出さない（操作優先）
+function extrasHtml(item) {
+  const list = extraChoices();
+  if (!list.length) return '';
+  const tiers = {};
+  list.forEach(t => { (tiers[t.price] = tiers[t.price] || []).push(t); });
+  const cur = (cart[item.id] && cart[item.id].extras) || {};
+  const body = Object.keys(tiers).map(Number).sort((a, b) => a - b).map(price => {
+    const chips = tiers[price].map(t => {
+      const nn = cur[t.id] || 0;
+      const jp = t.nameJP ? `<span style="opacity:.75">${t.nameJP}</span>` : '';
+      return `<span class="ex-chip${nn ? ' on' : ''}" id="ex-${item.id}-${t.id}"
+        onclick="setExtra('${item.id}','${t.id}',1,event)">
+        <span class="ex-minus" onclick="setExtra('${item.id}','${t.id}',-1,event)">−</span>
+        ${t.namePL}${jp ? ' ' + jp : ''}
+        <span class="ex-n">${nn ? '×' + nn : '+' + t.price}</span></span>`;
+    }).join('');
+    return `<div class="ex-tier"><span class="ex-tier-h">${price} zł</span>
+      <div class="ex-chips">${chips}</div></div>`;
+  }).join('');
+  return `<div class="extras-area">
+    <div class="remove-title" style="color:#2d7a3a">
+      ➕ Dodatki do tej miski / この丼にトッピングを追加
+    </div>
+    <div class="extras-note">
+      Dotknij, aby dodać. Dotknij ponownie = 2 szt. Czerwone „−” usuwa.<br>
+      タップで追加。もう一度タップで2個。赤い「−」で減らせます。
+    </div>
+    ${body}
+    <div class="ex-sum" id="exsum-${item.id}">${
+      extrasTotal(cart[item.id]) ? '➕ Dodatki razem / トッピング合計: +' + extrasTotal(cart[item.id]) + ' zł' : ''
+    }</div>
+  </div>`;
 }
 
 function renderCard(item) {
@@ -2200,23 +2322,10 @@ function renderCard(item) {
       🍵 Zupa miso GRATIS do tego dania — poproś obsługę!<br>
       <small style="font-weight:400">Free miso soup with this bowl — ask our staff / みそ汁無料サービス（係員にお申し付けください）</small>
     </div>
-    <button onclick="jumpToCheapToppings()"
-      style="width:100%;margin-top:.5rem;background:linear-gradient(135deg,#2d7a3a,#3d9c4a);
-             color:#fff;border:none;border-radius:10px;padding:.65rem;
-             font-size:.8rem;font-weight:700;cursor:pointer;
-             box-shadow:0 3px 10px rgba(45,122,58,0.3)">
-      ➕ Dodaj topping / トッピングを追加する ▶<br>
-      <small style="font-weight:400;opacity:.9">szczypiorek, sezam, nori, kukurydza… (1–2 zł)</small>
-    </button>` : '';
-  const dodatkiJumpBtn = isDon ? donJumpBtn : isRamen ? `
-    <button onclick="enterCategory('dodatki')"
-      style="width:100%;margin-top:.5rem;background:linear-gradient(135deg,#2d7a3a,#3d9c4a);
-             color:#fff;border:none;border-radius:10px;padding:.65rem;
-             font-size:.8rem;font-weight:700;cursor:pointer;
-             box-shadow:0 3px 10px rgba(45,122,58,0.3)">
-      ➕ Dodaj dodatki / トッピングを追加する ▶<br>
-      <small style="font-weight:400;opacity:.9">jajko, chashu, nori, kimchi… (1–6 zł) — zobacz stronę Dodatki</small>
-    </button>` : '';
+    ` : '';
+  // v44: Dodatkiページへ飛ばず、このカードの中でトッピングを足せるようにする
+  const dodatkiJumpBtn = (isDon ? donJumpBtn : '') +
+    ((isRamen || isDon) ? extrasHtml(item) : '');
 
   const toppingHtml = (item.toppings?.length || isRamen || isDon) ? `
     <div class="topping-rows" style="background:rgba(45,122,58,0.06);
@@ -2231,6 +2340,7 @@ function renderCard(item) {
     </div>` : '';
 
   const hasCustom = item.removable?.length || item.toppings?.length;
+  const lineMode = isLineItem(item.id) && !item.comingSoon && !item.soldOut;
   // 🛍️ v40: 対象カテゴリのみ「店内/持ち帰り/会計時渡し」チップを表示
   const _svCat = findCatOfItem(item.id);
   const _svFee = (_svCat && SERVE_FEES[_svCat.id]) || 0;
@@ -2238,6 +2348,9 @@ function renderCard(item) {
     <div class="serve-row" id="sv-${item.id}">
       <span class="serve-chip" data-m="wynos" onclick="setServeMode('${item.id}','wynos',this)">🛍️ Na wynos +${_svFee} zł — odbiór przy kasie<small>お持ち帰り（会計時にお渡し・容器代込）／未選択＝店内🍽️</small></span>
     </div>` : '';
+  // v47: Dodatkiの商品には「どの丼に乗せるか」の選択枠を用意する
+  const targetHtml = (isExtraChoice(item.id) && !item.comingSoon && !item.soldOut)
+    ? `<div class="tg-area" id="tg-${item.id}" style="display:none"></div>` : '';
   const nameJpHtml = item.nameJP ? `<span class="i-name-jp">${item.nameJP}</span>` : '';
   const spiceHtml = item.spice ? spiceMarks(item.spice) : '';
 
@@ -2258,10 +2371,12 @@ function renderCard(item) {
         <div class="i-ing">🥢 ${item.ingPL}</div>
         ${allergensHtml}
         ${item.promoPL||item.promoJP ? `<div class="promo-badge">⭐ ${item.promoPL||''}${item.promoJP?' / '+item.promoJP:''}${item.promoUntil?` <span class="promo-until">～${item.promoUntil}</span>`:''}</div>` : ''}
+        ${targetHtml}
         <div class="i-price" id="pr-${item.id}">${item.origPrice?`<span class="price-old">${item.origPrice} zł</span> `:''}${item.price} zł</div>
         <div class="card-actions">
           ${item.soldOut ? `<div style="width:100%;text-align:center;padding:.4rem 0;font-size:.8rem;color:#7a6858;font-weight:700">😔 Wyprzedane / Sold out / 本日売り切れ</div>`
           : item.comingSoon ? `<div style="width:100%;text-align:center;padding:.4rem 0;font-size:.8rem;color:#e67e22;font-weight:700">🚧 Wkrótce / Coming Soon / 準備中</div>`
+          : lineMode ? `<div class="lines-bar" id="lines-${item.id}"></div>`
           : `<label class="chk-label">
             <input type="checkbox" id="chk-${item.id}" onchange="onCheck('${item.id}',this.checked)">
             Wybierz / Select
@@ -2340,14 +2455,9 @@ function addRiceSet() {
     if (riceItem) break;
   }
   if (riceItem) {
-    if (!cart[riceItem.id]) {
-      cart[riceItem.id] = {qty:1, removed:[], toppingDeltas:Object.create(null), toppingLabels:Object.create(null), serve:'lokal'};
-      const chk = document.getElementById('chk-'+riceItem.id);
-      if (chk) chk.checked = true;
-      const qty = document.getElementById('qty-'+riceItem.id);
-      if (qty) qty.style.display = 'flex';
-    }
-    updateCartBar();
+    curLineKey(riceItem.id, true);   // v46: いま注文中の客の行として追加
+    syncCard(riceItem.id);
+    updateBadge();
     showToast('🍚 Dodano ryż do zamówienia! / ライスを追加しました！', false);
   }
   dismissRiceOffer();
@@ -2367,57 +2477,274 @@ function defaultServeFor(id) {
   return 'lokal';
 }
 
-function onCheck(id, checked) {
-  const card = document.getElementById('card-'+id);
-  const qty  = document.getElementById('qty-'+id);
-  const cs   = document.getElementById('cs-'+id);
-  if (checked) {
-    card.classList.add('selected');
-    qty.style.display = 'flex';
-    if (cs) cs.classList.add('open');
-    cart[id] = {qty:1, removed:[], toppingDeltas:Object.create(null), toppingLabels:Object.create(null),
-                serve: defaultServeFor(id)};
-    if (cart[id].serve === 'wynos') {   // v41 ⑤: 持ち帰りグループはチップも自動でONに
-      const sv = document.getElementById('sv-' + id);
-      if (sv) sv.querySelectorAll('.serve-chip').forEach(c =>
-        c.classList.toggle('sel', c.dataset.m === 'wynos'));
-    }
-  } else {
-    card.classList.remove('selected');
-    qty.style.display = 'none';
-    if (cs) cs.classList.remove('open');
-    document.querySelectorAll(`#card-${id} .remove-chip`).forEach(c=>c.classList.remove('active'));
-    document.querySelectorAll(`#sv-${id} .serve-chip`).forEach(c=>c.classList.remove('sel'));
-    delete cart[id];
+// v45: 新しい注文行を作る
+function newLine(itemId) {
+  const b = baseId(itemId);
+  let max = 0;
+  lineKeys(b).forEach(k => { max = Math.max(max, Number(k.split('#')[1]) || 0); });
+  const key = b + '#' + (max + 1);
+  cart[key] = blankLine(key);
+  activeLine[b] = key;
+  return key;
+}
+function blankLine(key) {
+  return { qty:1, removed:[], toppingDeltas:Object.create(null), toppingLabels:Object.create(null),
+           toppingIdx:Object.create(null), serve: defaultServeFor(key),
+           payers: defaultPayers.slice(), extras: Object.create(null) };
+}
+// v46: いま注文中の客の行を返す。
+//   ラーメン・丼 … タブで選んでいる行
+//   それ以外     … 同じ客（defaultPayers）の行。別の客なら別の行を作る。
+//   これをやらないと、客1のビール2杯に客2の1杯が合算され、
+//   客2の伝票が空になってしまう。
+function payerKey(o) { return ((o && o.payers) || []).join('+'); }
+
+// v47: Dodatkiページの商品か（丼に乗せられるトッピングか）
+function isExtraChoice(id) {
+  const b = baseId(id);
+  const cat = findCatOfItem(b);
+  if (!cat || cat.id !== 'dodatki') return false;
+  if (EXTRA_EXCLUDE.indexOf(b) >= 0) return false;
+  const it = findItem(b);
+  return !!it && Number(it.price) > 0;
+}
+// いまカートにある丼・ラーメンの行（乗せ先の候補）
+function bowlLines() {
+  return Object.keys(cart)
+    .filter(k => isLineItem(k))
+    .map(k => {
+      const it = findItem(k);
+      const same = lineKeys(k);
+      return { key: k, item: it,
+               no: same.indexOf(k) + 1, total: same.length,
+               payers: cart[k].payers || [] };
+    })
+    .sort((a, b) => a.key.localeCompare(b.key));
+}
+function curLineKey(itemId, create) {
+  const b = baseId(itemId);
+  if (isLineItem(b)) {
+    const k = activeLine[b];
+    if (k && cart[k]) return k;
+    return create ? newLine(b) : null;
   }
+  const want = defaultPayers.join('+');
+  const hit = lineKeys(b).find(x => payerKey(cart[x]) === want);
+  if (hit) return hit;
+  return create ? newLine(b) : null;
+}
+function ensureLine(itemId) {
+  const b = baseId(itemId);
+  const had = curLineKey(b, false);
+  const key = curLineKey(b, true);
+  if (!had) { syncCard(b); updateBadge(); }
+  return key;
+}
+// 参照だけ（行が無ければ null）
+function curLine(itemId) { return curLineKey(itemId, false); }
+function addLine(itemId) {
+  newLine(itemId);
+  const cs = document.getElementById('cs-' + baseId(itemId));
+  if (cs) cs.classList.add('open');
+  syncCard(baseId(itemId));
   updateBadge();
+  if (typeof persistState === 'function') persistState();
+}
+function selectLine(itemId, key) {
+  activeLine[baseId(itemId)] = key;
+  syncCard(baseId(itemId));
+}
+function removeLine(itemId) {
+  const b = baseId(itemId);
+  const key = activeLine[b];
+  if (key && cart[key]) delete cart[key];
+  const rest = lineKeys(b);
+  activeLine[b] = rest.length ? rest[rest.length - 1] : null;
+  syncCard(b);
+  updateBadge();
+  if (typeof persistState === 'function') persistState();
+}
+
+// ── v47: 「どの丼に乗せますか？」チップの描画 ────────────────────
+function renderTargets(topId) {
+  const area = document.getElementById('tg-' + topId);
+  if (!area) return;
+  const bowls = bowlLines();
+  if (!bowls.length) { area.style.display = 'none'; area.innerHTML = ''; return; }
+  area.style.display = 'block';
+  const chips = bowls.map(b => {
+    const nn = (cart[b.key].extras && cart[b.key].extras[topId]) || 0;
+    // v48: 客番号を主、何杯目かは同じ客が複数持つときだけ補助として出す
+    const same = lineKeys(b.key).filter(x => payerKey(cart[x]) === payerKey(cart[b.key]));
+    const seq  = same.length > 1 ? ` ${same.indexOf(b.key) + 1}杯目` : '';
+    const who  = b.payers.length ? `👤${b.payers.join('+')} · ` : '';
+    return `<span class="tg-chip${nn ? ' on' : ''}" id="tg-${topId}-${b.key}"
+        onclick="addToBowl('${topId}','${b.key}',1,event)">
+        <span class="tg-minus" onclick="addToBowl('${topId}','${b.key}',-1,event)">−</span>
+        ${who}🍜 ${b.item ? b.item.namePL : b.key}<small>${seq}</small>
+        <span class="tg-n">${nn ? '×' + nn : '＋'}</span></span>`;
+  }).join('');
+  area.innerHTML = `
+    <div class="tg-h">🍜 Do której miski dodać? / どの丼に乗せますか？
+      <small>Dotknij miski — dodatek trafi właśnie do niej i kuchnia będzie wiedzieć.<br>
+      丼を選ぶと、その1杯に紐づいてキッチンに伝わります。単品で欲しいときは下の「Wybierz / Select」をどうぞ。</small>
+    </div>
+    <div class="tg-chips">${chips}</div>`;
+}
+function addToBowl(topId, lineKey, delta, ev) {
+  if (ev && ev.stopPropagation) ev.stopPropagation();
+  const o = cart[lineKey];
+  if (!o) { renderTargets(topId); return; }
+  o.extras = o.extras || Object.create(null);
+  const next = Math.max(0, Math.min(9, (o.extras[topId] || 0) + delta));
+  if (next) o.extras[topId] = next; else delete o.extras[topId];
+  renderTargets(topId);
+  syncCard(baseId(lineKey));   // 丼のカードが開かれていれば、そちらの表示も合わせる
+  updateBadge();
+  if (typeof persistState === 'function') persistState();
+}
+
+// ── 行タブの描画 ────────────────────────────────────────────────
+function renderLines(itemId) {
+  const bar = document.getElementById('lines-' + itemId);
+  if (!bar) return;
+  const keys = lineKeys(itemId);
+  const cur  = activeLine[itemId];
+  // v48: 「1杯目/2杯目」より「客1/客2」のほうが取り違えにくい。
+  //      同じ客が同じ品を2杯頼んだときだけ、補助として何杯目かを添える。
+  let html = keys.map((k, i) => {
+    const o = cart[k];
+    const pk = payerKey(o);
+    const same = keys.filter(x => payerKey(cart[x]) === pk);
+    const seq  = same.length > 1 ? `<small>${same.indexOf(k) + 1}杯目</small>` : '';
+    const label = (o.payers && o.payers.length) ? `👤${o.payers.join('+')}` : `🍜 ${i + 1}`;
+    const mine = !defaultPayers.length || pk === defaultPayers.join('+');
+    return `<span class="line-tab${k === cur ? ' on' : ''}${mine ? '' : ' other'}"
+      onclick="selectLine('${itemId}','${k}')">${label}${seq}</span>`;
+  }).join('');
+  html += `<span class="line-tab line-add" onclick="addLine('${itemId}')">
+      ＋ ${keys.length ? 'Jeszcze jedna' : 'Dodaj'}<small>${keys.length ? 'もう1杯（内容を変えて）' : '追加する'}</small></span>`;
+  if (keys.length) {
+    html += `<span class="line-tab line-del" onclick="removeLine('${itemId}')">🗑<small>削除</small></span>`;
+    html += `<div class="line-hint">Każda miska osobno — możesz zmienić dodatki dla każdej.<br>
+      1杯ごとに別々です。タブを切り替えて、それぞれのトッピングを設定できます。</div>`;
+  }
+  bar.innerHTML = html;
+}
+
+// ── いま選ばれている行の内容をカードの各操作に反映 ────────────────
+function syncCard(itemId) {
+  const b = baseId(itemId);
+  const line = curLineKey(b, false);
+  const o = line ? cart[line] : null;
+  if (isExtraChoice(b)) renderTargets(b);   // v47: 乗せ先の候補を更新
+  if (isLineItem(b)) renderLines(b);
+  else {
+    const chk = document.getElementById('chk-' + b);
+    if (chk) chk.checked = !!o;
+    const qty = document.getElementById('qty-' + b);
+    if (qty) qty.style.display = o ? 'flex' : 'none';
+  }
+
+  const card = document.getElementById('card-' + b);
+  if (card) card.classList.toggle('selected', !!o);
+  const cs = document.getElementById('cs-' + b);
+  if (cs) cs.classList.toggle('open', !!o);
+
+  // 抜く具材
+  document.querySelectorAll(`#card-${b} .remove-chip`).forEach(c => {
+    const nm = c.textContent.trim();
+    c.classList.toggle('active', !!(o && o.removed && o.removed.indexOf(nm) >= 0));
+  });
+  // 変更・追加オプション
+  document.querySelectorAll(`#card-${b} .top-sel`).forEach((sel, ti) => {
+    const idx = (o && o.toppingIdx && o.toppingIdx[ti]) || 0;
+    sel.selectedIndex = Math.min(idx, sel.options.length - 1);
+    const d = (o && o.toppingDeltas && o.toppingDeltas[ti]) || 0;
+    const dEl = document.getElementById(`td-${b}-${ti}`);
+    if (dEl) dEl.textContent = d > 0 ? `+${d} zł` : d < 0 ? `${d} zł` : '';
+  });
+  // 提供方法
+  document.querySelectorAll(`#sv-${b} .serve-chip`).forEach(c =>
+    c.classList.toggle('sel', !!o && o.serve === c.dataset.m));
+  // トッピング
+  document.querySelectorAll(`#card-${b} .ex-chip`).forEach(c => {
+    const tid = c.id.replace('ex-' + b + '-', '');
+    const nn = (o && o.extras && o.extras[tid]) || 0;
+    c.classList.toggle('on', nn > 0);
+    const top = findItem(tid);
+    const nEl = c.querySelector('.ex-n');
+    if (nEl && top) nEl.textContent = nn > 0 ? '×' + nn : '+' + top.price;
+  });
+  const sm = document.getElementById('exsum-' + b);
+  if (sm) sm.textContent = (o && extrasTotal(o)) ? ('➕ Dodatki razem / トッピング合計: +' + extrasTotal(o) + ' zł') : '';
+  // 数量（数量方式の商品のみ）。未選択なら1に戻す（前の客の数量が残らないように）
+  const qn = document.getElementById('qn-' + b);
+  if (qn) qn.textContent = o ? o.qty : 1;
+  refreshPrice(line || b);
+}
+
+function onCheck(id, checked) {
+  // v45: ラーメン・丼は1杯＝1行。チェックボックスではなく行の追加／全削除に振り替える
+  if (isLineItem(id)) {
+    if (checked) { addLine(id); }
+    else {
+      lineKeys(id).forEach(k => { delete cart[k]; });
+      activeLine[baseId(id)] = null;
+      syncCard(baseId(id));
+      updateBadge();
+    }
+    return;
+  }
+  const b = baseId(id);
+  if (checked) {
+    curLineKey(b, true);          // v46: この客ぶんの行を作る（他の客の行はそのまま）
+  } else {
+    const key = curLineKey(b, false);
+    if (key) delete cart[key];    // v46: 消すのはこの客ぶんだけ
+  }
+  syncCard(b);
+  updateBadge();
+  if (typeof persistState === 'function') persistState();
 }
 
 function chgQty(id, d) {
-  if (!cart[id]) return;
-  cart[id].qty = Math.max(1, cart[id].qty + d);
-  document.getElementById('qn-'+id).textContent = cart[id].qty;
+  const b = baseId(id);
+  if (isLineItem(b)) return;                 // v45: 1杯＝1行の商品は数量を使わない
+  const existed = curLineKey(b, false);
+  const key = curLineKey(b, d > 0);          // v46: この客ぶんの行を増減する
+  if (!key) return;
+  // 行を新しく作った回は「1個目の追加」なので、そこからさらに足さない
+  if (existed) cart[key].qty = Math.max(1, cart[key].qty + d);
+  syncCard(b);
+  updateBadge();
+  if (typeof persistState === 'function') persistState();
 }
 
 function toggleRemove(itemId, ingredient, el) {
-  if (!cart[itemId]) return;
-  el.classList.toggle('active');
-  const removed = cart[itemId].removed;
+  const key = ensureLine(itemId);
+  if (!key) return;
+  const removed = cart[key].removed;
   const idx = removed.indexOf(ingredient);
   if (idx === -1) removed.push(ingredient);
   else removed.splice(idx, 1);
-  refreshPrice(itemId);   // 交換減額を即時反映
+  el.classList.toggle('active', idx === -1);
+  refreshPrice(key);   // 交換減額を即時反映
+  if (typeof persistState === 'function') persistState();
 }
 
 function onTopChange(itemId, ti, sel, priceDeltas) {
-  if (!cart[itemId]) return;
+  const key = ensureLine(itemId);
+  if (!key) return;
   const delta = priceDeltas[sel.selectedIndex];
   const label = sel.selectedIndex > 0 ? sel.options[sel.selectedIndex].text : null;
-  cart[itemId].toppingDeltas[ti] = delta;
-  cart[itemId].toppingLabels[ti] = label;
-  const dEl = document.getElementById(`td-${itemId}-${ti}`);
+  cart[key].toppingDeltas[ti] = delta;
+  cart[key].toppingLabels[ti] = label;
+  cart[key].toppingIdx[ti]    = sel.selectedIndex;   // v45: 行を切り替えたとき復元するため
+  const dEl = document.getElementById(`td-${baseId(itemId)}-${ti}`);
   if (dEl) dEl.textContent = delta>0?`+${delta} zł`:delta<0?`${delta} zł`:'';
-  refreshPrice(itemId);
+  refreshPrice(key);
+  if (typeof persistState === 'function') persistState();
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -2535,6 +2862,81 @@ async function submitBorrow() {
   btn.textContent = '✅ 借りる / Wypożycz / Borrow';
 }
 
+// ══════════════════════════════════════════════════════════════
+//  v44: 丼ごとのトッピング追加（cart[id].extras = { トッピングID: 個数 }）
+//   Dodatkiページへ飛ばずにその場で足せる。どの丼に付けたかが記録されるので、
+//   キッチン票にも「この丼に味玉1」と出る。
+// ══════════════════════════════════════════════════════════════
+// 替え玉はラーメン側に専用オプションがあり、ライスはセット割の計算対象なので除外する
+const EXTRA_EXCLUDE = ['d_noodle1', 'd_noodle2', 'd_6d'];
+
+function extraChoices() {
+  const cat = MENU.find(c => c.id === 'dodatki');
+  if (!cat) return [];
+  return (cat.items || []).filter(it =>
+    !HIDDEN_ITEMS.has(it.id) && !it.soldOut && !it.comingSoon &&
+    EXTRA_EXCLUDE.indexOf(it.id) === -1 && Number(it.price) > 0);
+}
+function extrasList(o) {
+  const e = o && o.extras;
+  if (!e) return [];
+  return Object.keys(e).filter(k => e[k] > 0)
+    .map(k => ({ id: k, n: e[k], item: findItem(k) }))
+    .filter(x => x.item);
+}
+function extrasTotal(o) {
+  return extrasList(o).reduce((t, x) => t + (Number(x.item.price) || 0) * x.n, 0);
+}
+function extrasText(o) {
+  const l = extrasList(o);
+  if (!l.length) return '';
+  return '➕ Dodatki / トッピング追加: ' +
+    l.map(x => x.item.namePL + (x.n > 1 ? ' ×' + x.n : '') +
+               (x.item.nameJP ? '（' + x.item.nameJP + '）' : '')).join(', ') +
+    ' (+' + extrasTotal(o) + ' zł)';
+}
+// 1行ぶんの請求額（本体＋交換差額）×数量 ＋ トッピング ＋ 容器代
+function lineTotalOf(id) {
+  const item = findItem(id), o = cart[id];
+  if (!item || !o) return 0;
+  return (item.price + swapCalc(item, o).delta) * (o.qty || 1)
+         + extrasTotal(o) + serveFee(id, o);
+}
+
+// トッピングを1つ増減する（未選択の商品なら自動でカートに入れる）
+function setExtra(itemId, tid, delta, ev) {
+  if (ev && ev.stopPropagation) ev.stopPropagation();
+  const key = ensureLine(itemId);
+  if (!key) return;
+  const o = cart[key];
+  o.extras = o.extras || Object.create(null);
+  const next = Math.max(0, Math.min(9, (o.extras[tid] || 0) + delta));
+  if (next) o.extras[tid] = next; else delete o.extras[tid];
+  refreshExtraChip(key, tid);
+  refreshExtraSum(key);
+  refreshPrice(key);
+  renderTargets(tid);   // v47: Dodatkiページ側の表示も同期
+  updateBadge();
+  if (typeof persistState === 'function') persistState();
+}
+function refreshExtraChip(lineKey, tid) {
+  const itemId = baseId(lineKey);
+  const el = document.getElementById('ex-' + itemId + '-' + tid);
+  if (!el) return;
+  const o = cart[lineKey];
+  const n = (o && o.extras && o.extras[tid]) || 0;
+  const top = findItem(tid);
+  el.classList.toggle('on', n > 0);
+  const numEl = el.querySelector('.ex-n');
+  if (numEl) numEl.textContent = n > 0 ? '×' + n : '+' + (top ? top.price : 0);
+}
+function refreshExtraSum(lineKey) {
+  const el = document.getElementById('exsum-' + baseId(lineKey));
+  if (!el) return;
+  const t = extrasTotal(cart[lineKey]);
+  el.textContent = t ? ('➕ Dodatki razem / トッピング合計: +' + t + ' zł') : '';
+}
+
 // ── 交換ルール：外し単価を「追加額を上限」に減額（ベース価格未満なし） ──
 function swapCalc(item, o) {
   const deltas = Object.values(o.toppingDeltas||{});
@@ -2551,9 +2953,16 @@ function swapCalc(item, o) {
 
 function refreshPrice(id) {
   const item = findItem(id);
-  if (!item || !cart[id]) return;
+  const el = document.getElementById('pr-' + baseId(id));
+  if (!item || !el) return;
+  if (!cart[id]) {   // 行が無くなったら通常価格に戻す
+    el.innerHTML = (item.origPrice ? `<span class="price-old">${item.origPrice} zł</span> ` : '') + item.price + ' zł';
+    return;
+  }
   const delta = swapCalc(item, cart[id]).delta;
-  document.getElementById('pr-'+id).textContent = (item.price+delta)+' zł';
+  const ex = extrasTotal(cart[id]);
+  el.innerHTML = (item.price + delta) + ' zł' +
+    (ex ? ` <span style="font-size:.8rem;color:#2d7a3a">＋ dodatki ${ex} zł</span>` : '');
 }
 
 function updateBadge() {
@@ -2564,8 +2973,8 @@ function updateBadge() {
   else     { b.style.display='none'; btn.classList.remove('has-items'); }
   updateOrderBar(n);
   // 🍚 ライス半額の案内（ラーメンあり・ライスなしのとき1回だけ）
-  const hasRamen = Object.keys(cart).some(id => /^r\d+$/.test(id));
-  const hasRice = RICE_IDS.some(id => cart[id]);
+  const hasRamen = Object.keys(cart).some(id => (findCatOfItem(id)||{}).id === 'ramen');
+  const hasRice = Object.keys(cart).some(id => RICE_IDS.indexOf(baseId(id)) >= 0);
   if (hasRamen && !hasRice && !window._ricePromoShown) {
     window._ricePromoShown = true;
     showToast('🍚 Do ramenu ryż za PÓŁ CENY — tylko 6 zł! / ラーメン注文の方はライスがセット半額6zł！', false);
@@ -2595,26 +3004,54 @@ function updateOrderBar(n) {
   bar.onclick = openConfirm;
   bar.style.background = 'linear-gradient(135deg,#1f6b2d,#2d9c42)';
   let total = 0;
-  for (const id in cart) {
-    const item = findItem(id);
-    if (!item) continue;
-    total += (item.price + swapCalc(item, cart[id]).delta) * (cart[id].qty || 1)
-           + serveFee(id, cart[id]);
-  }
+  for (const id in cart) total += lineTotalOf(id);
   bar.innerHTML = `🛒 <strong>Przejdź do zamówienia / 注文の確認へ ▶</strong>
     &nbsp;<span style="opacity:.9">${n} poz. · ${total} zł</span>`;
   bar.style.display = 'flex';
 }
 
+// ══════════════════════════════════════════════════════════════
+//  v45: カートを「注文行」単位で持つ
+//   ラーメンと丼は 1杯＝1行。キーは r1#1 / r1#2 のように連番を付ける。
+//   これで同じ商品でも1杯ずつトッピングを変えられ、キッチン票も
+//   「あっさり 味玉あり」「あっさり ねぎ抜き」と1杯ずつ指示できる。
+//   飲み物・前菜など他のカテゴリーは従来どおり数量方式（キー＝商品ID）。
+// ══════════════════════════════════════════════════════════════
+function baseId(key) {
+  const k = String(key == null ? '' : key);
+  const i = k.indexOf('#');
+  return i < 0 ? k : k.slice(0, i);
+}
+// その商品が「1杯＝1行」の対象か（ラーメンカテゴリー、または丼物）
+function isLineItem(itemId) {
+  const id = baseId(itemId);
+  const cat = findCatOfItem(id);
+  if (!cat) return false;
+  if (cat.id === 'ramen') return true;
+  const it = findItem(id);
+  if (!it) return false;
+  return /(^|[^a-z])don($|[^a-z])|rice bowl/i.test(it.nameEN || '') || /丼/.test(it.nameJP || '');
+}
+// その商品の行キー一覧（1杯目・2杯目…の順）
+function lineKeys(itemId) {
+  const b = baseId(itemId);
+  return Object.keys(cart)
+    .filter(k => baseId(k) === b)
+    .sort((x, y) => (Number(x.split('#')[1]) || 0) - (Number(y.split('#')[1]) || 0));
+}
+let activeLine = Object.create(null);   // 商品ID → いま編集中の行キー
+
 function findItem(id) {
+  const key = baseId(id);
   for (const cat of MENU) {
-    const it = cat.items.find(i=>i.id===id);
+    const it = cat.items.find(i=>i.id===key);
     if (it) return it;
   }
 }
 function findCatOfItem(id) {
+  const key = baseId(id);
   for (const cat of MENU) {
-    if (cat.items.find(i=>i.id===id)) return cat;
+    if (cat.items.find(i=>i.id===key)) return cat;
   }
 }
 
@@ -2635,6 +3072,8 @@ let groupTakeaway = [];         // v41 ⑤: グループごとの持ち帰りフ
 let setupTakeaway = false;      // グループ構成画面で「持ち帰り」を選んでいるか
 let setupAllowReuse = false;    // 追加グループ作成時：既に割り当て済みの人も選べるようにする
 let groupBillingAuto = false;   // v41 ③: グループ＝伝票を自動適用しているか
+let defaultPayers = [];         // v43: いま注文中の客番号。選んだ商品に自動で付く
+let addOrderMode = false;       // v43: 追加注文の最中か
 
 // グループ一覧画面で商品名を表示する際のHTMLエスケープ（このファイルに汎用escが無いため専用に用意）
 function escGroupText(s) {
@@ -2717,7 +3156,7 @@ function computeSplitTotals() {
     const item = findItem(id);
     if (!item) continue;
     const o = cart[id];
-    let line = (item.price + swapCalc(item, o).delta) * o.qty + serveFee(id, o);
+    let line = lineTotalOf(id);
     if (cc.discount > 0 && id === cc.targetId) line -= cc.discount;
     if (_perkAlloc[id]) line -= _perkAlloc[id];
     if (_riceAlloc[id]) line -= _riceAlloc[id];
@@ -2787,10 +3226,13 @@ function renderSplitUI() {
   }
 
   // 各商品の割り当てチップ
+  // v43：会計を分けていなくても「客ごと」表示なら必ず出す。
+  //      前菜が誰のラーメンの連れなのかを、ホールとキッチンに伝えるため。
+  const showChips = (n >= 2) && (splitBill || confView === 'payer');
   document.querySelectorAll('#conf-items .conf-item').forEach(div => {
     const old = div.querySelector('.payer-chips');
     if (old) old.remove();
-    if (!splitBill || n < 2) return;
+    if (!showChips) return;
     const id = div.dataset.id;
     const payers = cart[id] ? getPayers(cart[id]) : [];
     const chips = document.createElement('div');
@@ -2864,17 +3306,17 @@ const RICE_IDS = ['o10', 'a16', 'd_6d'];
 function computeRiceSetDiscount() {
   let ramenUnits = 0, riceUnits = 0;
   for (const id in cart) {
-    if (/^r\d+$/.test(id)) ramenUnits += cart[id].qty || 1;
-    if (RICE_IDS.includes(id)) riceUnits += cart[id].qty || 1;
+    if ((findCatOfItem(id) || {}).id === 'ramen') ramenUnits += cart[id].qty || 1;
+    if (RICE_IDS.indexOf(baseId(id)) >= 0) riceUnits += cart[id].qty || 1;
   }
   const count = Math.min(ramenUnits, riceUnits);
   // 個別会計用：どのライス行から引くかの割当
   const alloc = {};
   let left = count;
-  for (const rid of RICE_IDS) {
-    if (!left || !cart[rid]) continue;
-    const take = Math.min(left, cart[rid].qty || 1);
-    alloc[rid] = take * 6; left -= take;
+  for (const key in cart) {
+    if (!left || RICE_IDS.indexOf(baseId(key)) < 0) continue;
+    const take = Math.min(left, cart[key].qty || 1);
+    alloc[key] = take * 6; left -= take;
   }
   return { count, discount: count * 6, alloc };
 }
@@ -2896,10 +3338,20 @@ function computeRankPerk() {
   if (!perk) return null;
   const units = [];
   for (const id in cart) {
-    if (!/^d_/.test(id)) continue;
-    const item = findItem(id);
-    if (!item || item.price < 1 || item.price > perk.maxPrice) continue;
-    for (let k = 0; k < (cart[id].qty || 1); k++) units.push({ id, price: item.price, name: item.namePL });
+    // 単品で注文されたトッピング
+    if (/^d_/.test(baseId(id))) {
+      const item = findItem(id);
+      if (item && item.price >= 1 && item.price <= perk.maxPrice) {
+        for (let k = 0; k < (cart[id].qty || 1); k++)
+          units.push({ id, price: item.price, name: item.namePL });
+      }
+    }
+    // v44: 丼カード内で足したトッピングも特典の対象にする（割当先はその丼の行）
+    extrasList(cart[id]).forEach(x => {
+      if (x.item.price < 1 || x.item.price > perk.maxPrice) return;
+      for (let k = 0; k < x.n; k++)
+        units.push({ id: id, price: x.item.price, name: x.item.namePL });
+    });
   }
   units.sort((a, b) => b.price - a.price); // 高い順に無料化（客に有利）
   const take = units.slice(0, perk.count);
@@ -2944,16 +3396,16 @@ let selectedCoupon = null; // 使用するクーポン（'half'|'free'|null）
 // （＝お好きな1杯無料/半額と同等。追加トッピング・替え玉は対象外＝満額請求）
 function computeCouponDiscount() {
   if (!selectedCoupon) return { discount: 0, target: '', targetId: '' };
-  let target = null;
+  let target = null, targetKey = '';
   for (const id in cart) {
-    if (!/^r\d+$/.test(id)) continue;               // ラーメン(r1〜)のみ対象
+    if ((findCatOfItem(id) || {}).id !== 'ramen') continue;   // ラーメンのみ対象
     const item = findItem(id);
     if (!item) continue;
-    if (!target || item.price > target.price) target = item;
+    if (!target || item.price > target.price) { target = item; targetKey = id; }
   }
   if (!target) return { discount: 0, target: '', targetId: '' };
   const discount = selectedCoupon === 'free' ? target.price : Math.round(target.price / 2);
-  return { discount, target: target.namePL, targetId: target.id };
+  return { discount, target: target.namePL, targetId: targetKey };
 }
 
 // クーポン選択が変わったら確認画面の合計を更新
@@ -3048,25 +3500,31 @@ function renderCouponBox() {
 let confView = 'category';
 let confViewLocked = false;   // ユーザーが自分でタブを押したら自動切替をやめる
 
-function confLineTotal(id) {
-  const item = findItem(id), o = cart[id];
-  if (!item || !o) return 0;
-  return (item.price + swapCalc(item, o).delta) * o.qty + serveFee(id, o);
-}
+function confLineTotal(id) { return lineTotalOf(id); }
 
 function confItemHtml(id) {
   const item = findItem(id), o = cart[id];
   if (!item || !o) return '';
   const sw   = swapCalc(item, o);
   const sfee = serveFee(id, o);
-  const line = (item.price + sw.delta) * o.qty + sfee;
+  const line = lineTotalOf(id);
   const removed = o.removed && o.removed.length
     ? `<div class="conf-removed">🚫 Bez: ${o.removed.join(', ')}</div>` : '';
   const changed = Object.values(o.toppingLabels || {}).filter(Boolean);
+  const exTxt = extrasText(o);
+  if (exTxt) changed.push(exTxt);
   if (o.serve === 'wynos') changed.push(serveLabelText('wynos', sfee));
   if (o.serve === 'kasa')  changed.push(serveLabelText('kasa', sfee));
   if (sw.disc > 0) changed.push('↩︎ Zamiana składnika / 具材交換: −' + sw.disc + ' zł');
   const changedHtml = changed.length ? `<div class="conf-changed">🔧 ${changed.join(', ')}</div>` : '';
+  // v46: 「2杯は客1、1杯は客2」のように、数量をその場で切り分けられるようにする
+  const nG = Math.max(parseInt(guestNum, 10) || 1, 1);
+  const splitBtn = (confView === 'payer' && nG >= 2 && !groupBillingAuto && o.qty > 1 && !isLineItem(id))
+    ? `<div style="padding-left:.5rem;margin-top:.25rem">
+        <button onclick="splitConfLine('${id}')" style="background:rgba(45,122,58,.1);
+          border:1.5px solid #2d7a3a;color:#2d7a3a;border-radius:16px;padding:.25rem .7rem;
+          font-size:.7rem;font-weight:700;cursor:pointer;font-family:inherit">
+          ✂️ Podziel 1 szt. / 1つ分ける</button></div>` : '';
   return `<div class="conf-item" data-id="${id}">
       <div class="conf-item-top">
         <div class="conf-name">${item.namePL}<br><span class="conf-name-en">${item.nameEN}</span></div>
@@ -3074,7 +3532,32 @@ function confItemHtml(id) {
         <div class="conf-price">${line} zł</div>
       </div>
       ${removed || changedHtml ? `<div class="conf-details">${removed}${changedHtml}</div>` : ''}
+      ${splitBtn}
     </div>`;
+}
+
+// v46: 数量から1つだけ切り離して別の行にする（別の客に割り当てるため）
+function splitConfLine(key) {
+  const o = cart[key];
+  if (!o || o.qty <= 1) return;
+  const b = baseId(key);
+  let max = 0;
+  lineKeys(b).forEach(k => { max = Math.max(max, Number(k.split('#')[1]) || 0); });
+  const nk = b + '#' + (max + 1);
+  cart[nk] = {
+    qty: 1, removed: (o.removed || []).slice(),
+    toppingDeltas: Object.assign(Object.create(null), o.toppingDeltas),
+    toppingLabels: Object.assign(Object.create(null), o.toppingLabels),
+    toppingIdx:    Object.assign(Object.create(null), o.toppingIdx),
+    serve: o.serve, payers: [],                 // 割り当ては空にして、客を選んでもらう
+    extras: Object.assign(Object.create(null), o.extras),
+    _groupTagged: o._groupTagged
+  };
+  o.qty -= 1;
+  refreshConfItems();
+  updateBadge();
+  showToast('✂️ Podzielono / 1つ分けました — wybierz gościa poniżej / 下で客番号を選んでください', false);
+  if (typeof persistState === 'function') persistState();
 }
 
 function buildConfHtmlByCategory(ids) {
@@ -3109,12 +3592,27 @@ function buildConfHtmlByPayer(ids) {
     if (!b.payers.length) return -1;
     return a.payers[0] - b.payers[0];
   });
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  const unassigned = entries.some(g => !g.payers.length);
   let html = '';
+  // v43：未指定の品が残っているときだけ、指定をうながす
+  if (n >= 2 && unassigned && !groupBillingAuto) {
+    html += `<div class="assign-hint">
+      👤 <b>Do kogo należy danie? / どなたの料理ですか？</b><br>
+      Dotknij numeru gościa pod pozycją — kelner i kuchnia będą wiedzieć,
+      komu podać przystawkę i do czyjego ramenu należy.<br>
+      <small>Tap the guest number under each item so staff know who to serve it to.</small><br>
+      各商品の下の 👤番号 を押して指定してください。前菜がどのお客様の料理か、
+      ホールとキッチンに伝わります。<br>
+      <small>※ 指定しない品は「みんなで」として全員で割ります。</small></div>`;
+  }
   entries.forEach(g => {
     const sub = g.ids.reduce((t, id) => t + confLineTotal(id), 0);
     const takeaway = g.ids.some(id => cart[id] && cart[id].serve && cart[id].serve !== 'lokal');
+    const bill = (splitBill || groupBillingAuto)
+      ? `🧾 Rachunek ${getPayGroup(g.payers[0])} · ` : '';
     const title = g.payers.length
-      ? `🧾 Rachunek ${getPayGroup(g.payers[0])} · 👤${g.payers.join('+')}` +
+      ? bill + `👤${g.payers.join('+')}` +
         `<span style="font-weight:400;opacity:.75"> / 客${g.payers.join('・')}</span>` +
         (takeaway ? ' <span style="font-size:.68rem">🥡</span>' : '')
       : `👥 Wspólne / Shared / みんなで`;
@@ -3165,6 +3663,10 @@ function openConfirm() {
   setTimeout(checkAllergyWarning, 50);
   setTimeout(renderCouponBox, 50);
   setTimeout(renderRankPerkBox, 60);
+  // v45 fix: 旧版はクーポンのラジオを触ったときしか合計を再計算しておらず、
+  //   🍚ライスセット割と🎁ランク特典が確認画面の合計に反映されていなかった。
+  //   （送信される請求額には反映されるため、画面と実額がズレていた）
+  setTimeout(applyCouponToTotal, 70);
   const ids = Object.keys(cart);
   if (!ids.length) { showToast("Nie wybrano nic / Nothing selected"); return; }
   // 注文確定ボタンを必ず有効化（不具合修正）
@@ -3304,17 +3806,19 @@ async function placeOrder() {
     const sw = swapCalc(item, o); const delta = sw.delta;
     const unit  = item.price + delta;
     const sfee  = serveFee(id, o);
-    const line  = unit * o.qty + sfee;
+    const line  = lineTotalOf(id);
     total += line;
     const removedStr  = o.removed?.length ? `Bez: ${o.removed.join(', ')}` : '';
     const changedStr  = Object.values(o.toppingLabels).filter(Boolean).join(', ');
+    const extraStr    = extrasText(o);
     const swapStr     = sw.disc > 0 ? ('Zamiana / 交換減額: −' + sw.disc + ' zł') : '';
     const serveStr    = (o.serve && o.serve !== 'lokal') ? serveLabelText(o.serve, sfee) : '';
-    const customStr   = [serveStr, removedStr, changedStr, swapStr].filter(Boolean).join(' | ');
+    const customStr   = [serveStr, removedStr, changedStr, extraStr, swapStr].filter(Boolean).join(' | ');
     const pl_ = getPayers(o);
-    const payerTag = (splitBill && (parseInt(guestNum,10)||1) >= 2)
-      ? ('【' + (pl_.length ? '👤' + pl_.join('+') : '👥wsp') + '】') : '';
-    return { id: id, namePL: payerTag + item.namePL, nameEN:item.nameEN, qty:o.qty,
+    // v43：会計を分けていなくても、指定があればキッチン票・提供票に客番号を出す
+    const payerTag = (pl_.length && (parseInt(guestNum,10)||1) >= 2)
+      ? ('【👤' + pl_.join('+') + '】') : '';
+    return { id: baseId(id), namePL: payerTag + item.namePL, nameEN:item.nameEN, qty:o.qty,
               unitPrice:unit, lineTotal:line, customizations:customStr,
               serveMode: o.serve || 'lokal', serveFee: sfee,
               payers: pl_.slice() };   // v42: キッチン表示用に商品IDと負担者を送る
@@ -3396,12 +3900,18 @@ async function placeOrder() {
   }
 
   // 送信成功 → 使用クーポンを消し込み、カートを空にして完了画面へ
+  // v48: この注文の客別内訳を残す。会計時に卓の全注文をまたいで合算するため。
+  let splitSnap = null;
+  try { splitSnap = computeSplitTotals(); } catch (e) { splitSnap = null; }
+  // ※ 客別内訳はクーポン適用後の金額で持たせる必要があるため、
+  //    selectedCoupon をリセットする前に計算しておく。
   if (isMember && selectedCoupon && memberInfo.coupons) {
     const ci = memberInfo.coupons.findIndex(c => !c.u && c.t === selectedCoupon);
     if (ci >= 0) memberInfo.coupons.splice(ci, 1);
   }
   selectedCoupon = null;
-  sessionOrders.push({ id: orderId, total: total });
+  sessionOrders.push({ id: orderId, total: total,
+    persons: splitSnap ? splitSnap.finals.slice() : null });
   cart = Object.create(null);
   updateBadge();
   if (typeof persistState === 'function') persistState();
@@ -3685,9 +4195,68 @@ function openCheckout() {
   const sum = sessionOrders.reduce((a, o) => a + (o.total || 0), 0);
   document.getElementById('co-sum').textContent =
     `Stolik ${tableNum} ・ ${sessionOrders.length} zamówień / 件 ・ Razem ${sum} zł`;
+  document.getElementById('co-guests').innerHTML = buildCheckoutBreakdown();
   showCoStep('co-step-type');
   document.getElementById('checkout-screen').style.display = 'block';
   window.scrollTo(0, 0);
+}
+
+// v48: この卓の全注文（追加注文も含む）を客ごとに合算する
+function checkoutTotals() {
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  const per = new Array(n).fill(0);
+  let any = false;
+  sessionOrders.forEach(o => {
+    if (!o.persons) return;
+    any = true;
+    o.persons.forEach((v, i) => { if (i < n) per[i] += v; });
+  });
+  return { n, per, any };
+}
+function checkoutBreakdownText() {
+  const t = checkoutTotals();
+  if (!t.any || t.n < 2) return '';
+  const groups = {};
+  t.per.forEach((v, i) => {
+    const L = getPayGroup(i + 1);
+    (groups[L] = groups[L] || { total: 0, members: [] });
+    groups[L].total += v; groups[L].members.push(i + 1);
+  });
+  const merged = Object.keys(groups).length < t.n;
+  return (merged
+    ? Object.keys(groups).sort().map(L =>
+        '🧾' + L + '(👤' + groups[L].members.join('+') + ')→' + fmtZl(groups[L].total)).join(' | ')
+    : t.per.map((v, i) => '👤' + (i + 1) + '→' + fmtZl(v)).join(' | '));
+}
+function buildCheckoutBreakdown() {
+  const t = checkoutTotals();
+  if (!t.any || t.n < 2) return '';
+  const groups = {};
+  t.per.forEach((v, i) => {
+    const L = getPayGroup(i + 1);
+    (groups[L] = groups[L] || { total: 0, members: [] });
+    groups[L].total += v; groups[L].members.push(i + 1);
+  });
+  const rows = t.per.map((v, i) =>
+    `<div style="display:flex;justify-content:space-between;padding:.15rem 0">
+      <span>👤 客${i + 1}</span><strong>${fmtZl(v)}</strong></div>`).join('');
+  let bills = '';
+  if (Object.keys(groups).length < t.n) {
+    bills = '<div style="margin-top:.45rem;padding-top:.45rem;border-top:1px dashed rgba(45,122,58,.4)">' +
+      '<strong>🧾 Rachunki / 伝票ごと</strong>' +
+      Object.keys(groups).sort().map(L =>
+        `<div style="display:flex;justify-content:space-between;padding:.15rem 0">
+          <span>Rachunek ${L}（👤${groups[L].members.join('+')}）</span>
+          <strong>${fmtZl(groups[L].total)}</strong></div>`).join('') + '</div>';
+  }
+  return `<div style="background:#f2f9ee;border:1.5px solid #2d7a3a;border-radius:12px;
+      padding:.7rem .8rem;font-size:.82rem;color:#1f5429;line-height:1.6">
+    <div style="font-weight:700;margin-bottom:.3rem">💳 Do zapłaty / お支払い金額（この卓の全注文の合計）</div>
+    ${rows}${bills}
+    <div style="font-size:.68rem;opacity:.8;margin-top:.4rem">
+      Zawiera wszystkie zamówienia, także dodatkowe. / 追加注文もすべて含まれています。<br>
+      Grosze zaokrągla kasa. / 端数はレジで調整します。</div>
+  </div>`;
 }
 
 function showCoStep(id) {
@@ -3761,6 +4330,7 @@ async function confirmCheckout() {
       body: JSON.stringify({ action: 'checkout',
         table: tableNum, guests: guestNum,
         orders: sessionOrders.map(o => o.id), sum,
+        guestBreakdown: checkoutBreakdownText(),
         invoiceType: checkoutInvoice.type, nip: checkoutInvoice.nip,
         companyName: checkoutInvoice.name, companyAddress: checkoutInvoice.address,
         isMember, memberName: isMember ? memberName : '', memberContact: isMember ? memberContact : '' })
@@ -3784,12 +4354,71 @@ function renderSessionOrders() {
 
 // 追加注文：セッション（テーブル・会員情報・注文履歴）を保持したままメニューへ
 function backToMenuKeepSession() {
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  addOrderMode = false;
+  if (n >= 2) { openAddOrderPicker(); return; }   // 2名以上なら必ず相手を確認する
+  defaultPayers = [];
+  addOrderMode = true;
+  resumeMenuForAddOrder();
+}
+
+// v43：追加注文が誰のものかを選んでもらう
+function openAddOrderPicker() {
+  addOrderMode = false;
+  document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('savings-card').style.display = 'none';
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  let html = '';
+  if (orderGroups.length) {
+    html += orderGroups.map((g, i) =>
+      `<button class="co-btn" onclick="pickAddOrder(${i},null)">
+        ${groupBillingAuto ? '🧾' + String.fromCharCode(65 + i) + ' · ' : ''}👤${g.join('+')}${groupTakeaway[i] ? ' 🥡' : ''}
+        <br><small>Grupa ${i + 1} / Group ${i + 1} / グループ${i + 1}${groupTakeaway[i] ? '（持ち帰り）' : ''}</small>
+      </button>`).join('');
+  } else {
+    for (let p = 1; p <= n; p++) {
+      html += `<button class="co-btn" onclick="pickAddOrder(null,${p})">
+        👤 Osoba ${p} / Guest ${p} / 客${p}</button>`;
+    }
+  }
+  html += `<button class="co-btn" onclick="pickAddOrder(null,0)">
+      👥 Wspólne — dla wszystkich<br>
+      <small>Shared by everyone / みんなで（全員で割る）</small></button>`;
+  document.getElementById('addorder-list').innerHTML = html;
+  document.getElementById('addorder-screen').style.display = 'flex';
+  window.scrollTo(0, 0);
+}
+
+function pickAddOrder(groupIdx, person) {
+  if (groupIdx !== null) {
+    currentGroupIndex = groupIdx;
+    reviewEditMode = false;
+    defaultPayers = orderGroups[groupIdx].slice();
+  } else {
+    currentGroupIndex = -1;
+    defaultPayers = person ? [person] : [];
+  }
+  activeLine = Object.create(null);   // v45: 追加注文は必ず新しい行から
+  addOrderMode = true;
+  document.getElementById('addorder-screen').style.display = 'none';
+  resumeMenuForAddOrder();
+}
+
+function cancelAddOrder() {
+  document.getElementById('addorder-screen').style.display = 'none';
+  document.getElementById('success-screen').style.display = 'flex';
+}
+
+function resumeMenuForAddOrder() {
   document.getElementById('success-screen').style.display = 'none';
   document.getElementById('savings-card').style.display = 'none';
   document.getElementById('menu-screen').style.display = 'block';
+  backToCategoryGrid();
+  updateGroupProgressBar();
   updateBadge();
   window.scrollTo(0, 0);
-  showToast('➕ Dodaj kolejne pozycje / 追加のご注文をどうぞ', false);
+  const who = defaultPayers.length ? '👤' + defaultPayers.join('+') : '👥 みんなで';
+  showToast('➕ Dodatkowe zamówienie / 追加注文：' + who, false);
   if (typeof persistState === 'function') persistState();
 }
 
@@ -3885,6 +4514,8 @@ function resetApp() {
   groupSetupAssigned = []; currentGroupIndex = -1; reviewEditMode = false;
   groupTakeaway = []; setupTakeaway = false; setupAllowReuse = false;
   groupBillingAuto = false; confView = 'category'; confViewLocked = false;
+  defaultPayers = []; addOrderMode = false; activeLine = Object.create(null);
+  { const el = document.getElementById('addorder-screen'); if (el) el.style.display = 'none'; }
   const gpb = document.getElementById('group-progress-bar');
   if (gpb) { gpb.style.display = 'none'; gpb.innerHTML = ''; }
   { const grs = document.getElementById('group-review-screen'); if (grs) grs.style.display = 'none'; }
@@ -4014,7 +4645,8 @@ function persistState() {
       tableNum, guestNum, isMember, memberContact, memberName, memberInfo,
       cart, coseatMembers, sessionOrders, inMenu: menuOpen, t: Date.now(),
       orderModeDecided, orderGroups, groupTakeaway, groupSetupAssigned,
-      currentGroupIndex, splitBill, groupBillingAuto, payGroups
+      currentGroupIndex, splitBill, groupBillingAuto, payGroups,
+      defaultPayers, addOrderMode, activeLine
     }));
   } catch (e) {}
 }
@@ -4041,6 +4673,9 @@ function tryRestoreState() {
     splitBill          = !!s.splitBill;
     groupBillingAuto   = !!s.groupBillingAuto;
     payGroups          = s.payGroups || {};
+    defaultPayers      = s.defaultPayers || [];
+    addOrderMode       = !!s.addOrderMode;
+    activeLine         = s.activeLine || Object.create(null);
     ['welcome-screen','member-check-screen','register-prompt-screen'].forEach(sid => {
       const el = document.getElementById(sid); if (el) el.style.display = 'none';
     });
@@ -4103,7 +4738,8 @@ window.addEventListener('load', () => { setTimeout(tryRestoreState, 150); });
   <div style="max-width:440px;margin:0 auto">
     <div style="text-align:center;font-size:1.15rem;font-weight:700;color:#5b3b8e;margin-bottom:.2rem">
       💳 Płatność / Payment / お会計</div>
-    <div id="co-sum" style="text-align:center;font-size:.85rem;color:#7a6858;margin-bottom:1rem"></div>
+    <div id="co-sum" style="text-align:center;font-size:.85rem;color:#7a6858;margin-bottom:.7rem"></div>
+    <div id="co-guests" style="margin-bottom:1rem"></div>
 
     <!-- STEP 1: 領収書タイプ -->
     <div class="co-step" id="co-step-type">
