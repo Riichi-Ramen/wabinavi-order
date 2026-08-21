@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WABI NAVI — Etykiety QR książek / 書籍QRラベル印刷</title>
+<style>
+:root{--accent:#c0392b;--text:#2c1810;--muted:#7a6858;--border:rgba(180,140,110,.35)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f7f0e6;color:var(--text);padding:1.5rem 1rem 3rem}
+.wrap{max-width:920px;margin:0 auto}
+h1{font-size:1.15rem;color:var(--accent);text-align:center;margin-bottom:.3rem}
+.sub{font-size:.8rem;color:var(--muted);text-align:center;margin-bottom:1.2rem;line-height:1.7}
+.panel{background:rgba(255,252,245,.95);border:1px solid rgba(192,57,43,.2);border-radius:14px;
+  padding:1.1rem;margin-bottom:1.2rem;box-shadow:0 4px 20px rgba(120,60,40,.1)}
+.row{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;margin-bottom:.8rem}
+label.f{font-size:.78rem;color:var(--muted);font-weight:700}
+select,input[type=text]{font-family:inherit;font-size:.9rem;padding:.5rem .6rem;border-radius:8px;
+  border:1.5px solid rgba(192,57,43,.3);background:#fffdf9;color:var(--text)}
+.btn{padding:.6rem 1.1rem;border:none;border-radius:9px;font-weight:700;font-size:.85rem;
+  cursor:pointer;font-family:inherit;background:var(--accent);color:#fff}
+.btn.ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+.count{font-size:.8rem;color:var(--muted)}
+.picker{max-height:250px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:.5rem;background:#fffdf9}
+.gname{font-size:.75rem;font-weight:700;color:var(--accent);margin:.6rem 0 .25rem;letter-spacing:.03em}
+.pick{display:flex;align-items:center;gap:.5rem;font-size:.8rem;padding:.16rem 0}
+.pick input{width:16px;height:16px;accent-color:var(--accent)}
+.pick .id{font-family:ui-monospace,Menlo,monospace;color:var(--accent);font-weight:700;min-width:74px}
+.pick .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hint{font-size:.75rem;color:var(--muted);line-height:1.7;margin-top:.6rem}
+
+/* ── ラベルシート ── */
+#sheet{background:#fff;margin:0 auto;padding:0}
+.label{
+  border:1px dashed #ddd;border-radius:3px;
+  display:flex;align-items:center;gap:2.5mm;padding:2mm 2.5mm;overflow:hidden;
+  page-break-inside:avoid;break-inside:avoid;
+}
+.label .qr{flex:none;line-height:0}
+.label .qr img,.label .qr canvas{display:block}
+.label .txt{flex:1;min-width:0;line-height:1.25}
+.label .lid{font-family:ui-monospace,Menlo,monospace;font-weight:700;color:#000;letter-spacing:.02em}
+.label .ltitle{color:#333;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical}
+.label .lbrand{color:#c0392b;font-weight:700;letter-spacing:.06em}
+
+/* サイズ別 */
+.size-24 .label{width:70mm;height:37mm}
+.size-24 .lid{font-size:11pt}
+.size-24 .ltitle{font-size:7pt;-webkit-line-clamp:3;margin:.8mm 0}
+.size-24 .lbrand{font-size:6pt}
+.size-40 .label{width:48.5mm;height:25.4mm;gap:1.8mm;padding:1.2mm 1.5mm}
+.size-40 .lid{font-size:8.5pt}
+.size-40 .ltitle{font-size:5.5pt;-webkit-line-clamp:2;margin:.5mm 0}
+.size-40 .lbrand{font-size:4.5pt}
+
+#sheet{display:grid;justify-content:center;gap:0}
+#sheet.size-24{grid-template-columns:repeat(3,70mm)}
+#sheet.size-40{grid-template-columns:repeat(4,48.5mm)}
+
+@media print{
+  @page{size:A4;margin:8mm}
+  body{background:#fff;padding:0}
+  .noprint{display:none !important}
+  .label{border:1px dashed #eee}
+  #sheet{gap:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="noprint">📚 Etykiety QR do książek / 書籍QRラベル</h1>
+  <div class="sub noprint">
+    Wydrukuj i naklej na tylnej okładce każdej książki.<br>
+    印刷して各書籍の裏表紙に貼ってください。QRの中身は管理番号のみです（個人情報なし）。
+  </div>
+
+  <div class="panel noprint">
+    <div class="row">
+      <label class="f">Rozmiar / サイズ</label>
+      <select id="size">
+        <option value="24">70 × 37 mm — 24 szt./A4（標準・おすすめ）</option>
+        <option value="40">48,5 × 25,4 mm — 40 szt./A4（小さめ・文庫向き）</option>
+      </select>
+      <label class="f">Pomiń / 先頭を空ける</label>
+      <input type="text" id="skip" value="0" style="width:70px" title="使いかけのシール台紙用">
+      <button class="btn ghost" onclick="load()">🔄 Odśwież / 再取得</button>
+    </div>
+    <div class="row">
+      <button class="btn ghost" onclick="pickAll(true)">☑ Wszystkie / 全選択</button>
+      <button class="btn ghost" onclick="pickAll(false)">☐ Żadna / 全解除</button>
+      <span class="count" id="count"></span>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="build();window.print()">🖨 Drukuj / 印刷</button>
+    </div>
+    <div class="picker" id="picker">Ładowanie… / 読み込み中…</div>
+    <div class="hint">
+      ・シール台紙は A4「3×8面（70×37mm）」または「4×10面（48.5×25.4mm）」に対応。<br>
+      ・印刷ダイアログでは<b>「余白：なし／既定」「倍率100%」</b>にしてください（縮小すると位置がずれます）。<br>
+      ・使いかけの台紙は「先頭を空ける」に使用済み枚数を入れると、その分だけ空白から始まります。<br>
+      ・普通紙に印刷して透明テープで留めても十分実用的です。
+    </div>
+  </div>
+
+  <div id="sheet" class="size-24"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const GAS_URL = localStorage.getItem('wabi_gas_url') ||
+  'https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec';
+
+let BOOKS = [];
+
+async function load(){
+  const p = document.getElementById('picker');
+  p.textContent = 'Ładowanie… / 読み込み中…';
+  try {
+    const res = await fetch(GAS_URL + '?action=getBooks');
+    const j = await res.json();
+    BOOKS = (j.books || []).slice();
+    if (!BOOKS.length) { p.textContent = 'Brak książek w arkuszu / 書籍シートにデータがありません'; return; }
+    renderPicker();
+    build();
+  } catch(e){
+    p.textContent = 'Błąd połączenia / 通信エラー: ' + e;
+  }
+}
+
+function renderPicker(){
+  const groups = {};
+  BOOKS.forEach(b => { (groups[b.genre || '—'] = groups[b.genre || '—'] || []).push(b); });
+  const p = document.getElementById('picker');
+  p.innerHTML = Object.keys(groups).map(g =>
+    `<div class="gname">${esc(g)}</div>` + groups[g].map(b =>
+      `<label class="pick"><input type="checkbox" class="cb" value="${esc(b.id)}" checked onchange="updCount()">
+        <span class="id">${esc(b.id)}</span><span class="t">${esc(b.title)}</span></label>`
+    ).join('')
+  ).join('');
+  updCount();
+}
+function pickAll(v){
+  document.querySelectorAll('.cb').forEach(c => c.checked = v);
+  updCount(); build();
+}
+function updCount(){
+  const n = document.querySelectorAll('.cb:checked').length;
+  document.getElementById('count').textContent = n + ' / ' + BOOKS.length + ' etykiet — ラベル' + n + '枚';
+}
+
+function build(){
+  const size = document.getElementById('size').value;
+  const skip = Math.max(0, parseInt(document.getElementById('skip').value || '0', 10) || 0);
+  const sheet = document.getElementById('sheet');
+  sheet.className = 'size-' + size;
+  sheet.innerHTML = '';
+
+  const sel = {};
+  document.querySelectorAll('.cb:checked').forEach(c => sel[c.value] = true);
+  const list = BOOKS.filter(b => sel[b.id]);
+
+  for (let i = 0; i < skip; i++) {
+    const d = document.createElement('div');
+    d.className = 'label'; d.style.border = 'none';
+    sheet.appendChild(d);
+  }
+
+  const qrPx = size === '24' ? 96 : 66;
+  list.forEach(b => {
+    const el = document.createElement('div');
+    el.className = 'label';
+    const qr = document.createElement('div'); qr.className = 'qr';
+    const txt = document.createElement('div'); txt.className = 'txt';
+    txt.innerHTML = `<div class="lid">${esc(b.id)}</div>
+      <div class="ltitle">${esc(b.title)}</div>
+      <div class="lbrand">🍜 WABI NAVI · Toruń</div>`;
+    el.appendChild(qr); el.appendChild(txt);
+    sheet.appendChild(el);
+    try {
+      new QRCode(qr, { text: 'WABIBOOK:' + b.id, width: qrPx, height: qrPx,
+                       correctLevel: QRCode.CorrectLevel.M });
+    } catch(e){ qr.textContent = b.id; }
+  });
+  updCount();
+}
+
+document.getElementById('size').onchange = build;
+document.getElementById('skip').oninput  = build;
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+load();
+</script>
+</body>
+</html>
