@@ -485,18 +485,26 @@ async function doReturn(b){
   if (r.status !== 'ok') { showErr(r.message || 'Błąd'); return; }
   stopCam();
   document.getElementById('scan-card').classList.add('hidden');
-  const gift = r.lateDays > 0
-    ? `<div class="gift">🎁 Zwrot po terminie (${r.lateDays} dni) — <b>wręcz drobny upominek</b>
-        i podziękuj za przyniesienie.<br>
-        期限超過（${r.lateDays}日）。<b>サービス品をお渡しし</b>、お礼を伝えてください。</div>`
-    : `<div class="gift">🎁 Zwrot w terminie — zaproponuj kolejną książkę!<br>
-        期限内の返却です。次の1冊をおすすめしましょう。</div>`;
+  const late = r.lateDays > 0
+    ? `<div style="font-size:.78rem;color:#a00;margin-top:.3rem">
+         Zwrot po terminie: ${r.lateDays} dni / 期限超過 ${r.lateDays}日</div>` : '';
+  const gift = r.gifted
+    ? `<div class="gift">🍙 <b>Prezent przyznany / 特典を付与しました</b><br>
+        Onigiri (1 szt.) GRATIS do dowolnego ramenu<br>
+        Free onigiri (1 pc) with any ramen<br>
+        ラーメンご注文で おにぎり1個サービス<br>
+        <small>Pojawi się automatycznie przy składaniu zamówienia (${esc(r.giftMember||'')}).<br>
+        注文アプリの確認画面に自動で表示され、合計から差し引かれます。</small></div>`
+    : `<div class="gift">📗 Zwrot zapisany. Zaproponuj kolejną książkę!<br>
+        返却を記録しました。次の1冊をおすすめしましょう。<br>
+        <small>特典は付与されていません（会員情報が紐づいていない、または未使用の特典が残っています）。</small></div>`;
   const d = document.getElementById('detail-card');
   d.innerHTML =
     `<div class="result">
        <div class="big">📗</div>
        <div style="font-weight:700">Zwrot zapisany / 返却を記録しました</div>
        <div class="sub" style="margin-top:.4rem">${esc(r.book.title)}<br>${esc(r.book.id)}</div>
+       ${late}
      </div>${gift}
      <div class="btn-row"><button class="btn btn-primary" onclick="setMode('return')">📗 Następna / 次の返却</button></div>`;
   d.classList.remove('hidden');

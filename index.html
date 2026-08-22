@@ -3154,6 +3154,7 @@ function computeSplitTotals() {
   const _pk = computeRankPerk();
   const _perkAlloc = (_pk && _pk.alloc) || {};
   const _riceAlloc = computeRiceSetDiscount().alloc;
+  const _bg = computeBookGiftDiscount();
   for (const id in cart) {
     const item = findItem(id);
     if (!item) continue;
@@ -3162,6 +3163,7 @@ function computeSplitTotals() {
     if (cc.discount > 0 && id === cc.targetId) line -= cc.discount;
     if (_perkAlloc[id]) line -= _perkAlloc[id];
     if (_riceAlloc[id]) line -= _riceAlloc[id];
+    if (_bg.discount > 0 && id === _bg.targetId) line -= _bg.discount;
     const payers = getPayers(o).filter(p => p >= 1 && p <= n);
     if (payers.length) {
       const each = line / payers.length; // 複数選択時は均等割り
@@ -3393,6 +3395,28 @@ function renderRankPerkBox() {
 }
 
 let selectedCoupon = null; // 使用するクーポン（'half'|'free'|null）
+let selectedBookGift = false;  // 🍙 書籍返却特典（おにぎり1個無料）を使うか
+
+// ══════════════════════════════════════════════════════════════
+//  🍙 書籍返却特典：ラーメン注文時に「Onigiri (1 szt.)」1個を無料に
+//   本を返却した瞬間にGASが会員へ1枚付与する（クーポン欄に t:"book"）。
+//   条件：カートにラーメンがあり、かつ おにぎり(o1) が入っていること。
+// ══════════════════════════════════════════════════════════════
+const BOOK_GIFT_ITEM = 'o1';   // Onigiri (1 szt.)
+
+function hasBookGift() {
+  return !!(isMember && memberInfo && memberInfo.coupons &&
+            memberInfo.coupons.some(c => !c.u && c.t === 'book'));
+}
+function computeBookGiftDiscount() {
+  if (!selectedBookGift || !hasBookGift()) return { discount: 0, targetId: '', reason: '' };
+  const hasRamen = Object.keys(cart).some(id => (findCatOfItem(id) || {}).id === 'ramen');
+  if (!hasRamen) return { discount: 0, targetId: '', reason: 'ramen' };
+  const key = Object.keys(cart).find(id => baseId(id) === BOOK_GIFT_ITEM);
+  if (!key) return { discount: 0, targetId: '', reason: 'onigiri' };
+  const item = findItem(BOOK_GIFT_ITEM);
+  return { discount: item ? item.price : 0, targetId: key, reason: '' };
+}
 
 // クーポン割引額を計算：カート内で最も高いラーメン1杯の基本価格が対象
 // （＝お好きな1杯無料/半額と同等。追加トッピング・替え玉は対象外＝満額請求）
@@ -3444,6 +3468,13 @@ function applyCouponToTotal() {
     pLine.innerHTML = `<span>🎁 Bonus rangi ${perkInfo.rank}（${perkInfo.names.join(', ')}）</span><span>−${perkDisc} zł</span>`;
     pLine.style.display = 'flex';
   } else { pLine.style.display = 'none'; }
+  // 🍙 書籍返却特典（おにぎり1個無料）
+  const bg = computeBookGiftDiscount();
+  const bLine = mkLine('bookgift-discount-line', '#2d7a3a');
+  if (bg.discount > 0) {
+    bLine.innerHTML = `<span>🍙 Prezent za zwrot książki（Onigiri）</span><span>−${bg.discount} zł</span>`;
+    bLine.style.display = 'flex';
+  } else { bLine.style.display = 'none'; }
   // 🍚 ライスセット割引行
   const rice = computeRiceSetDiscount();
   const rLine = mkLine('riceset-discount-line', '#1f6b8e');
@@ -3452,18 +3483,63 @@ function applyCouponToTotal() {
     rLine.style.display = 'flex';
   } else { rLine.style.display = 'none'; }
   // 合計
-  const allDisc = discount + perkDisc + rice.discount;
+  const allDisc = discount + perkDisc + rice.discount + bg.discount;
   totalEl.innerHTML = allDisc > 0
     ? `<span style="text-decoration:line-through;opacity:.5;font-size:.8em">${base} zł</span> ${base - allDisc} zł`
     : base + ' zł';
   renderRankPerkBox();
+  renderBookGiftBox();
   renderSplitSummary();
+}
+
+// 🍙 書籍返却特典の案内ボックス（確認画面）
+function renderBookGiftBox() {
+  const ta = document.getElementById('uwagi-ta');
+  let box = document.getElementById('bookgift-area');
+  if (!hasBookGift()) { if (box) box.style.display = 'none'; selectedBookGift = false; return; }
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'bookgift-area';
+    box.style.cssText = 'margin:.8rem 0;padding:.8rem .9rem;border:2px solid #2d7a3a;border-radius:12px;' +
+      'background:linear-gradient(135deg,#f2f9ee,#e6f3df);font-size:.82rem;line-height:1.7;color:#1f5429';
+    ta.parentNode.insertBefore(box, ta);
+  }
+  const bg = computeBookGiftDiscount();
+  const item = findItem(BOOK_GIFT_ITEM);
+  let note = '';
+  if (selectedBookGift && bg.discount === 0) {
+    note = bg.reason === 'ramen'
+      ? `<div style="margin-top:.4rem;color:#8e2418;font-weight:700">
+           ⚠️ Dodaj ramen, aby skorzystać / ラーメンをご注文いただくと無料になります</div>`
+      : `<div style="margin-top:.4rem;color:#8e2418;font-weight:700">
+           ⚠️ Dodaj Onigiri (1 szt.) do zamówienia / おにぎり（1個）をカートに追加してください
+           <button onclick="document.getElementById('confirm-modal').classList.remove('open');enterCategory('onigiri')"
+             style="margin-left:.4rem;background:#2d7a3a;color:#fff;border:none;border-radius:8px;
+             padding:.3rem .7rem;font-size:.72rem;font-weight:700;cursor:pointer">🍙 追加 ▶</button></div>`;
+  }
+  box.innerHTML = `
+    <div style="font-weight:700;margin-bottom:.4rem">
+      🍙 Prezent za zwrot książki! / 書籍返却の特典があります！</div>
+    <label style="display:block;padding:.2rem 0;cursor:pointer">
+      <input type="radio" name="bookgift-sel" value="" ${selectedBookGift ? '' : 'checked'}
+        onchange="selectedBookGift=false;applyCouponToTotal()">
+      Nie używam teraz / 今回は使わない</label>
+    <label style="display:block;padding:.2rem 0;cursor:pointer">
+      <input type="radio" name="bookgift-sel" value="1" ${selectedBookGift ? 'checked' : ''}
+        onchange="selectedBookGift=true;applyCouponToTotal()">
+      Onigiri (1 szt.) GRATIS do dowolnego ramenu<br>
+      <span style="font-size:.74rem;opacity:.85">Free onigiri (1 pc) with any ramen ・
+      ラーメンご注文で おにぎり1個サービス（−${item ? item.price : 14} zł）</span></label>
+    ${note}
+    <div style="font-size:.68rem;opacity:.8;margin-top:.4rem">
+      ※ Ważne przy tej wizycie / 今回のご来店でご利用いただけます</div>`;
+  box.style.display = 'block';
 }
 
 function renderCouponBox() {
   const ta = document.getElementById('uwagi-ta');
   let box = document.getElementById('coupon-area');
-  const coupons = (isMember && memberInfo && memberInfo.coupons) ? memberInfo.coupons.filter(c => !c.u) : [];
+  const coupons = (isMember && memberInfo && memberInfo.coupons) ? memberInfo.coupons.filter(c => !c.u && c.t !== 'book') : [];
   if (!coupons.length) { if (box) box.style.display = 'none'; selectedCoupon = null; return; }
   if (!box) {
     box = document.createElement('div');
@@ -3665,6 +3741,7 @@ function openConfirm() {
   setTimeout(checkAllergyWarning, 50);
   setTimeout(renderCouponBox, 50);
   setTimeout(renderRankPerkBox, 60);
+  setTimeout(renderBookGiftBox, 65);
   // v45 fix: 旧版はクーポンのラジオを触ったときしか合計を再計算しておらず、
   //   🍚ライスセット割と🎁ランク特典が確認画面の合計に反映されていなかった。
   //   （送信される請求額には反映されるため、画面と実額がズレていた）
@@ -3833,6 +3910,8 @@ async function placeOrder() {
   if (perkCalc && perkCalc.discount > 0) total -= perkCalc.discount;
   const riceCalc = computeRiceSetDiscount();
   if (riceCalc.discount > 0) total -= riceCalc.discount;
+  const bookGiftCalc = computeBookGiftDiscount();
+  if (bookGiftCalc.discount > 0) total -= bookGiftCalc.discount;
 
   // ⭐Polecane（おすすめ特価）の値引き額を集計。
   //   origPriceは通常価格、priceは特価。カート内の数量ぶん差額を合計する。
@@ -3848,12 +3927,13 @@ async function placeOrder() {
 
   // 今回の注文で発生した「お得額」の合計（完了画面での演出に使う）
   const totalSavings = polecaneDiscount + couponCalc.discount +
-    (perkCalc ? perkCalc.discount : 0) + riceCalc.discount;
+    (perkCalc ? perkCalc.discount : 0) + riceCalc.discount + bookGiftCalc.discount;
   const savingsBreakdown = [];
   if (polecaneDiscount > 0) savingsBreakdown.push({ label: '⭐ Polecane', pl: 'Oferta specjalna', jp: 'おすすめ特価', amt: polecaneDiscount });
   if (couponCalc.discount > 0) savingsBreakdown.push({ label: '🎫', pl: 'Kupon', jp: 'クーポン', amt: couponCalc.discount });
   if (perkCalc && perkCalc.discount > 0) savingsBreakdown.push({ label: '🎁', pl: 'Bonus rangi', jp: 'ランク特典', amt: perkCalc.discount });
   if (riceCalc.discount > 0) savingsBreakdown.push({ label: '🍚', pl: 'Zestaw z ryżem', jp: 'ライスセット', amt: riceCalc.discount });
+  if (bookGiftCalc.discount > 0) savingsBreakdown.push({ label: '🍙', pl: 'Prezent za zwrot książki', jp: '書籍返却特典', amt: bookGiftCalc.discount });
 
   document.getElementById('confirm-modal').classList.remove('open');
   document.getElementById('btn-order').disabled = true;
@@ -3882,6 +3962,8 @@ async function placeOrder() {
           couponTarget: couponCalc.target,
           riceSetDiscount: riceCalc.discount,
           riceSetCount: riceCalc.count,
+          useBookGift: (bookGiftCalc.discount > 0),
+          bookGiftDiscount: bookGiftCalc.discount,
           rankPerkDiscount: perkCalc ? perkCalc.discount : 0,
           rankPerkRank: perkCalc ? perkCalc.rank : "",
           rankPerkDetail: perkCalc ? perkCalc.names.join(", ") : "",
@@ -3907,6 +3989,11 @@ async function placeOrder() {
   try { splitSnap = computeSplitTotals(); } catch (e) { splitSnap = null; }
   // ※ 客別内訳はクーポン適用後の金額で持たせる必要があるため、
   //    selectedCoupon をリセットする前に計算しておく。
+  if (bookGiftCalc.discount > 0 && memberInfo.coupons) {
+    const bi = memberInfo.coupons.findIndex(c => !c.u && c.t === 'book');
+    if (bi >= 0) memberInfo.coupons.splice(bi, 1);
+  }
+  selectedBookGift = false;
   if (isMember && selectedCoupon && memberInfo.coupons) {
     const ci = memberInfo.coupons.findIndex(c => !c.u && c.t === selectedCoupon);
     if (ci >= 0) memberInfo.coupons.splice(ci, 1);
@@ -4529,7 +4616,7 @@ function resetApp() {
   const co = document.getElementById('checkout-screen'); if (co) co.style.display = 'none';
   tableNum=""; guestNum="";
   isMember=false; memberContact=""; memberName=""; memberInfo=Object.create(null);
-  coseatMembers = [];
+  coseatMembers = []; selectedCoupon = null; selectedBookGift = false;
   document.getElementById('success-screen').style.display = 'none';
   document.getElementById('savings-card').style.display = 'none';
   document.getElementById('member-check-screen').style.display = 'none';
