@@ -7,7 +7,7 @@
 <style>
 :root{
   --accent:#c0392b;--text:#2c1810;--muted:#7a6858;
-  --border:rgba(180,140,110,0.35);--green:#2d7a3a;
+  --border:rgba(180,140,110,0.35);--green:#2d7a3a;--warn:#b8860b;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{
@@ -76,6 +76,62 @@ body{
   width:36px;height:36px;margin:2rem auto;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #list-area{width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center}
+
+/* ══════════ 📞 電話予約（v8.3） ══════════ */
+.tel-open{width:100%;max-width:560px;display:flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:1rem;margin-bottom:.8rem;border:none;border-radius:14px;cursor:pointer;
+  background:var(--accent);color:#fff;font-weight:700;font-size:1rem;font-family:inherit;
+  box-shadow:0 5px 18px rgba(192,57,43,0.32)}
+.tel-open small{display:block;font-weight:400;font-size:.7rem;opacity:.9}
+.back-link{width:100%;max-width:560px;background:none;border:none;color:var(--accent);
+  font-weight:700;font-size:.82rem;cursor:pointer;text-align:left;padding:.2rem 0 .6rem;font-family:inherit}
+.sec{width:100%;max-width:560px;background:rgba(255,252,245,0.95);border:1px solid rgba(192,57,43,0.18);
+  border-radius:14px;padding:.85rem .9rem;margin-bottom:.6rem;box-shadow:0 3px 12px rgba(120,60,40,0.08)}
+.sec-title{font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:.5rem;
+  display:flex;justify-content:space-between;align-items:baseline;gap:.4rem}
+.sec-title span.hint{font-size:.68rem;font-weight:400;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.chip{position:relative;padding:.55rem .7rem;border-radius:10px;border:1.5px solid var(--border);
+  background:rgba(255,255,255,.6);color:var(--text);font-size:.85rem;font-weight:700;
+  cursor:pointer;font-family:inherit;min-width:60px;text-align:center;line-height:1.15}
+.chip small{display:block;font-size:.62rem;font-weight:400;color:var(--muted)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip.on small{color:rgba(255,255,255,.85)}
+.chip.risky{border-style:dashed;border-color:rgba(184,134,11,.8);color:var(--warn)}
+.chip.risky.on{background:var(--warn);border-color:var(--warn);color:#fff}
+.chip .cnt{position:absolute;top:-6px;right:-6px;background:#7a5a28;color:#fff;border-radius:20px;
+  font-size:.6rem;font-weight:700;padding:.05rem .32rem;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.chip.on .cnt{background:#4a3418}
+.tel-input{width:100%;background:rgba(255,252,248,0.95);border:1.5px solid rgba(192,57,43,0.3);
+  color:var(--text);border-radius:10px;padding:.7rem .8rem;font-size:1rem;font-family:inherit}
+.tel-input:focus{outline:none;border-color:var(--accent)}
+.tel-input.big{font-size:1.25rem;font-weight:700;letter-spacing:.06em}
+.row2{display:flex;gap:.5rem;flex-wrap:wrap}
+.row2>*{flex:1;min-width:150px}
+.guest-info{margin-top:.55rem;font-size:.78rem;line-height:1.6;border-radius:10px;padding:.5rem .65rem;
+  background:rgba(45,122,58,.08);border:1px solid rgba(45,122,58,.3);color:#25602f}
+.guest-info.plain{background:rgba(120,90,40,.07);border-color:rgba(120,90,40,.28);color:#6b5330}
+.guest-info.warn{background:rgba(192,57,43,.07);border-color:rgba(192,57,43,.35);color:#8e2b20}
+.guest-info button{margin-top:.4rem;background:#fff;border:1.5px solid currentColor;color:inherit;
+  border-radius:8px;padding:.35rem .6rem;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit}
+.day-load{font-size:.75rem;color:var(--muted);margin-top:.5rem;line-height:1.6}
+.tel-save{width:100%;max-width:560px;padding:1.05rem;border:none;border-radius:14px;cursor:pointer;
+  background:var(--green);color:#fff;font-weight:700;font-size:1.05rem;font-family:inherit;
+  box-shadow:0 5px 18px rgba(45,122,58,.32);margin-top:.3rem}
+.tel-save:disabled{opacity:.55;cursor:default}
+.tel-msg{width:100%;max-width:560px;border-radius:10px;padding:.7rem .8rem;font-size:.82rem;
+  margin-bottom:.6rem;display:none;line-height:1.6}
+.tel-msg.err{background:#fee;border:1px solid #f5c6c6;color:#a00}
+.tel-msg.warn{background:#fff8e5;border:1px solid #e8d08a;color:#7a5a10}
+.tel-msg button{margin-top:.5rem;margin-right:.4rem;border-radius:8px;padding:.5rem .8rem;
+  font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid}
+.tel-msg .go{background:var(--accent);border-color:var(--accent);color:#fff}
+.tel-msg .no{background:#fff;border-color:rgba(120,120,120,.5);color:#666}
+.done{width:100%;max-width:560px;background:rgba(45,122,58,.08);border:1.5px solid rgba(45,122,58,.4);
+  border-radius:14px;padding:1.1rem;text-align:center;color:#25602f;margin-bottom:.6rem}
+.done .id{font-size:1.5rem;font-weight:700;letter-spacing:.05em;margin:.35rem 0}
+.done .sum{font-size:.9rem;line-height:1.7;color:var(--text)}
+.done .note{font-size:.74rem;color:var(--muted);margin-top:.5rem;line-height:1.5}
 </style>
 </head>
 <body>
@@ -94,6 +150,10 @@ body{
 
 <!-- 一覧 -->
 <div id="panel" style="display:none;width:100%;max-width:560px;flex-direction:column;align-items:center">
+  <button class="tel-open" onclick="openTel()">
+    📞 Rezerwacja przez telefon
+    <small>電話で受けた予約をここから登録</small>
+  </button>
   <div class="tabs">
     <button class="tab active" id="tab-today" onclick="setRange('today')">📅 Dziś / 今日</button>
     <button class="tab" id="tab-upcoming" onclick="setRange('upcoming')">🔜 Nadchodzące / 今後</button>
@@ -104,6 +164,82 @@ body{
     <button class="refresh" onclick="load()">🔄 Odśwież / 更新</button>
   </div>
   <div id="list-area"><div class="spinner"></div></div>
+</div>
+
+<!-- ══════════ 📞 電話予約フォーム（v8.3） ══════════ -->
+<div id="tel-panel" style="display:none;width:100%;max-width:560px;flex-direction:column;align-items:center">
+  <button class="back-link" onclick="closeTel()">← Wróć do listy / 一覧へ戻る</button>
+
+  <!-- 登録完了 -->
+  <div id="tel-done" class="done" style="display:none"></div>
+
+  <!-- 入力フォーム -->
+  <div id="tel-form" style="width:100%;display:flex;flex-direction:column;align-items:center">
+
+    <div class="tel-msg" id="tel-msg"></div>
+
+    <!-- ① 日付 -->
+    <div class="sec">
+      <div class="sec-title">🗓 Kiedy? / いつ <span class="hint" id="day-name"></span></div>
+      <div class="chips" id="date-chips"></div>
+      <input type="date" class="tel-input" id="f-date" style="margin-top:.5rem" onchange="onDateChange()">
+      <div class="day-load" id="day-load"></div>
+    </div>
+
+    <!-- ② 時間 -->
+    <div class="sec">
+      <div class="sec-title">🕐 O której? / 何時
+        <span class="hint">数字＝その時刻の既存予約人数</span></div>
+      <div class="chips" id="time-chips"></div>
+      <input type="time" class="tel-input" id="f-time" style="margin-top:.5rem" onchange="onTimeInput()">
+    </div>
+
+    <!-- ③ 人数 -->
+    <div class="sec">
+      <div class="sec-title">👥 Ile osób? / 何名様</div>
+      <div class="chips" id="guest-chips"></div>
+      <input type="number" class="tel-input" id="f-guests" min="1" max="30"
+             style="margin-top:.5rem" inputmode="numeric" placeholder="9名以上はここに入力"
+             onchange="onGuestInput()" oninput="onGuestInput()">
+    </div>
+
+    <!-- ④ 電話番号（会員・履歴の自動照会） -->
+    <div class="sec">
+      <div class="sec-title">📞 Numer telefonu / 電話番号
+        <span class="hint">入力すると常連さんを自動照会</span></div>
+      <input type="tel" class="tel-input big" id="f-phone" inputmode="tel"
+             placeholder="123 456 789" oninput="onPhoneInput()">
+      <div class="guest-info" id="guest-info" style="display:none"></div>
+    </div>
+
+    <!-- ⑤ 名前・メール -->
+    <div class="sec">
+      <div class="sec-title">👤 Imię gościa / お名前
+        <span class="hint">メールは任意（あれば確認メール送信）</span></div>
+      <input type="text" class="tel-input" id="f-name" placeholder="Imię i nazwisko / 氏名">
+      <input type="email" class="tel-input" id="f-email" style="margin-top:.5rem"
+             inputmode="email" placeholder="E-mail（任意 / opcjonalnie）">
+    </div>
+
+    <!-- ⑥ 備考 -->
+    <div class="sec">
+      <div class="sec-title">📝 Uwagi / ご要望</div>
+      <div class="chips" id="memo-chips"></div>
+      <input type="text" class="tel-input" id="f-comment" style="margin-top:.5rem"
+             placeholder="アレルギー・席の希望など">
+    </div>
+
+    <!-- ⑦ 受付者 -->
+    <div class="sec">
+      <div class="sec-title">🙋 Kto odebrał? / 受付者
+        <span class="hint">台帳に残ります（任意）</span></div>
+      <input type="text" class="tel-input" id="f-staff" placeholder="Imię pracownika / 従業員名">
+    </div>
+
+    <button class="tel-save" id="tel-save" onclick="submitTel(false)">
+      ✅ Zapisz rezerwację / この内容で登録
+    </button>
+  </div>
 </div>
 
 <script>
@@ -260,6 +396,337 @@ async function memo(id){
   if (m === null) return;
   await postGAS({ action:'staffReservation', password: PW, id, memo: m });
   load();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   📞 電話予約（v8.3）
+
+   受話器を持ったまま、片手で入力できることを最優先にしています。
+   ・入力の順番は電話での会話の順番（日→時間→人数→番号→名前）
+   ・ほとんどの項目はタップだけで済む（キーボードは番号と名前のみ）
+   ・時間ボタンには「その時刻の既存予約人数」を出す（満席判断のため）
+   ・電話番号を入れると常連さんを自動照会し、名前を聞き直さずに済む
+
+   ⚠️ 下の設定はGAS側 RES_CONFIG の**表示用の写し**です。
+      実際の可否判定はGASが行うので、ここを変えても運用は変わりません。
+      GASを変えたときは見た目を合わせるためここも直してください。
+   ══════════════════════════════════════════════════════════════ */
+const TEL_OPEN = '13:00';    // 最初の予約枠
+const TEL_LAST = '21:30';    // 最後の予約枠
+const TEL_STEP = 30;         // 何分刻みでボタンを出すか
+const TEL_LATE_FROM  = '19:45';  // この時刻以降は曜日制限
+const TEL_LATE_DAYS  = [5,6];    // 0=日,1=月…5=金,6=土
+const TEL_CLOSED_DAYS = [1];     // 定休日：月曜
+const TEL_MAX_ONLINE  = 7;       // これを超えると「大人数」警告
+
+const MEMO_PRESETS = [
+  ['🚼','Krzesełko / ベビーチェア','krzesełko dla dziecka'],
+  ['🌾','Alergia / アレルギー','ALERGIA: '],
+  ['🎂','Urodziny / 誕生日','urodziny 🎂'],
+  ['🪟','Przy oknie / 窓際','stolik przy oknie'],
+  ['♿','Bez schodów / 段差なし','bez schodów'],
+  ['🥡','Na wynos / 持ち帰り','na wynos']
+];
+
+let telDay = [];       // 選択日の既存予約
+let lookupTimer = null;
+let lastLookup  = '';
+
+function pad2(n){ return ('0'+n).slice(-2); }
+function ymd(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+const DAY_PL = ['niedziela / 日','poniedziałek / 月','wtorek / 火','środa / 水',
+                'czwartek / 木','piątek / 金','sobota / 土'];
+
+function openTel(){
+  document.getElementById('panel').style.display = 'none';
+  document.getElementById('tel-panel').style.display = 'flex';
+  resetTelForm();
+}
+function closeTel(){
+  document.getElementById('tel-panel').style.display = 'none';
+  document.getElementById('panel').style.display = 'flex';
+  load();
+}
+
+function resetTelForm(){
+  document.getElementById('tel-done').style.display = 'none';
+  document.getElementById('tel-form').style.display = 'flex';
+  document.getElementById('tel-msg').style.display = 'none';
+  ['f-time','f-guests','f-phone','f-name','f-email','f-comment'].forEach(id =>
+    document.getElementById(id).value = '');
+  document.getElementById('guest-info').style.display = 'none';
+  document.getElementById('f-staff').value = localStorage.getItem('wabi_staff_name') || '';
+  document.getElementById('f-date').value = ymd(new Date());
+  buildDateChips(); buildGuestChips(); buildMemoChips();
+  onDateChange();
+  window.scrollTo(0,0);
+}
+
+/* ── 日付 ── */
+function buildDateChips(){
+  const box = document.getElementById('date-chips');
+  const labels = ['Dziś / 今日','Jutro / 明日'];
+  let html = '';
+  for (let i = 0; i < 7; i++){
+    const d = new Date(); d.setDate(d.getDate()+i);
+    const v = ymd(d);
+    const lab = labels[i] || (d.getDate()+'/'+(d.getMonth()+1));
+    const closed = TEL_CLOSED_DAYS.indexOf(d.getDay()) >= 0;
+    html += `<button class="chip ${closed?'risky':''}" data-date="${v}" onclick="pickDate('${v}')">
+      ${lab}<small>${DAY_PL[d.getDay()].split(' / ')[1]}${closed?' 休':''}</small></button>`;
+  }
+  box.innerHTML = html;
+}
+function pickDate(v){
+  document.getElementById('f-date').value = v;
+  onDateChange();
+}
+function onDateChange(){
+  const v = document.getElementById('f-date').value;
+  document.querySelectorAll('#date-chips .chip').forEach(c =>
+    c.classList.toggle('on', c.dataset.date === v));
+  const d = v ? new Date(v+'T12:00:00') : null;
+  document.getElementById('day-name').textContent = d ? DAY_PL[d.getDay()] : '';
+  buildTimeChips();
+  loadDay(v);
+}
+
+/* ── その日の埋まり具合を読み込む ── */
+async function loadDay(date){
+  const box = document.getElementById('day-load');
+  telDay = [];
+  if (!date){ box.textContent = ''; buildTimeChips(); return; }
+  box.textContent = '⏳ Sprawdzam ten dzień… / その日の予約を確認中…';
+  try{
+    const url = GAS_URL + '?action=getReservations&password=' + encodeURIComponent(PW) +
+                '&range=' + date;
+    const d = await (await fetch(url)).json();
+    const list = (d.reservations || []).filter(r => statusClass(r.status) !== 'grey');
+    telDay = list;
+    const g = list.reduce((s,r) => s + (parseInt(r.guests,10)||0), 0);
+    box.textContent = list.length
+      ? `📋 Ten dzień / この日： ${list.length} rezerwacji / 件 · ${g} osób / 名`
+      : '📋 Ten dzień / この日： まだ予約はありません / brak rezerwacji';
+  }catch(e){
+    box.textContent = '⚠️ 予約状況を取得できませんでした（登録は可能です）';
+  }
+  buildTimeChips();
+}
+
+/* ── 時間 ── */
+function buildTimeChips(){
+  const box  = document.getElementById('time-chips');
+  const date = document.getElementById('f-date').value;
+  const day  = date ? new Date(date+'T12:00:00').getDay() : -1;
+  const cur  = document.getElementById('f-time').value;
+
+  // 時刻ごとの既存予約人数
+  const cnt = {};
+  telDay.forEach(r => { cnt[r.time] = (cnt[r.time]||0) + (parseInt(r.guests,10)||0); });
+
+  const [oh,om] = TEL_OPEN.split(':').map(Number);
+  const [lh,lm] = TEL_LAST.split(':').map(Number);
+  let t = oh*60+om;
+  const end = lh*60+lm;
+  let html = '';
+  while (t <= end){
+    const v = pad2(Math.floor(t/60))+':'+pad2(t%60);
+    const late = v >= TEL_LATE_FROM && day >= 0 && TEL_LATE_DAYS.indexOf(day) < 0;
+    html += `<button class="chip ${late?'risky':''} ${v===cur?'on':''}"
+        data-time="${v}" onclick="pickTime('${v}')">${v}${late?' ⚠':''}
+        ${cnt[v] ? '<span class="cnt">'+cnt[v]+'</span>' : ''}</button>`;
+    t += TEL_STEP;
+  }
+  box.innerHTML = html;
+}
+function pickTime(v){
+  document.getElementById('f-time').value = v;
+  document.querySelectorAll('#time-chips .chip').forEach(c =>
+    c.classList.toggle('on', c.dataset.time === v));
+}
+function onTimeInput(){
+  const v = document.getElementById('f-time').value;
+  document.querySelectorAll('#time-chips .chip').forEach(c =>
+    c.classList.toggle('on', c.dataset.time === v));
+}
+
+/* ── 人数 ── */
+function buildGuestChips(){
+  let html = '';
+  for (let i = 1; i <= 8; i++){
+    html += `<button class="chip ${i>TEL_MAX_ONLINE?'risky':''}" data-g="${i}"
+      onclick="pickGuests(${i})">${i}<small>os./名</small></button>`;
+  }
+  document.getElementById('guest-chips').innerHTML = html;
+}
+function pickGuests(n){
+  document.getElementById('f-guests').value = n;
+  syncGuestChips();
+}
+function onGuestInput(){ syncGuestChips(); }
+function syncGuestChips(){
+  const v = document.getElementById('f-guests').value;
+  document.querySelectorAll('#guest-chips .chip').forEach(c =>
+    c.classList.toggle('on', c.dataset.g === v));
+}
+
+/* ── 備考のよく使う文言 ── */
+function buildMemoChips(){
+  document.getElementById('memo-chips').innerHTML = MEMO_PRESETS.map((p,i) =>
+    `<button class="chip" onclick="addMemo(${i})">${p[0]}<small>${p[1].split(' / ')[1]}</small></button>`
+  ).join('');
+}
+function addMemo(i){
+  const f = document.getElementById('f-comment');
+  const t = MEMO_PRESETS[i][2];
+  if (f.value.indexOf(t) >= 0) return;
+  f.value = f.value ? f.value.replace(/\s*$/,'') + ', ' + t : t;
+  f.focus();
+}
+
+/* ── 電話番号から会員・履歴を自動照会 ── */
+function onPhoneInput(){
+  const raw = document.getElementById('f-phone').value;
+  const digits = raw.replace(/\D/g,'');
+  if (digits.length < 9){
+    document.getElementById('guest-info').style.display = 'none';
+    lastLookup = '';
+    return;
+  }
+  clearTimeout(lookupTimer);
+  lookupTimer = setTimeout(() => lookupGuest(raw), 400);
+}
+
+async function lookupGuest(q){
+  if (q === lastLookup) return;
+  lastLookup = q;
+  const box = document.getElementById('guest-info');
+  box.className = 'guest-info plain';
+  box.style.display = 'block';
+  box.textContent = '⏳ Sprawdzam… / 照会中…';
+  try{
+    const url = GAS_URL + '?action=staffGuest&password=' + encodeURIComponent(PW) +
+                '&q=' + encodeURIComponent(q);
+    const d = await (await fetch(url)).json();
+    if (d.status !== 'ok'){ box.style.display = 'none'; return; }
+    if (!d.found){
+      box.className = 'guest-info plain';
+      box.innerHTML = '🆕 Nowy gość / 台帳にない新しいお客様です';
+      return;
+    }
+    const m = d.member, h = d.history, l = d.last;
+    let html = '';
+    if (m){
+      html += `⭐ <b>${esc(m.name)}</b> — ${esc(m.rank||'')} ${esc(m.memberId)}` +
+              (m.points ? ` · ${m.points}pt` : '') + '<br>';
+    }
+    if (h){
+      const parts = [];
+      if (h.visits)  parts.push('🍜 ' + h.visits + '回来店');
+      if (h.noshows) parts.push('👻 No-show ' + h.noshows + '回');
+      if (h.cancels) parts.push('❌ 取消 ' + h.cancels + '回');
+      if (h.lastVisit) parts.push('前回 ' + h.lastVisit);
+      if (parts.length) html += parts.join(' · ') + '<br>';
+    }
+    if (l){
+      html += `<span style="font-size:.74rem">📋 直近の予約：${esc(l.date)} ${esc(l.time)} ` +
+              `${esc(l.guests)}名${l.comment ? ' 📝'+esc(l.comment) : ''}</span>`;
+      html += `<br><button onclick="applyLast()">↩︎ Uzupełnij / 前回の内容を入れる</button>`;
+      window.__telLast = l;
+    }
+    box.className = 'guest-info' + (h && h.noshows ? ' warn' : (m ? '' : ' plain'));
+    box.innerHTML = html || '🆕 Nowy gość / 新しいお客様です';
+    // 名前が空なら自動で埋める（聞き直さなくて済む）
+    const nameF = document.getElementById('f-name');
+    if (!nameF.value) nameF.value = (m && m.name) || (l && l.name) || '';
+    const mailF = document.getElementById('f-email');
+    if (!mailF.value && l && l.email) mailF.value = l.email;
+  }catch(e){
+    box.style.display = 'none';
+  }
+}
+
+function applyLast(){
+  const l = window.__telLast;
+  if (!l) return;
+  if (l.guests)  { document.getElementById('f-guests').value = l.guests; syncGuestChips(); }
+  if (l.name)    document.getElementById('f-name').value = l.name;
+  if (l.email)   document.getElementById('f-email').value = l.email;
+  if (l.comment) document.getElementById('f-comment').value = l.comment;
+}
+
+/* ── 登録 ── */
+function telMsg(kind, html){
+  const b = document.getElementById('tel-msg');
+  b.className = 'tel-msg ' + kind;
+  b.innerHTML = html;
+  b.style.display = 'block';
+  b.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+async function submitTel(force){
+  const btn = document.getElementById('tel-save');
+  const payload = {
+    action:  'telReservation',
+    password: PW,
+    force:    !!force,
+    date:    document.getElementById('f-date').value,
+    time:    document.getElementById('f-time').value,
+    guests:  document.getElementById('f-guests').value,
+    phone:   document.getElementById('f-phone').value.trim(),
+    name:    document.getElementById('f-name').value.trim(),
+    email:   document.getElementById('f-email').value.trim(),
+    comment: document.getElementById('f-comment').value.trim(),
+    staff:   document.getElementById('f-staff').value.trim()
+  };
+  localStorage.setItem('wabi_staff_name', payload.staff);
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Zapisuję… / 登録中…';
+  try{
+    const d = await postGAS(payload);
+
+    if (d.status === 'confirm'){
+      telMsg('warn',
+        '<b>⚠️ Sprawdź / 確認してください</b><br>' +
+        d.warnings.map(w => '・' + esc(w)).join('<br>') +
+        '<br><button class="go" onclick="submitTel(true)">それでも登録する / Zapisz mimo to</button>' +
+        '<button class="no" onclick="document.getElementById(\'tel-msg\').style.display=\'none\'">修正する / Popraw</button>');
+      return;
+    }
+    if (d.status !== 'ok'){
+      telMsg('err', '⚠️ ' + esc(d.message || 'Błąd / エラー'));
+      return;
+    }
+    showDone(d, payload);
+  }catch(e){
+    telMsg('err', '⚠️ Błąd połączenia / 通信エラー。もう一度お試しください。');
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '✅ Zapisz rezerwację / この内容で登録';
+  }
+}
+
+function showDone(d, p){
+  document.getElementById('tel-form').style.display = 'none';
+  const box = document.getElementById('tel-done');
+  box.style.display = 'block';
+  box.innerHTML =
+    '<div style="font-size:1.6rem">✅</div>' +
+    '<div style="font-weight:700">Zapisano / 登録しました</div>' +
+    '<div class="id">' + esc(d.id) + '</div>' +
+    '<div class="sum">🗓 ' + esc(d.date) + ' 🕐 ' + esc(d.time) + '<br>' +
+      '👥 ' + esc(d.guests) + ' os./名 · 👤 ' + esc(d.name) +
+      (d.memberId ? '<br>⭐ ' + esc(d.memberRank) + ' ' + esc(d.memberId) : '') + '</div>' +
+    '<div class="note">' + (d.mailSent
+      ? '📧 確認メールを送信しました / Wysłano e-mail z potwierdzeniem'
+      : '📵 メール未登録のため確認メールは送っていません。<br>予約番号を口頭でお伝えください / Podaj numer rezerwacji przez telefon') +
+    '</div>' +
+    '<div style="margin-top:.9rem;display:flex;gap:.5rem">' +
+      '<button class="btn btn-primary" style="flex:1" onclick="resetTelForm()">➕ Następna / 続けて登録</button>' +
+      '<button class="btn" style="flex:1;border:1.5px solid var(--border);background:#fff;color:var(--text)" onclick="closeTel()">📋 Lista / 一覧へ</button>' +
+    '</div>';
+  window.scrollTo(0,0);
 }
 
 // 保存済みパスワードがあれば自動ログイン
