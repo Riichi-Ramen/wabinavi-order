@@ -142,6 +142,14 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
   color:#fff;padding:.65rem 1.2rem;border-radius:12px;font-size:.9rem;font-weight:700;
   z-index:800;display:none;box-shadow:0 6px 20px rgba(0,0,0,.4);max-width:92vw;text-align:center}
 #toast.err{background:var(--danger)}
+
+/* パスワード欄＋👁ボタン */
+.pw-wrap{position:relative;display:block}
+.pw-wrap input{padding-right:2.8rem !important;width:100%}
+.pw-eye{position:absolute;top:50%;right:.5rem;transform:translateY(-50%);
+  background:none;border:none;font-size:1.15rem;cursor:pointer;line-height:1;
+  padding:.25rem .35rem;border-radius:6px;opacity:.75}
+.pw-eye:hover{opacity:1;background:rgba(0,0,0,.06)}
 </style>
 </head>
 <body>
@@ -151,7 +159,11 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
     <h1>🍳 Kuchnia / キッチン</h1>
     <p>Wprowadź hasło obsługi.<br>Enter the staff password.<br>係員パスワードを入力してください。</p>
     <div id="lock-err"></div>
-    <input type="password" id="pw" placeholder="Hasło / パスワード" autocomplete="current-password">
+    <div class="pw-wrap">
+      <input type="password" id="pw" placeholder="Hasło / パスワード" autocomplete="new-password" name="wabi-staff-pass" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button type="button" class="pw-eye" id="pw-eye" onclick="togglePw_()"
+              title="Pokaż / 表示">👁</button>
+    </div>
     <button onclick="doLogin()">🔓 Otwórz / 開く</button>
   </div>
 </div>
@@ -187,6 +199,32 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 // ════════════════════════════════════════════════════════════════════
 
 const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec";
+const PW_FIELD_ID = 'pw';
+// ── パスワードの表示切替（👁）────────────────────────────────────
+//   入力した文字を目で確認できるようにします。
+//   打ち間違いか、パスワード自体が違うのかを切り分けられます。
+function togglePw_(){
+  const f = document.getElementById(PW_FIELD_ID);
+  const b = document.getElementById('pw-eye');
+  if (!f || !b) return;
+  const show = f.type === 'password';
+  f.type = show ? 'text' : 'password';
+  b.textContent = show ? '🙈' : '👁';
+  b.title = show ? 'Ukryj / 隠す' : 'Pokaż / 表示';
+  f.focus();
+}
+
+// ── ブラウザの自動入力対策 ────────────────────────────────────────
+//   Chrome等は autocomplete="off" を無視して、読み込み後に
+//   別サイトの古いパスワードを勝手に入れてしまうことがあります。
+//   「●が8個入っているのに違うと言われる」の原因がこれです。
+//   読み込み直後と少し遅れて2回、入力欄を空にします。
+function clearPwField_(){
+  const f = document.getElementById(PW_FIELD_ID);
+  if (f) f.value = '';
+}
+window.addEventListener('load', () => { clearPwField_(); setTimeout(clearPwField_, 400); });
+
 function gasUrl(){ try{ return localStorage.getItem('wabi_gas_url') || DEFAULT_GAS_URL; }catch(e){ return DEFAULT_GAS_URL; } }
 
 const POLL_MS   = 12000;   // 何ミリ秒ごとに注文を取りに行くか
