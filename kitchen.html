@@ -385,7 +385,10 @@ let timer = null, clockTimer = null, busy = false;
 // ── ログイン ────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   let saved = "";
-  try { saved = sessionStorage.getItem('wabi_kds_pw') || ""; } catch(e){}
+  // 係員パスワードは全スタッフ画面で共通（localStorage・端末に保存されたまま）
+  //   旧 sessionStorage('wabi_kds_pw') からも一度だけ引き継ぎます。
+  try { saved = localStorage.getItem('wabi_staff_pw')
+              || sessionStorage.getItem('wabi_kds_pw') || ""; } catch(e){}
   if (saved) { document.getElementById('pw').value = saved; doLogin(true); }
   document.getElementById('pw').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
@@ -406,7 +409,7 @@ async function doLogin(silent) {
     PASSWORD = "";
     return;
   }
-  try { sessionStorage.setItem('wabi_kds_pw', pw); } catch(e){}
+  try { localStorage.setItem('wabi_staff_pw', pw); } catch(e){}
   document.getElementById('lock').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   applyData(res);

@@ -139,11 +139,12 @@ document.getElementById('logo-tap').onclick = () => {
   }
 };
 
-let PW    = sessionStorage.getItem('wabi_staff_pw') || '';
+// 係員パスワードは全スタッフ画面で共通（localStorage・端末に保存されたまま）
+//   予約・キッチン・商品管理と同じキーを使うので、
+//   どれか1画面で一度入れれば、以後この端末では全部そのまま使えます。
+let PW    = localStorage.getItem('wabi_staff_pw') || '';
 let MODE  = 'lend';               // lend / return / list
 let LEND  = { book:null, member:null };   // 貸出の2要素（どちらから読んでもよい）
-let BASKET = [];                  // 同一会員に続けて貸した本（全巻まとめ借り用）
-let MAXBOOKS = 2;                 // GASから受け取る上限（表示用。判定はサーバー側）
 let CURBOOK = null;               // 返却・延長で扱う本
 let scanner = null, camOn = false;
 
@@ -154,8 +155,14 @@ async function postGAS(payload){
     body: JSON.stringify(payload) });
   return res.json();
 }
-function api(op, extra){
-  return postGAS(Object.assign({ action:'staffBook', op, password: PW }, extra || {}));
+async function api(op, extra){
+  const r = await postGAS(Object.assign({ action:'staffBook', op, password: PW }, extra || {}));
+  // パスワードが変更された場合、端末に残った古い値を捨ててログイン画面に戻す
+  if (r && r.status === 'unauthorized') {
+    try { localStorage.removeItem('wabi_staff_pw'); } catch(e){}
+    location.reload();
+  }
+  return r;
 }
 function showErr(msg){
   const e = document.getElementById('err');
@@ -178,7 +185,8 @@ async function login(){
     if (r.status === 'unauthorized') {
       e.textContent = r.message || 'Nieprawidłowe hasło'; e.style.display='block'; return;
     }
-    PW = pw; sessionStorage.setItem('wabi_staff_pw', pw);
+    PW = pw;
+    try { localStorage.setItem('wabi_staff_pw', pw); } catch(e){}
     document.getElementById('login-card').classList.add('hidden');
     document.getElementById('main').classList.remove('hidden');
     setMode('lend');
@@ -194,7 +202,7 @@ if (PW) {
 
 // ── モード切替 ───────────────────────────────────────────────────
 function setMode(m){
-  MODE = m; LEND = { book:null, member:null }; BASKET = []; CURBOOK = null;
+  MODE = m; LEND = { book:null, member:null }; CURBOOK = null;
   ['lend','return','list'].forEach(k =>
     document.getElementById('tab-'+k).classList.toggle('active', k===m));
   document.getElementById('detail-card').classList.add('hidden');
@@ -218,8 +226,8 @@ function renderStep(){
     hint.innerHTML = 'Książka i karta członka — <b>w dowolnej kolejności</b>.<br>' +
                      '本のQRと会員カードのQR、<b>どちらから読んでもOK</b>です。';
     lab.textContent = 'lub wpisz ręcznie / 手入力（Cook-01 · WN-M-0001 · e-mail · tel.）';
-    note.innerHTML = 'Wypożyczenie tylko dla członków (bezpłatne) · limit ' + MAXBOOKS + ' książki na osobę.<br>' +
-                     '貸出は会員限定（無料）・お一人 ' + MAXBOOKS + '冊まで。未登録の方はその場で登録できます。';
+    note.innerHTML = 'Wypożyczenie tylko dla członków (bezpłatne). Rejestracja zajmuje minutę.<br>' +
+                     '貸出は会員限定（無料）。未登録の方はその場で登録できます。';
     slots.classList.remove('hidden');
     renderSlots();
   } else {
@@ -244,8 +252,8 @@ function renderSlots(){
        ${b?'<button class="x" onclick="clearSlot(&quot;book&quot;)">✕</button>':''}
      </div>
      <div class="slot ${m?'filled':''}">
-       <div class="ico">${m ? (m.remaining>0?'✅':'🚫') : '🎫'}</div>
-       <div class="body"><div class="lbl">Członek / 会員${m?' &nbsp;·&nbsp; pozostało / 残り <b>'+m.remaining+'</b> / '+MAXBOOKS:''}</div>
+       <div class="ico">${m?'✅':'🎫'}</div>
+       <div class="body"><div class="lbl">Członek / 会員</div>
          <div class="val ${m?'':'empty'}">${m ? esc(m.name)+'（'+esc(m.memberId)+'）' : 'czeka na skan / 未スキャン'}</div></div>
        ${m?'<button class="x" onclick="clearSlot(&quot;member&quot;)">✕</button>':''}
      </div>`;
@@ -327,17 +335,10 @@ async function handleCode(code){
     // ── 貸出モード ──
     if (kind === 'book') {
       if (r.book.lent) { CURBOOK = r.book; return showAlreadyLent(r.book); }
-      if (LEND.member && LEND.member.remaining <= 0) {
-        showErr('🚫 Limit ' + MAXBOOKS + ' książek na osobę / お一人 ' + MAXBOOKS + '冊までです');
-        return;
-      }
       LEND.book = r.book;
     } else {
-      if (typeof r.maxBooks === 'number') MAXBOOKS = r.maxBooks;
-      LEND.member = Object.assign({}, r.member,
-        { remaining: (typeof r.remaining === 'number') ? r.remaining : MAXBOOKS });
-      showBorrowedNote(r);
-      if (LEND.member.remaining <= 0) { LEND.book = null; renderSlots(); return; }
+      LEND.member = r.member;
+      if (r.lentCount) showBorrowedNote(r);
     }
     renderSlots();
     if (LEND.book && LEND.member) await doLend();
@@ -350,49 +351,26 @@ function lookupAs(kind, code){
                          : api('member', { memberId: code });
 }
 
-// ── 貸出実行（会員はそのまま残るので、続けて何冊でもスキャンできる） ──
+// ── 貸出実行 ─────────────────────────────────────────────────────
 async function doLend(){
   const r = await api('lend', { bookId: LEND.book.id, memberId: LEND.member.memberId });
   if (r.status !== 'ok') { showErr(r.message || 'Błąd'); return; }
-
-  BASKET.push({ id: r.book.id, title: r.book.title, dueDate: r.dueDate });
-  if (typeof r.maxBooks === 'number') MAXBOOKS = r.maxBooks;
-  LEND.member.remaining = (typeof r.remaining === 'number')
-    ? r.remaining : Math.max(0, LEND.member.remaining - 1);
-  LEND.book = null;                       // 本の枠だけ空け、会員は保持
-  renderSlots();
-  renderBasket(r);
-  document.getElementById('manual').value = '';
-  document.getElementById('manual').focus();
-}
-
-// ── 貸出済みリスト（1冊目で完了、2冊目以降は積み上げ表示） ──
-function renderBasket(r){
+  stopCam();
+  document.getElementById('scan-card').classList.add('hidden');
   const d = document.getElementById('detail-card');
-  const rows = BASKET.map((b,i) =>
-    `<div class="list-row"><div class="list-main">
-       <div class="t">${i+1}. ${esc(b.id)} · ${esc(b.title)}</div></div>
-       <div class="days ok">✅</div></div>`).join('');
   d.innerHTML =
     `<div class="result">
        <div class="big">✅</div>
-       <div style="font-weight:700">Wypożyczono ${BASKET.length} ${BASKET.length===1?'książkę':'szt.'} / ${BASKET.length}冊 貸出しました</div>
-       <div class="sub" style="margin-top:.3rem"><b>${esc(LEND.member.name)}</b>（${esc(LEND.member.memberId)}）</div>
-       <div class="form-label" style="margin-top:.8rem">Zwrot do / 返却予定日</div>
+       <div style="font-weight:700">Wypożyczono / 貸出しました</div>
+       <div class="sub" style="margin-top:.4rem">${esc(r.book.title)}<br>
+         <b>${esc(r.member.name)}</b>（${esc(r.member.memberId)}）</div>
+       <div class="form-label" style="margin-top:.9rem">Zwrot do / 返却予定日</div>
        <div class="due">${r.dueDate}</div>
-       <div class="sub">${r.mailSent ? '📧 Potwierdzenie wysłane / 確認メール送信済み'
-                                     : '✉️ Brak e-maila — poinformuj ustnie / メール未登録：口頭で'}</div>
+       <div class="sub">3 tygodnie od dziś / 本日から3週間<br>
+         ${r.mailSent ? '📧 Potwierdzenie wysłane / 確認メール送信済み'
+                      : '✉️ Brak e-maila w profilu — poinformuj ustnie / メール未登録：口頭でお伝えください'}</div>
      </div>
-     ${rows}
-     ${LEND.member.remaining > 0
-       ? `<div class="gift">📚 Można wypożyczyć jeszcze <b>${LEND.member.remaining}</b> —
-            skanuj dalej, ten sam członek pozostaje wybrany.<br>
-            あと <b>${LEND.member.remaining}冊</b> 貸出できます。続けてスキャンしてください。</div>`
-       : `<div class="gift">🚫 Osiągnięto limit ${MAXBOOKS} książek na osobę.<br>
-            お一人 ${MAXBOOKS}冊の上限に達しました。返却後にまたご利用いただけます。</div>`}
-     <div class="btn-row">
-       <button class="btn btn-primary" onclick="setMode('lend')">✔ Zakończ / 会計へ（終了）</button>
-     </div>`;
+     <div class="btn-row"><button class="btn btn-primary" onclick="setMode('lend')">📕 Następna / 次の貸出</button></div>`;
   d.classList.remove('hidden');
 }
 
@@ -411,41 +389,12 @@ function showAlreadyLent(b){
   d.classList.remove('hidden');
 }
 
-// ── 会員がすでに借りている本の状況を表示 ──
+// ── 会員がすでに借りている本の注意表示 ───────────────────────────
 function showBorrowedNote(r){
-  const list = r.lentBooks || [];
-  const rem  = (typeof r.remaining === 'number') ? r.remaining : MAXBOOKS;
-  const over = list.filter(b => b.daysLeft < 0);
-  const d = document.getElementById('detail-card');
-
-  if (rem <= 0) {
-    // 上限に達している：どの本を返せば借りられるかを出す
-    d.innerHTML =
-      `<div class="result"><div class="big">🚫</div>
-         <div style="font-weight:700">Limit ${MAXBOOKS} książek / お一人 ${MAXBOOKS}冊までです</div>
-         <div class="sub" style="margin-top:.3rem"><b>${esc(r.member.name)}</b> —
-           najpierw zwrot jednej z poniższych / まず下記のいずれかをご返却ください</div></div>` +
-      list.map(b => {
-        const cls = b.daysLeft < 0 ? 'over' : b.daysLeft <= 3 ? 'soon' : 'ok';
-        return `<div class="list-row">
-          <div class="list-main"><div class="t">${esc(b.id)} · ${esc(b.title)}</div>
-            <div class="m">do ${b.dueDate}</div></div>
-          <button class="btn btn-green" style="width:auto;padding:.45rem .8rem"
-                  onclick="doReturn({id:'${esc(b.id)}'})">📗 Zwrot</button>
-          <div class="days ${cls}">${b.daysLeft < 0 ? (-b.daysLeft)+'d' : b.daysLeft+'d'}</div>
-        </div>`;
-      }).join('') +
-      `<div class="gift">💡 Zwrot można przyjąć od razu tutaj — potem zeskanuj nową książkę.<br>
-        この場で返却を受け付けられます。返却後、あらためて本をスキャンしてください。</div>
-       <div class="btn-row"><button class="btn btn-ghost" onclick="setMode('lend')">↩ 戻る</button></div>`;
-    d.classList.remove('hidden');
-    return;
-  }
-
-  if (over.length) {
-    showErr('⚠️ Ten członek ma ' + over.length + ' książkę/i po terminie — poproś o zwrot / '
-          + 'この会員は期限超過の本を' + over.length + '冊お持ちです');
-  }
+  const over = (r.lentBooks||[]).filter(b => b.daysLeft < 0);
+  if (!over.length) return;
+  showErr('⚠️ Ten członek ma ' + over.length + ' książkę/i po terminie — poproś o zwrot / '
+        + 'この会員は期限超過の本を' + over.length + '冊お持ちです');
 }
 
 // ── 返却モードのスキャン ─────────────────────────────────────────
@@ -485,26 +434,18 @@ async function doReturn(b){
   if (r.status !== 'ok') { showErr(r.message || 'Błąd'); return; }
   stopCam();
   document.getElementById('scan-card').classList.add('hidden');
-  const late = r.lateDays > 0
-    ? `<div style="font-size:.78rem;color:#a00;margin-top:.3rem">
-         Zwrot po terminie: ${r.lateDays} dni / 期限超過 ${r.lateDays}日</div>` : '';
-  const gift = r.gifted
-    ? `<div class="gift">🍙 <b>Prezent przyznany / 特典を付与しました</b><br>
-        Onigiri (1 szt.) GRATIS do dowolnego ramenu<br>
-        Free onigiri (1 pc) with any ramen<br>
-        ラーメンご注文で おにぎり1個サービス<br>
-        <small>Pojawi się automatycznie przy składaniu zamówienia (${esc(r.giftMember||'')}).<br>
-        注文アプリの確認画面に自動で表示され、合計から差し引かれます。</small></div>`
-    : `<div class="gift">📗 Zwrot zapisany. Zaproponuj kolejną książkę!<br>
-        返却を記録しました。次の1冊をおすすめしましょう。<br>
-        <small>特典は付与されていません（会員情報が紐づいていない、または未使用の特典が残っています）。</small></div>`;
+  const gift = r.lateDays > 0
+    ? `<div class="gift">🎁 Zwrot po terminie (${r.lateDays} dni) — <b>wręcz drobny upominek</b>
+        i podziękuj za przyniesienie.<br>
+        期限超過（${r.lateDays}日）。<b>サービス品をお渡しし</b>、お礼を伝えてください。</div>`
+    : `<div class="gift">🎁 Zwrot w terminie — zaproponuj kolejną książkę!<br>
+        期限内の返却です。次の1冊をおすすめしましょう。</div>`;
   const d = document.getElementById('detail-card');
   d.innerHTML =
     `<div class="result">
        <div class="big">📗</div>
        <div style="font-weight:700">Zwrot zapisany / 返却を記録しました</div>
        <div class="sub" style="margin-top:.4rem">${esc(r.book.title)}<br>${esc(r.book.id)}</div>
-       ${late}
      </div>${gift}
      <div class="btn-row"><button class="btn btn-primary" onclick="setMode('return')">📗 Następna / 次の返却</button></div>`;
   d.classList.remove('hidden');

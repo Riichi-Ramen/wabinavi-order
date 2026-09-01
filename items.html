@@ -78,7 +78,8 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
 <div id="categories"></div>
 
 <div class="savebar">
-  <input type="password" id="save-password" placeholder="🔑 係員パスワード / Hasło obsługi">
+  <input type="password" id="save-password"
+         placeholder="🔑 係員パスワード（初回のみ）/ Hasło obsługi (tylko raz)">
   <button class="save-btn" id="save-btn" onclick="saveHidden()">💾 保存 / Zapisz</button>
   <div class="save-status" id="save-status"></div>
 </div>
@@ -224,10 +225,12 @@ async function loadHidden() {
 
 // ── 保存 ──
 async function saveHidden() {
-  const password = document.getElementById('save-password').value;
+  // 係員パスワード：入力欄が空なら、他のスタッフ画面で保存済みの値を使う
+  const field    = document.getElementById('save-password');
+  const password = field.value || localStorage.getItem('wabi_staff_pw') || '';
   const status   = document.getElementById('save-status');
   if (!GAS_URL) { status.textContent = '⚠️ GAS URLを設定してください（上部の状態表示をタップ）'; return; }
-  if (!password) { status.textContent = '🔑 パスワードを入力してください / Podaj hasło'; return; }
+  if (!password) { status.textContent = '🔑 初回のみパスワードを入力してください / Podaj hasło'; return; }
 
   const btn = document.getElementById('save-btn');
   btn.disabled = true; status.textContent = '⏳ 保存中… / Zapisywanie…';
@@ -238,6 +241,11 @@ async function saveHidden() {
       body: JSON.stringify({ action:'setHiddenItems', password, hidden:[...hidden] })
     });
     const data = await res.json();
+    // 保存に成功したパスワードは端末に覚えさせ、次回から入力不要にする
+    if (data.status === 'ok') {
+      try { localStorage.setItem('wabi_staff_pw', password); } catch(e){}
+      field.value = '';
+    }
     status.textContent = data.status === 'ok'
       ? '✅ ' + data.message + ' — アプリに即反映されます'
       : '❌ ' + (data.message || 'エラー');
