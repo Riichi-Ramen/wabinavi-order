@@ -201,7 +201,7 @@ body{
     <!-- ② 時間 -->
     <div class="sec">
       <div class="sec-title">🕐 O której? / 何時
-        <span class="hint">数字＝その時刻の既存予約人数</span></div>
+        <span class="hint">Liczba = ile osób już zapisanych / 数字＝その時刻の既存予約人数</span></div>
       <div class="chips" id="time-chips"></div>
       <input type="time" class="tel-input" id="f-time" style="margin-top:.5rem" onchange="onTimeInput()">
     </div>
@@ -211,14 +211,14 @@ body{
       <div class="sec-title">👥 Ile osób? / 何名様</div>
       <div class="chips" id="guest-chips"></div>
       <input type="number" class="tel-input" id="f-guests" min="1" max="30"
-             style="margin-top:.5rem" inputmode="numeric" placeholder="9名以上はここに入力"
+             style="margin-top:.5rem" inputmode="numeric" placeholder="9+ osób — wpisz tu / 9名以上はここに入力"
              onchange="onGuestInput()" oninput="onGuestInput()">
     </div>
 
     <!-- ④ 電話番号（会員・履歴の自動照会） -->
     <div class="sec">
       <div class="sec-title">📞 Numer telefonu / 電話番号
-        <span class="hint">入力すると常連さんを自動照会</span></div>
+        <span class="hint">Sprawdza stałych gości / 入力すると常連さんを自動照会</span></div>
       <input type="tel" class="tel-input big" id="f-phone" inputmode="tel"
              placeholder="123 456 789" oninput="onPhoneInput()">
       <div class="guest-info" id="guest-info" style="display:none"></div>
@@ -227,7 +227,7 @@ body{
     <!-- ⑤ 名前・メール -->
     <div class="sec">
       <div class="sec-title">👤 Imię gościa / お名前
-        <span class="hint">メールは任意（あれば確認メール送信）</span></div>
+        <span class="hint">E-mail opcjonalny / メールは任意（あれば確認メール送信）</span></div>
       <input type="text" class="tel-input" id="f-name" placeholder="Imię i nazwisko / 氏名">
       <input type="email" class="tel-input" id="f-email" style="margin-top:.5rem"
              inputmode="email" placeholder="E-mail（任意 / opcjonalnie）">
@@ -238,13 +238,13 @@ body{
       <div class="sec-title">📝 Uwagi / ご要望</div>
       <div class="chips" id="memo-chips"></div>
       <input type="text" class="tel-input" id="f-comment" style="margin-top:.5rem"
-             placeholder="アレルギー・席の希望など">
+             placeholder="Alergie, miejsce przy oknie… / アレルギー・席の希望など">
     </div>
 
     <!-- ⑦ 受付者 -->
     <div class="sec">
       <div class="sec-title">🙋 Kto odebrał? / 受付者
-        <span class="hint">台帳に残ります（任意）</span></div>
+        <span class="hint">Zapisze się w rejestrze / 台帳に残ります（任意）</span></div>
       <input type="text" class="tel-input" id="f-staff" placeholder="Imię pracownika / 従業員名">
     </div>
 
@@ -470,7 +470,6 @@ const MEMO_PRESETS = [
   ['🌾','Alergia / アレルギー','ALERGIA: '],
   ['🎂','Urodziny / 誕生日','urodziny 🎂'],
   ['🪟','Przy oknie / 窓際','stolik przy oknie'],
-  ['♿','Bez schodów / 段差なし','bez schodów'],
   ['🥡','Na wynos / 持ち帰り','na wynos']
 ];
 
@@ -736,8 +735,8 @@ async function submitTel(force){
       telMsg('warn',
         '<b>⚠️ Sprawdź / 確認してください</b><br>' +
         d.warnings.map(w => '・' + esc(w)).join('<br>') +
-        '<br><button class="go" onclick="submitTel(true)">それでも登録する / Zapisz mimo to</button>' +
-        '<button class="no" onclick="document.getElementById(\'tel-msg\').style.display=\'none\'">修正する / Popraw</button>');
+        '<br><button class="go" onclick="submitTel(true)">Zapisz mimo to / それでも登録する</button>' +
+        '<button class="no" onclick="document.getElementById(\'tel-msg\').style.display=\'none\'">Popraw / 修正する</button>');
       return;
     }
     if (d.status !== 'ok'){
@@ -746,7 +745,7 @@ async function submitTel(force){
     }
     showDone(d, payload);
   }catch(e){
-    telMsg('err', '⚠️ Błąd połączenia / 通信エラー。もう一度お試しください。');
+    telMsg('err', '⚠️ Błąd połączenia — spróbuj jeszcze raz / 通信エラー。もう一度お試しください');
   }finally{
     btn.disabled = false;
     btn.textContent = '✅ Zapisz rezerwację / この内容で登録';
