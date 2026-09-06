@@ -120,6 +120,11 @@ body{
 .mc-btn .mc-btn-icon{font-size:1.6rem}
 .mc-btn .mc-btn-en{font-size:.68rem;color:var(--muted);font-weight:400}
 .member-id-box{display:none;border-top:1px solid rgba(192,57,43,0.2);padding-top:1.2rem;margin-top:.2rem}
+.consent-box{display:flex;gap:.6rem;align-items:flex-start;background:rgba(192,57,43,.06);
+  border:1px solid rgba(192,57,43,.28);border-radius:10px;padding:.75rem .8rem;
+  margin:.6rem 0 .9rem;font-size:.74rem;line-height:1.6;cursor:pointer;text-align:left}
+.consent-box input{width:20px;height:20px;flex:0 0 20px;margin-top:.1rem;accent-color:#c0392b}
+.consent-box a{color:#c0392b;font-weight:700}
 .member-id-box.open{display:block}
 .mid-field{margin-bottom:.65rem;text-align:left}
 .mid-field-label{font-size:.72rem;color:var(--muted);margin-bottom:.25rem;display:flex;align-items:center;gap:.3rem}
@@ -791,6 +796,17 @@ body.show-config .config-bar{display:flex}
         </select>
       </div>
       <div class="mid-note">※ Dane używane tylko w programie lojalnościowym Wabi Navi.</div>
+      <label class="consent-box">
+        <input type="checkbox" id="mid-consent">
+        <span>
+          Zapoznałem(-am) się z <a href="polityka.html" target="_blank" rel="noopener">Polityką prywatności</a>
+          i wyrażam zgodę na przetwarzanie moich danych w programie lojalnościowym.<br>
+          I have read the <a href="polityka.html#en" target="_blank" rel="noopener">Privacy Policy</a>
+          and consent to my data being processed for the loyalty programme.<br>
+          <a href="polityka.html#jp" target="_blank" rel="noopener">プライバシーポリシー</a>を読み、
+          ポイントプログラムでの個人情報の利用に同意します。
+        </span>
+      </label>
       <button class="mid-confirm-btn" onclick="confirmMemberId()">
         ✅ Zarejestruj się i przejdź do menu<br>
         <small style="font-weight:400;font-size:.78rem">Register & go to menu / 登録してメニューへ</small>
@@ -1038,9 +1054,9 @@ body.show-config .config-bar{display:flex}
       📚 Wypożyczalnia Książek / 書籍貸し出し
     </div>
     <div style="text-align:center;font-size:.72rem;color:var(--muted);margin-bottom:.6rem;line-height:1.7">
-      日本文化関連書籍を会員の方に無料で貸し出しています（3週間・お一人2冊まで）。<br>
-      Bezpłatna wypożyczalnia dla członków klubu (3 tygodnie, maks. 2 książki).<br>
-      Free lending for members (3 weeks, up to 2 books).
+      日本文化関連書籍を会員の方に無料で貸し出しています（最長3週間）。<br>
+      Bezpłatna wypożyczalnia dla członków klubu (maks. 3 tygodnie).<br>
+      Free lending for members (max 3 weeks).
     </div>
     <div style="text-align:center;margin-bottom:1rem">
       <button onclick="document.getElementById('book-terms').style.display=
@@ -1056,10 +1072,8 @@ body.show-config .config-bar{display:flex}
       <strong>📜 貸し出し規約 / Regulamin wypożyczalni / Lending Terms</strong><br>
       1️⃣ 会員限定サービスです（無料）。<br>
       &nbsp;&nbsp;<small>Usługa tylko dla członków klubu (bezpłatna). / Members only (free).</small><br>
-      2️⃣ 貸出期間は3週間。カウンターへご返却ください（延滞料はいただきません）。<br>
-      &nbsp;&nbsp;<small>3 tygodnie — zwrot przy kasie, bez kar za spóźnienie. / 3 weeks, return at the counter, no late fees.</small><br>
-      2️⃣-2 同時にお借りいただけるのは<strong>お一人2冊まで</strong>です。<br>
-      &nbsp;&nbsp;<small>Jednocześnie maks. 2 książki na osobę. / Up to 2 books per member at a time.</small><br>
+      2️⃣ 貸出期間は最長3週間。選択した返却予定日までにカウンターへご返却ください。<br>
+      &nbsp;&nbsp;<small>Maks. 3 tygodnie — zwrot przy kasie do wybranej daty. / Max 3 weeks, return at the counter.</small><br>
       3️⃣ 受け取り・返却はレジカウンターで会員IDをご提示ください。<br>
       &nbsp;&nbsp;<small>Odbiór i zwrot przy kasie za okazaniem ID członka. / Show member ID at pickup & return.</small><br>
       4️⃣ 紛失・汚損の場合は実費をご負担いただきます。<br>
@@ -1092,7 +1106,7 @@ body.show-config .config-bar{display:flex}
         style="width:100%;padding:.6rem;border:1.5px solid var(--border);border-radius:10px;
                font-family:inherit;font-size:.9rem;margin-bottom:.4rem">
       <div style="font-size:.7rem;color:var(--muted);margin-bottom:1rem;line-height:1.6">
-        ※ 本日から3週間。それまでにカウンターへご返却ください（お一人2冊まで）。<br>
+        ※ 本日から最長3週間以内。それまでにカウンターへご返却ください。<br>
         Maks. 3 tygodnie od dziś. / Max 3 weeks from today.
       </div>
       <div id="borrow-error" style="display:none;background:#fee;border:1px solid #f5c6c6;
@@ -1644,9 +1658,16 @@ function confirmMemberId() {
   if (!lastName)  { showToast("Wpisz nazwisko / Enter last name"); return; }
   if (!contactVal) { showToast("Wpisz kontakt / Enter contact"); return; }
   if (midTab==='email' && !contactVal.includes('@')) { showToast("Nieprawidłowy e-mail / Invalid email"); return; }
+  // RODO：ポリシーへの同意がなければ登録しない
+  const midConsent = document.getElementById('mid-consent');
+  if (!midConsent || !midConsent.checked) {
+    showToast("Zaakceptuj Politykę prywatności / Please accept the Privacy Policy / プライバシーポリシーへの同意が必要です");
+    return;
+  }
   memberContact = contactVal;
   memberName    = `${firstName} ${lastName}`;
   memberInfo    = { firstName, lastName, contact: contactVal, contactType: midTab,
+                    consent:    true,
                     birthYear:  document.getElementById('mid-birthyear')?.value   || '',
                     birthMonth: document.getElementById('mid-birthmonth').value,
                     birthDay:   document.getElementById('mid-birthday')?.value    || '',
@@ -3154,7 +3175,6 @@ function computeSplitTotals() {
   const _pk = computeRankPerk();
   const _perkAlloc = (_pk && _pk.alloc) || {};
   const _riceAlloc = computeRiceSetDiscount().alloc;
-  const _bg = computeBookGiftDiscount();
   for (const id in cart) {
     const item = findItem(id);
     if (!item) continue;
@@ -3163,7 +3183,6 @@ function computeSplitTotals() {
     if (cc.discount > 0 && id === cc.targetId) line -= cc.discount;
     if (_perkAlloc[id]) line -= _perkAlloc[id];
     if (_riceAlloc[id]) line -= _riceAlloc[id];
-    if (_bg.discount > 0 && id === _bg.targetId) line -= _bg.discount;
     const payers = getPayers(o).filter(p => p >= 1 && p <= n);
     if (payers.length) {
       const each = line / payers.length; // 複数選択時は均等割り
@@ -3395,28 +3414,6 @@ function renderRankPerkBox() {
 }
 
 let selectedCoupon = null; // 使用するクーポン（'half'|'free'|null）
-let selectedBookGift = false;  // 🍙 書籍返却特典（おにぎり1個無料）を使うか
-
-// ══════════════════════════════════════════════════════════════
-//  🍙 書籍返却特典：ラーメン注文時に「Onigiri (1 szt.)」1個を無料に
-//   本を返却した瞬間にGASが会員へ1枚付与する（クーポン欄に t:"book"）。
-//   条件：カートにラーメンがあり、かつ おにぎり(o1) が入っていること。
-// ══════════════════════════════════════════════════════════════
-const BOOK_GIFT_ITEM = 'o1';   // Onigiri (1 szt.)
-
-function hasBookGift() {
-  return !!(isMember && memberInfo && memberInfo.coupons &&
-            memberInfo.coupons.some(c => !c.u && c.t === 'book'));
-}
-function computeBookGiftDiscount() {
-  if (!selectedBookGift || !hasBookGift()) return { discount: 0, targetId: '', reason: '' };
-  const hasRamen = Object.keys(cart).some(id => (findCatOfItem(id) || {}).id === 'ramen');
-  if (!hasRamen) return { discount: 0, targetId: '', reason: 'ramen' };
-  const key = Object.keys(cart).find(id => baseId(id) === BOOK_GIFT_ITEM);
-  if (!key) return { discount: 0, targetId: '', reason: 'onigiri' };
-  const item = findItem(BOOK_GIFT_ITEM);
-  return { discount: item ? item.price : 0, targetId: key, reason: '' };
-}
 
 // クーポン割引額を計算：カート内で最も高いラーメン1杯の基本価格が対象
 // （＝お好きな1杯無料/半額と同等。追加トッピング・替え玉は対象外＝満額請求）
@@ -3468,13 +3465,6 @@ function applyCouponToTotal() {
     pLine.innerHTML = `<span>🎁 Bonus rangi ${perkInfo.rank}（${perkInfo.names.join(', ')}）</span><span>−${perkDisc} zł</span>`;
     pLine.style.display = 'flex';
   } else { pLine.style.display = 'none'; }
-  // 🍙 書籍返却特典（おにぎり1個無料）
-  const bg = computeBookGiftDiscount();
-  const bLine = mkLine('bookgift-discount-line', '#2d7a3a');
-  if (bg.discount > 0) {
-    bLine.innerHTML = `<span>🍙 Prezent za zwrot książki（Onigiri）</span><span>−${bg.discount} zł</span>`;
-    bLine.style.display = 'flex';
-  } else { bLine.style.display = 'none'; }
   // 🍚 ライスセット割引行
   const rice = computeRiceSetDiscount();
   const rLine = mkLine('riceset-discount-line', '#1f6b8e');
@@ -3483,63 +3473,18 @@ function applyCouponToTotal() {
     rLine.style.display = 'flex';
   } else { rLine.style.display = 'none'; }
   // 合計
-  const allDisc = discount + perkDisc + rice.discount + bg.discount;
+  const allDisc = discount + perkDisc + rice.discount;
   totalEl.innerHTML = allDisc > 0
     ? `<span style="text-decoration:line-through;opacity:.5;font-size:.8em">${base} zł</span> ${base - allDisc} zł`
     : base + ' zł';
   renderRankPerkBox();
-  renderBookGiftBox();
   renderSplitSummary();
-}
-
-// 🍙 書籍返却特典の案内ボックス（確認画面）
-function renderBookGiftBox() {
-  const ta = document.getElementById('uwagi-ta');
-  let box = document.getElementById('bookgift-area');
-  if (!hasBookGift()) { if (box) box.style.display = 'none'; selectedBookGift = false; return; }
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'bookgift-area';
-    box.style.cssText = 'margin:.8rem 0;padding:.8rem .9rem;border:2px solid #2d7a3a;border-radius:12px;' +
-      'background:linear-gradient(135deg,#f2f9ee,#e6f3df);font-size:.82rem;line-height:1.7;color:#1f5429';
-    ta.parentNode.insertBefore(box, ta);
-  }
-  const bg = computeBookGiftDiscount();
-  const item = findItem(BOOK_GIFT_ITEM);
-  let note = '';
-  if (selectedBookGift && bg.discount === 0) {
-    note = bg.reason === 'ramen'
-      ? `<div style="margin-top:.4rem;color:#8e2418;font-weight:700">
-           ⚠️ Dodaj ramen, aby skorzystać / ラーメンをご注文いただくと無料になります</div>`
-      : `<div style="margin-top:.4rem;color:#8e2418;font-weight:700">
-           ⚠️ Dodaj Onigiri (1 szt.) do zamówienia / おにぎり（1個）をカートに追加してください
-           <button onclick="document.getElementById('confirm-modal').classList.remove('open');enterCategory('onigiri')"
-             style="margin-left:.4rem;background:#2d7a3a;color:#fff;border:none;border-radius:8px;
-             padding:.3rem .7rem;font-size:.72rem;font-weight:700;cursor:pointer">🍙 追加 ▶</button></div>`;
-  }
-  box.innerHTML = `
-    <div style="font-weight:700;margin-bottom:.4rem">
-      🍙 Prezent za zwrot książki! / 書籍返却の特典があります！</div>
-    <label style="display:block;padding:.2rem 0;cursor:pointer">
-      <input type="radio" name="bookgift-sel" value="" ${selectedBookGift ? '' : 'checked'}
-        onchange="selectedBookGift=false;applyCouponToTotal()">
-      Nie używam teraz / 今回は使わない</label>
-    <label style="display:block;padding:.2rem 0;cursor:pointer">
-      <input type="radio" name="bookgift-sel" value="1" ${selectedBookGift ? 'checked' : ''}
-        onchange="selectedBookGift=true;applyCouponToTotal()">
-      Onigiri (1 szt.) GRATIS do dowolnego ramenu<br>
-      <span style="font-size:.74rem;opacity:.85">Free onigiri (1 pc) with any ramen ・
-      ラーメンご注文で おにぎり1個サービス（−${item ? item.price : 14} zł）</span></label>
-    ${note}
-    <div style="font-size:.68rem;opacity:.8;margin-top:.4rem">
-      ※ Ważne przy tej wizycie / 今回のご来店でご利用いただけます</div>`;
-  box.style.display = 'block';
 }
 
 function renderCouponBox() {
   const ta = document.getElementById('uwagi-ta');
   let box = document.getElementById('coupon-area');
-  const coupons = (isMember && memberInfo && memberInfo.coupons) ? memberInfo.coupons.filter(c => !c.u && c.t !== 'book') : [];
+  const coupons = (isMember && memberInfo && memberInfo.coupons) ? memberInfo.coupons.filter(c => !c.u) : [];
   if (!coupons.length) { if (box) box.style.display = 'none'; selectedCoupon = null; return; }
   if (!box) {
     box = document.createElement('div');
@@ -3741,7 +3686,6 @@ function openConfirm() {
   setTimeout(checkAllergyWarning, 50);
   setTimeout(renderCouponBox, 50);
   setTimeout(renderRankPerkBox, 60);
-  setTimeout(renderBookGiftBox, 65);
   // v45 fix: 旧版はクーポンのラジオを触ったときしか合計を再計算しておらず、
   //   🍚ライスセット割と🎁ランク特典が確認画面の合計に反映されていなかった。
   //   （送信される請求額には反映されるため、画面と実額がズレていた）
@@ -3910,8 +3854,6 @@ async function placeOrder() {
   if (perkCalc && perkCalc.discount > 0) total -= perkCalc.discount;
   const riceCalc = computeRiceSetDiscount();
   if (riceCalc.discount > 0) total -= riceCalc.discount;
-  const bookGiftCalc = computeBookGiftDiscount();
-  if (bookGiftCalc.discount > 0) total -= bookGiftCalc.discount;
 
   // ⭐Polecane（おすすめ特価）の値引き額を集計。
   //   origPriceは通常価格、priceは特価。カート内の数量ぶん差額を合計する。
@@ -3927,13 +3869,12 @@ async function placeOrder() {
 
   // 今回の注文で発生した「お得額」の合計（完了画面での演出に使う）
   const totalSavings = polecaneDiscount + couponCalc.discount +
-    (perkCalc ? perkCalc.discount : 0) + riceCalc.discount + bookGiftCalc.discount;
+    (perkCalc ? perkCalc.discount : 0) + riceCalc.discount;
   const savingsBreakdown = [];
   if (polecaneDiscount > 0) savingsBreakdown.push({ label: '⭐ Polecane', pl: 'Oferta specjalna', jp: 'おすすめ特価', amt: polecaneDiscount });
   if (couponCalc.discount > 0) savingsBreakdown.push({ label: '🎫', pl: 'Kupon', jp: 'クーポン', amt: couponCalc.discount });
   if (perkCalc && perkCalc.discount > 0) savingsBreakdown.push({ label: '🎁', pl: 'Bonus rangi', jp: 'ランク特典', amt: perkCalc.discount });
   if (riceCalc.discount > 0) savingsBreakdown.push({ label: '🍚', pl: 'Zestaw z ryżem', jp: 'ライスセット', amt: riceCalc.discount });
-  if (bookGiftCalc.discount > 0) savingsBreakdown.push({ label: '🍙', pl: 'Prezent za zwrot książki', jp: '書籍返却特典', amt: bookGiftCalc.discount });
 
   document.getElementById('confirm-modal').classList.remove('open');
   document.getElementById('btn-order').disabled = true;
@@ -3957,13 +3898,12 @@ async function placeOrder() {
           memberGender:     isMember?(memberInfo.gender    ||""):"",
           memberType:       isMember?(memberInfo.memberType||"G"):"",
           memberLanguage:   isMember?(memberInfo.language  ||""):"",
+          memberConsent:    isMember? !!memberInfo.consent : false,
           useCoupon: (isMember && selectedCoupon && couponCalc.discount > 0) ? selectedCoupon : "",
           couponDiscount: couponCalc.discount,
           couponTarget: couponCalc.target,
           riceSetDiscount: riceCalc.discount,
           riceSetCount: riceCalc.count,
-          useBookGift: (bookGiftCalc.discount > 0),
-          bookGiftDiscount: bookGiftCalc.discount,
           rankPerkDiscount: perkCalc ? perkCalc.discount : 0,
           rankPerkRank: perkCalc ? perkCalc.rank : "",
           rankPerkDetail: perkCalc ? perkCalc.names.join(", ") : "",
@@ -3989,11 +3929,6 @@ async function placeOrder() {
   try { splitSnap = computeSplitTotals(); } catch (e) { splitSnap = null; }
   // ※ 客別内訳はクーポン適用後の金額で持たせる必要があるため、
   //    selectedCoupon をリセットする前に計算しておく。
-  if (bookGiftCalc.discount > 0 && memberInfo.coupons) {
-    const bi = memberInfo.coupons.findIndex(c => !c.u && c.t === 'book');
-    if (bi >= 0) memberInfo.coupons.splice(bi, 1);
-  }
-  selectedBookGift = false;
   if (isMember && selectedCoupon && memberInfo.coupons) {
     const ci = memberInfo.coupons.findIndex(c => !c.u && c.t === selectedCoupon);
     if (ci >= 0) memberInfo.coupons.splice(ci, 1);
@@ -4616,7 +4551,7 @@ function resetApp() {
   const co = document.getElementById('checkout-screen'); if (co) co.style.display = 'none';
   tableNum=""; guestNum="";
   isMember=false; memberContact=""; memberName=""; memberInfo=Object.create(null);
-  coseatMembers = []; selectedCoupon = null; selectedBookGift = false;
+  coseatMembers = [];
   document.getElementById('success-screen').style.display = 'none';
   document.getElementById('savings-card').style.display = 'none';
   document.getElementById('member-check-screen').style.display = 'none';
