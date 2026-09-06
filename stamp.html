@@ -138,6 +138,15 @@ body{
     placeholder="np. +48 123 456 789" autocomplete="tel"
     style="display:none">
   <div class="error-msg" id="email-error"></div>
+  <label class="form-label">🔑 Kod tygodnia / Weekly code / 今週のコード</label>
+  <input class="form-input" type="tel" inputmode="numeric" maxlength="4"
+         id="stamp-code" placeholder="0000"
+         style="letter-spacing:.5em;text-align:center;font-size:1.2rem;font-weight:700">
+  <p style="font-size:.68rem;color:var(--muted);margin:.2rem 0 .7rem;line-height:1.6">
+    Poproś obsługę o kod. Zapamiętamy go na tym urządzeniu.<br>
+    Ask our staff for the code — we'll remember it on this device.<br>
+    係員にコードをお尋ねください。この端末に記憶します。
+  </p>
   <button class="btn btn-primary" onclick="doStamp()">
     🎋 スタンプを押す / Otrzymaj pieczątkę / Get stamp
   </button>
@@ -149,7 +158,9 @@ body{
     👤 会員カードを見る / Zobacz kartę / View card
   </button>
   <hr class="divider">
-  <div class="staff-panel">
+  <!-- 係員専用ブロック。既定では非表示。スタッフ端末でのみ表示されます。
+       表示条件は revealStaffEntryIfAllowed() を参照してください。 -->
+  <div class="staff-panel" id="staff-entry" style="display:none">
     <div class="staff-title">🔒 Dla obsługi / 係員専用</div>
     <button class="btn btn-secondary" style="margin:0" onclick="showScreen('screen-staff')">
       ＋ 手動ポイント追加 / Dodaj punkty ręcznie
@@ -611,7 +622,13 @@ async function doStamp() {
     return;
   }
   try {
-    const res = await postGAS({action:'stamp', email});
+    const codeEl = document.getElementById('stamp-code');
+    const code   = codeEl ? codeEl.value.replace(/\D/g, '') : '';
+    const res = await postGAS({action:'stamp', email, code});
+    // 通ったコードだけを端末に記憶する（間違ったコードは覚えない）
+    if (res && res.status !== 'badCode' && code) {
+      try { localStorage.setItem('wabi_stamp_code', code); } catch(e) {}
+    }
     renderStampResult(res);
   } catch(e) {
     renderStampResult({status:'error', message:''});
@@ -631,37 +648,47 @@ function renderStampResult(res) {
 
   if (res.status === 'ok') {
     icon.textContent  = '🎋';
-    title.textContent = 'スタンプ完了！ / Pieczątka przyznana!';
+    title.textContent = 'Pieczątka przyznana! / Stamp added! / スタンプ完了！';
     msg.textContent   = '';
     pts.textContent   = res.newPt + ' pt';
     pts.style.display = 'block';
-    ptslabel.textContent = `（+10pt）　累計 / Łącznie`;
+    ptslabel.textContent = `(+10 pkt) Łącznie / Total / 累計`;
     ptslabel.style.display = 'block';
 
     if (res.bonus) {
       bonusArea.innerHTML = `<div class="bonus-box">
-        <div class="bonus-text">🎉 ボーナス達成！ / Bonus osiągnięty!<br>
-        ラーメン1杯無料券をゲット！<br>
-        <small>Voucher na darmowe ramen!</small></div></div>`;
+        <div class="bonus-text">🎉 Bonus osiągnięty! / Bonus unlocked! / ボーナス達成！<br>
+        Voucher na darmowe ramen!<br>
+        <small>A free ramen voucher is yours! ／ ラーメン1杯無料券をゲット！</small></div></div>`;
     }
     if (res.rankUp) {
       rankupArea.innerHTML = `<div class="rankup-box">
-        <div class="rankup-text">⬆️ ランクアップ！ / Awans rankingowy!<br>
-        ${res.rank.icon} ${res.rank.name} になりました！<br>
-        <small>Osiągnąłeś/aś poziom ${res.rank.name}!</small></div></div>`;
+        <div class="rankup-text">⬆️ Awans rankingowy! / Rank up! / ランクアップ！<br>
+        ${res.rank.icon} ${res.rank.name}<br>
+        <small>Osiągnąłeś/aś poziom ${res.rank.name}! ／ You reached ${res.rank.name}! ／ ${res.rank.name} になりました！</small></div></div>`;
     }
     if (res.member) cardArea.innerHTML = renderCard(res.member);
 
   } else if (res.status === 'alreadyStamped') {
     icon.textContent  = '⏰';
-    title.textContent = '本日スタンプ済み / Już ostemplowano';
+    title.textContent = 'Już ostemplowano / Already stamped today / 本日スタンプ済み';
     msg.textContent   = res.message;
     if (res.member) cardArea.innerHTML = renderCard(res.member);
 
   } else if (res.status === 'noRamen') {
     icon.textContent  = '🍜';
-    title.textContent = 'ラーメンが必要です / Wymagane ramen';
-    msg.textContent   = res.message;
+    // 拒絶ではなく案内の調子にする（ドリンクのみのご来店が多いため）
+    title.innerHTML   = 'Pieczątkę otrzymasz po zamówieniu ramenu.<br>' +
+                        'A stamp is added after you order ramen.<br>' +
+                        'スタンプはラーメンをご注文いただくと付きます。';
+    msg.textContent   = '';
+
+  } else if (res.status === 'badCode') {
+    icon.textContent  = '🔑';
+    title.innerHTML   = 'Poproś obsługę o kod tygodnia.<br>' +
+                        'Please ask our staff for this week\'s code.<br>' +
+                        '係員に今週のコードをお尋ねください。';
+    msg.textContent   = '';
 
   } else if (res.status === 'notMember') {
     icon.textContent  = '🌸';
@@ -756,24 +783,31 @@ async function doRegister() {
       document.getElementById('result-pts').style.display = 'block';
       document.getElementById('result-pts').textContent   = mid;
       document.getElementById('result-pts-label').style.display = 'block';
-      document.getElementById('result-pts-label').textContent   = '🪪 会員ID / Member ID';
+      document.getElementById('result-pts-label').textContent   = '🪪 Nr członkowski / Member ID / 会員ID';
       // ── 特典一覧案内板＋注文に進むボタン ──
       document.getElementById('bonus-area').innerHTML = `
         <div class="bonus-box"><div class="bonus-text" style="text-align:left;line-height:1.9">
-          🎁 <strong>入会特典：ドリンク券1枚プレゼント！</strong><br>
-          <small>Bonus powitalny: voucher na napój! / Welcome gift: free drink voucher!</small><br><br>
-          <strong>🌸 会員特典一覧 / Twoje korzyści / Your benefits</strong><br>
-          🍜 1杯 = 10pt（100pt = ラーメン1杯無料！）<br>
-          <small>1 miska = 10 pkt → 100 pkt = ramen gratis!</small><br>
-          ⭐ 6杯目：ラーメン半額 / 6. miska: pół ceny<br>
-          🥉 11杯目：ラーメン無料 / 11. miska: gratis<br>
-          🎂 誕生月：ドリンク1杯無料 / Urodziny: napój gratis<br>
-          🎓 学生・🧓シニア：ラーメン10%引き<br>
-          <small>Studenci i seniorzy: -10% na ramen</small><br>
-          📚 日本文化関連書籍の貸し出し（最長3週間・無料）<br>
-          <small>Wypożyczalnia książek o Japonii / Japanese culture book lending</small><br>
-          🎉 会員限定プロモ・イベント招待<br>
-          <small>Promocje i wydarzenia tylko dla członków</small>
+          🎁 <strong>Bonus powitalny: voucher na napój!</strong><br>
+          <small>Welcome gift: a free drink voucher! ／ 入会特典：ドリンク券1枚プレゼント！</small><br><br>
+          <strong>🌸 Twoje korzyści ／ Your benefits ／ 会員特典一覧</strong><br>
+          🍜 1 miska = 10 pkt<br>
+          <small>1 bowl = 10 pts ／ ラーメン1杯 = 10ポイント</small><br>
+          ⭐ 50 pkt → 6. miska za pół ceny<br>
+          <small>50 pts → 6th bowl half price ／ 50pt → 6杯目が半額</small><br>
+          🎁 100 pkt → 12. miska gratis<br>
+          <small>100 pts → 12th bowl free ／ 100pt → 12杯目が無料</small><br>
+          🎂 Urodziny: napój gratis<br>
+          <small>Birthday month: a free drink ／ 誕生月：ドリンク1杯無料</small><br>
+          🎓🧓 Studenci i seniorzy: −10% na ramen<br>
+          <small>Students and seniors: 10% off ramen ／ 学生・シニア：ラーメン10%引き</small><br>
+          📚 Wypożyczalnia książek o Japonii (do 3 tygodni, bezpłatnie)<br>
+          <small>Japanese culture book lending (up to 3 weeks, free) ／ 日本文化関連書籍の貸し出し（最長3週間・無料）</small><br>
+          <small>🚧 Od października — w przygotowaniu ／ From October — coming soon ／ 10月開始予定・準備中</small><br>
+          🎌 Quiz z japońskiego — punkty za poprawne odpowiedzi<br>
+          <small>Japanese quiz — earn points for correct answers ／ 日本語クイズ：正解でポイント</small><br>
+          <small>🚧 Od października — w przygotowaniu ／ From October — coming soon ／ 10月開始予定・準備中</small><br>
+          🎉 Promocje i wydarzenia tylko dla członków<br>
+          <small>Member-only promotions and events ／ 会員限定プロモ・イベント招待</small>
         </div></div>
         ${res.whatsapp ? `
         <a href="${res.whatsapp}" target="_blank" rel="noopener"
@@ -793,8 +827,9 @@ async function doRegister() {
           </button>
         </a>
         <div style="font-size:.7rem;color:var(--muted);text-align:center;margin-top:.4rem;line-height:1.6">
-          ご着席のうえ、テーブルのQRコードからもご注文いただけます。<br>
-          Możesz też zamówić, skanując kod QR na stoliku.
+          Możesz też zamówić, skanując kod QR na stoliku.<br>
+          You can also order by scanning the QR code on your table.<br>
+          ご着席のうえ、テーブルのQRコードからもご注文いただけます。
         </div>`;
       document.getElementById('rankup-area').innerHTML = '';
       document.getElementById('card-area').innerHTML   = renderCard(res.member);
@@ -913,14 +948,46 @@ function stopQrScan() {
 }
 
 // パスワードが正しかった操作の後に端末記憶を保存/消去（v5.7）
+// ══════════════════════════════════════════════════════════════
+//  🔒 係員専用ボタンの表示判定
+//    お客様の端末には出しません。次のどちらかを満たす端末だけ表示します。
+//      ① この端末をスタッフ端末として登録済み（wabi_staff_device）
+//      ② URLの末尾に ?staff=1 を付けて開いた（初回の登録用）
+//    ②で開くと、その端末は自動的に①として登録され、
+//    以後は普通のURLで開いてもボタンが出ます。
+//    解除したいときは ?staff=0 を付けて開いてください。
+// ══════════════════════════════════════════════════════════════
+function revealStaffEntryIfAllowed() {
+  var el = document.getElementById('staff-entry');
+  if (!el) return;
+  var q = new URLSearchParams(location.search).get('staff');
+  try {
+    if (q === '1') localStorage.setItem('wabi_staff_device', '1');
+    if (q === '0') {
+      localStorage.removeItem('wabi_staff_device');
+      localStorage.removeItem('wabi_staff_pw_saved');
+    }
+  } catch (e) {}
+  var isStaff = false;
+  try {
+    isStaff = localStorage.getItem('wabi_staff_device') === '1' ||
+              !!localStorage.getItem('wabi_staff_pw_saved');
+  } catch (e) {}
+  el.style.display = isStaff ? '' : 'none';
+}
+
 function maybeSavePw(pw, res) {
   const badPw = res && (res.status === 'unauthorized' ||
     (res.message && /パスワード|hasło|prób/i.test(res.message)));
   if (badPw) return;
   const box = document.getElementById('staff-remember');
   try {
-    if (box && box.checked) localStorage.setItem('wabi_staff_pw_saved', pw);
-    else localStorage.removeItem('wabi_staff_pw_saved');
+    if (box && box.checked) {
+      localStorage.setItem('wabi_staff_pw_saved', pw);
+      localStorage.setItem('wabi_staff_device', '1');
+    } else {
+      localStorage.removeItem('wabi_staff_pw_saved');
+    }
   } catch(e) {}
 }
 
@@ -1074,6 +1141,12 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('staff-password').value = savedPw;
     document.getElementById('staff-remember').checked = true;
   }
+  // 記憶した今週のコードを入れておく（常連の方は入力不要）
+  try {
+    const savedCode = localStorage.getItem('wabi_stamp_code');
+    if (savedCode) document.getElementById('stamp-code').value = savedCode;
+  } catch (e) {}
+  revealStaffEntryIfAllowed();
     document.getElementById('reg-email').value   = saved;
   }
 });
