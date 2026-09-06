@@ -65,7 +65,13 @@ body{
 @media (prefers-reduced-motion:reduce){.spinner{animation-duration:2s}}
 .divider{border:none;border-top:1px solid var(--border);margin:.8rem 0}
 a.tel-link{color:var(--accent);font-weight:700;text-decoration:none}
-a.tel-big{display:block;font-size:1.15rem;letter-spacing:.05em;margin-top:.6rem}
+a.tel-btn{display:block;background:var(--accent);color:#fff;border-radius:10px;
+  padding:.9rem .8rem;font-size:1.2rem;font-weight:700;letter-spacing:.06em;
+  text-decoration:none;text-align:center;margin-top:1rem;
+  box-shadow:0 4px 14px rgba(192,57,43,0.3)}
+a.tel-btn:active{filter:brightness(.92)}
+a.tel-btn .tel-cap{display:block;font-size:.7rem;font-weight:400;letter-spacing:.02em;
+  opacity:.9;margin-top:.25rem}
 </style>
 </head>
 <body>
@@ -114,7 +120,7 @@ a.tel-big{display:block;font-size:1.15rem;letter-spacing:.05em;margin-top:.6rem}
       When we are busy we may not be able to hold your table — please call us.<br>
       ご来店<span class="lock-h"></span>時間前を過ぎました。混雑時は席をご用意できない場合がございます。<br>
       お手数ですがお電話にてご確認ください。
-      <a class="tel-link shop-tel tel-big" href="#"></a>
+      <a class="tel-btn shop-tel" href="#" role="button"></a>
     </p>
   </div>
 
@@ -183,9 +189,15 @@ function renderShopPhone(){
   const digits = tel.replace(/\D/g, '');
   document.querySelectorAll('.shop-tel').forEach(a => {
     if (!digits) { a.style.display = 'none'; return; }
-    a.textContent = '📞 ' + tel;
     a.href = 'tel:+48' + digits.slice(-9);
     a.style.display = '';
+    if (a.classList.contains('tel-btn')) {
+      // ボタン型：番号を大きく、その下に小さく多言語の説明
+      a.innerHTML = '📞 ' + tel +
+        '<span class="tel-cap">Zadzwoń / Call us / タップで発信</span>';
+    } else {
+      a.textContent = '📞 ' + tel;
+    }
   });
 }
 renderShopPhone();
