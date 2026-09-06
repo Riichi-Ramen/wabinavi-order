@@ -65,6 +65,7 @@ body{
 @media (prefers-reduced-motion:reduce){.spinner{animation-duration:2s}}
 .divider{border:none;border-top:1px solid var(--border);margin:.8rem 0}
 a.tel-link{color:var(--accent);font-weight:700;text-decoration:none}
+a.tel-big{display:block;font-size:1.15rem;letter-spacing:.05em;margin-top:.6rem}
 </style>
 </head>
 <body>
@@ -107,9 +108,13 @@ a.tel-link{color:var(--accent);font-weight:700;text-decoration:none}
       <button class="btn btn-danger" onclick="askCancel()">❌ Anuluj rezerwację / Cancel / キャンセルする</button>
     </div>
     <p class="note" id="v-locked" style="display:none">
-      Zmiany online możliwe do <span class="lock-h"></span>h przed wizytą — prosimy o kontakt telefoniczny.<br>
-      Online changes close <span class="lock-h"></span>h before your visit — please call us.<br>
-      ご来店<span class="lock-h"></span>時間前を過ぎたため、お電話にてご連絡ください。
+      Zmiany online możliwe do <span class="lock-h"></span>h przed wizytą.<br>
+      Przy dużym ruchu nie zawsze możemy zagwarantować stolik — prosimy o telefon.<br>
+      Online changes close <span class="lock-h"></span>h before your visit.<br>
+      When we are busy we may not be able to hold your table — please call us.<br>
+      ご来店<span class="lock-h"></span>時間前を過ぎました。混雑時は席をご用意できない場合がございます。<br>
+      お手数ですがお電話にてご確認ください。
+      <a class="tel-link shop-tel tel-big" href="#"></a>
     </p>
   </div>
 
@@ -148,7 +153,8 @@ a.tel-link{color:var(--accent);font-weight:700;text-decoration:none}
 </div>
 
 <p class="note">🍜 Wabi Navi — Toruń ·
-  <a class="tel-link" href="https://riichi-ramen.github.io/">riichi-ramen.github.io</a></p>
+  <a class="tel-link" href="https://riichi-ramen.github.io/">riichi-ramen.github.io</a><br>
+  <a class="tel-link shop-tel" href="#"></a></p>
 
 <script>
 const GAS_URL = localStorage.getItem('wabi_gas_url') ||
@@ -165,6 +171,24 @@ document.getElementById('logo-tap').onclick = () => {
 
 const params = new URLSearchParams(location.search);
 let RES = null, TOKEN = params.get('t') || '', RES_ID = params.get('id') || '', CONFIG = null;
+
+// 📞 店の電話番号。正本はGASの RES_CONFIG.shopPhone です。
+//    下の値は、GASに繋がる前（照会画面など）に表示するための控えです。
+//    番号を変えるときは GAS 側を直せば全体に反映されます。ここは保険。
+const SHOP_PHONE_FALLBACK = '693 865 271';
+
+// .shop-tel を持つ要素すべてに番号を入れ、タップで発信できるようにする
+function renderShopPhone(){
+  const tel = ((CONFIG && CONFIG.shopPhone) || SHOP_PHONE_FALLBACK).toString().trim();
+  const digits = tel.replace(/\D/g, '');
+  document.querySelectorAll('.shop-tel').forEach(a => {
+    if (!digits) { a.style.display = 'none'; return; }
+    a.textContent = '📞 ' + tel;
+    a.href = 'tel:+48' + digits.slice(-9);
+    a.style.display = '';
+  });
+}
+renderShopPhone();
 
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -218,6 +242,7 @@ function render(){
   const isFinal = RES.status.indexOf('キャンセル')>=0 || RES.status.indexOf('来店済')>=0 || RES.status.indexOf('No-show')>=0;
   locked.style.display = (!can && !isFinal) ? 'block' : 'none';
   document.querySelectorAll('.lock-h').forEach(x=>x.textContent = (CONFIG.minHoursBefore||2));
+  renderShopPhone();   // GASから届いた shopPhone を反映（届かなければ控えの番号のまま）
   show('scr-view');
 }
 
