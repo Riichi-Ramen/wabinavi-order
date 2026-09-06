@@ -96,6 +96,11 @@ body{
 
 .divider{border:none;border-top:1px solid var(--border);margin:.8rem 0}
 .link-btn{background:none;border:none;color:var(--accent);font-size:.78rem;cursor:pointer;text-decoration:underline;padding:0}
+.consent-box{display:flex;gap:.6rem;align-items:flex-start;background:rgba(192,57,43,.04);
+  border:1px solid rgba(192,57,43,.22);border-radius:10px;padding:.75rem .8rem;
+  margin:.4rem 0 .9rem;font-size:.76rem;line-height:1.6;cursor:pointer}
+.consent-box input{width:20px;height:20px;flex:0 0 20px;margin-top:.1rem;accent-color:#c0392b}
+.consent-box a{color:#c0392b;font-weight:700}
 .error-msg{background:#fee;border:1px solid #f5c6c6;border-radius:8px;padding:.6rem;
   font-size:.78rem;color:#a00;text-align:center;margin-bottom:.8rem;display:none}
 .id-tabs{display:flex;gap:.4rem;margin-bottom:.7rem}
@@ -381,6 +386,17 @@ body{
     <option value="SR">🧓 シニア 65+ / Senior（年齢確認後 / po weryfikacji wieku / after age check）</option>
     <option value="T">✈️ 観光客 / Turysta / Tourist</option>
   </select>
+  <label class="consent-box">
+    <input type="checkbox" id="reg-consent">
+    <span>
+      Zapoznałem(-am) się z <a href="polityka.html" target="_blank" rel="noopener">Polityką prywatności</a>
+      i wyrażam zgodę na przetwarzanie moich danych w programie lojalnościowym.<br>
+      I have read the <a href="polityka.html#en" target="_blank" rel="noopener">Privacy Policy</a>
+      and consent to my data being processed for the loyalty programme.<br>
+      <a href="polityka.html#jp" target="_blank" rel="noopener">プライバシーポリシー</a>を読み、
+      ポイントプログラムでの個人情報の利用に同意します。
+    </span>
+  </label>
   <div class="error-msg" id="reg-error"></div>
   <button class="btn btn-primary" onclick="doRegister()">
     🌸 登録する / Zarejestruj / Register
@@ -698,6 +714,15 @@ async function doRegister() {
   const birth  = document.getElementById('reg-birth').value;
   if (!name)  { showError('reg-error','氏名を入力してください / Enter your name'); return; }
   if (!email || !email.includes('@')) { showError('reg-error','メールアドレスを入力してください'); return; }
+  // RODO：ポリシーへの同意がなければ登録しない
+  const consentEl = document.getElementById('reg-consent');
+  if (!consentEl || !consentEl.checked) {
+    showError('reg-error',
+      'Prosimy o akceptację Polityki prywatności. / ' +
+      'Please accept the Privacy Policy. / ' +
+      'プライバシーポリシーへの同意が必要です。');
+    return;
+  }
   if (!GAS_URL) {
     showError('reg-error',
       '⚙️ システム準備中です。係員にお声がけください。 / ' +
@@ -719,7 +744,8 @@ async function doRegister() {
     }
 
     const res = await postGAS({action:'register', name, email,
-      birthYear, birthMonth:birth, birthDay, gender, memberType});
+      birthYear, birthMonth:birth, birthDay, gender, memberType,
+      consent: true, consentSource: 'stamp.html'});
     if (res.status === 'ok') {
       saveEmail(email);
       showScreen('screen-result');
