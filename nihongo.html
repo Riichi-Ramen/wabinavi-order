@@ -105,6 +105,7 @@ const GAS_URL = localStorage.getItem('wabi_gas_url') ||
   'https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec';
 
 let LESSONS = [];
+let QUIZ_POINTS = true;   // GASの設定で切り替わる
 const picked = {};   // 回号 → 選んだ選択肢番号
 
 function esc(s){
@@ -116,10 +117,16 @@ async function load(){
   try{
     const res = await fetch(GAS_URL + '?action=getLessons');
     const data = await res.json();
+    QUIZ_POINTS = (data.quizPoints !== false);
     if (data.status !== 'ok' || !data.lessons || !data.lessons.length){
       document.getElementById('content').innerHTML =
-        '<div class="card"><div class="closed-note">📚 Pierwsza lekcja już wkrótce!<br>' +
-        '第1回は近日公開です。お楽しみに。</div></div>';
+        '<div class="card" style="text-align:center">' +
+        '<div style="font-size:2.2rem;margin-bottom:.5rem">🎌</div>' +
+        '<div style="font-size:1rem;font-weight:700;color:var(--purple);margin-bottom:.4rem">' +
+        'Wkrótce / Coming soon</div>' +
+        '<div class="closed-note">Pierwsza lekcja japońskiego już niedługo — zapraszamy!<br>' +
+        '<span style="font-size:.9em">Our first Japanese lesson is coming soon.</span><br>' +
+        '<span style="font-size:.82em;color:#9a8878">第1回は近日公開です。お楽しみに。</span></div></div>';
       return;
     }
     LESSONS = data.lessons;
@@ -176,7 +183,7 @@ function lessonCard(L, isLatest){
         <input class="form-input mid-input" id="mid-${L.no}"
                placeholder="WN-XX-0000 lub e-mail / メールでも可" autocomplete="off">
         <button class="btn btn-purple" id="send-${L.no}" onclick="submitQuiz(${L.no})">
-          ✅ Wyślij odpowiedź / 回答する（+5pt）
+          ✅ Wyślij odpowiedź / Answer${QUIZ_POINTS ? '（+5 pkt）' : ''}
         </button>
         <div id="res-${L.no}"></div>
         <div class="meta">
@@ -236,8 +243,8 @@ async function submitQuiz(no){
       document.querySelectorAll(`#opts-${no} .opt`).forEach(b => { b.disabled = true; });
       if (d.correct){
         area.innerHTML = `<div class="result ok">
-          🎉 Poprawnie! / 正解です！<br>
-          ${esc(d.memberName)} — <strong>+5 pkt</strong> → ${d.newPt} pkt
+          🎉 Poprawnie! / Correct!<br>
+          ${esc(d.memberName)}${d.awarded ? ` — <strong>+${d.awarded} pkt</strong> → ${d.newPt} pkt` : ''}
           ${d.rankUp ? '<br>⬆️ Awans rangi! / ランクアップ！ ' + esc(d.rank.icon + ' ' + d.rank.name) : ''}
           ${d.prize ? '<br>🎁 Bierzesz udział w losowaniu / 抽選対象になりました' : ''}
         </div>`;
