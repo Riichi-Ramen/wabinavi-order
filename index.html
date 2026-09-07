@@ -370,6 +370,7 @@ body{
 
 .custom-section{margin-top:.75rem;border-top:1px solid var(--border);padding-top:.75rem;display:none}
 .custom-section.open{display:block}
+.serve-row.open{display:flex}
 .custom-head{font-size:.75rem;color:var(--accent);font-weight:700;margin-bottom:.6rem}
 .remove-area{margin-bottom:.7rem}
 .remove-title{font-size:.7rem;color:var(--muted);margin-bottom:.35rem;font-weight:600}
@@ -512,6 +513,14 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
   font-size:.9rem;font-weight:700;cursor:pointer;line-height:1.5}
 .om-takeaway-btn small{display:block;font-size:.72rem;font-weight:400;opacity:.85}
 .om-takeaway-btn.on{border-color:#b93c3c;background:linear-gradient(135deg,#fdecec,#f9dcdc);color:#8e2418}
+/* お召し上がり方の2択（店内が既定で選択済み） */
+.serve-pick-label{font-size:.82rem;color:var(--muted);margin:.2rem 0 .45rem;text-align:center;line-height:1.5}
+.serve-pick{display:flex;gap:.6rem;margin-bottom:1rem}
+.serve-pick button{flex:1;padding:.7rem .5rem;border-radius:12px;border:2px solid var(--border);
+  background:var(--card);color:var(--muted);font-family:inherit;font-size:.9rem;font-weight:700;
+  cursor:pointer;line-height:1.5}
+.serve-pick button small{display:block;font-size:.68rem;font-weight:400;opacity:.85}
+.serve-pick button.on{border-color:#b93c3c;background:linear-gradient(135deg,#fdecec,#f9dcdc);color:#8e2418}
 /* v41 ②: 確認画面の表示切替タブ */
 .cv-tabs{display:flex;gap:.4rem;margin:.2rem 0 .6rem}
 .cv-tab{flex:1;padding:.5rem .3rem;border-radius:10px;border:1.5px solid rgba(192,57,43,.35);
@@ -595,7 +604,7 @@ body.show-config .config-bar{display:flex}
   .menu-grid{grid-template-columns:1fr}
   .mismatch-compare{flex-direction:column;align-items:center}
 }
-.serve-row{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem;padding:.5rem .55rem;
+.serve-row{display:none;flex-wrap:wrap;gap:.35rem;margin-top:.5rem;padding:.5rem .55rem;
   background:rgba(47,102,144,.06);border:1.5px dashed rgba(47,102,144,.35);border-radius:10px}
 .serve-chip{flex:1 1 100%;min-width:120px;text-align:center;padding:.45rem .3rem;border-radius:8px;
   border:1.5px solid rgba(60,30,15,.25);font-size:.7rem;font-weight:600;cursor:pointer;
@@ -830,12 +839,17 @@ body.show-config .config-bar{display:flex}
       🎓 Zniżka studencka / Student discount / 学生割引<br>
       🧓 Zniżka senioralna / Senior discount / シニア割引<br>
       🍜 Program lojalnościowy / Loyalty / ラーメン特典（1杯 = 10pt）:<br>
-      &nbsp;&nbsp;⭐ 50 pkt → <strong>6杯目 半額</strong> / 6. miska −50%<br>
-      &nbsp;&nbsp;🎁 100 pkt → <strong>12杯目 無料</strong> / 12. miska GRATIS<br>
-      &nbsp;&nbsp;🔁 以降50ptごとに交互（18杯目半額・24杯目無料…）/ dalej co 50 pkt na przemian<br>
-      &nbsp;&nbsp;<small>※半額・無料の丼はポイント対象外 / Za miski −50%・gratis pkt nie są naliczane<br>
-      &nbsp;&nbsp;※半額は学割・シニア割と併用不可 / −50% nie łączy się ze zniżką stud./senior.</small><br>
+      &nbsp;&nbsp;⭐ 50 pkt → 6. miska −50% / <strong>6th bowl half price</strong> / 6杯目 半額<br>
+      &nbsp;&nbsp;🎁 100 pkt → 12. miska GRATIS / <strong>12th bowl free</strong> / 12杯目 無料<br>
+      &nbsp;&nbsp;🔁 Dalej co 50 pkt na przemian / Then alternating every 50 pts /
+      以降50ptごとに交互（18杯目半額・24杯目無料…）<br>
+      &nbsp;&nbsp;<small>※ Za miski −50% i gratis pkt nie są naliczane /
+      Discounted and free bowls do not earn points / 半額・無料の丼はポイント対象外<br>
+      &nbsp;&nbsp;※ −50% nie łączy się ze zniżką studencką i senioralną /
+      The 50% coupon cannot be combined with the student or senior discount /
+      半額は学割・シニア割と併用不可</small><br>
       📚 Wypożyczalnia książek o Japonii / Book lending / 日本文化関連書籍の貸し出し<br>
+      &nbsp;&nbsp;<small>🚧 Od października — w przygotowaniu / From October — coming soon / 10月開始予定・準備中</small><br>
       🚪 Rezygnacja możliwa w każdej chwili / Cancel anytime / いつでも退会自由
     </div>
     <div style="background:rgba(192,57,43,0.05);border:1px solid rgba(192,57,43,0.15);
@@ -845,7 +859,13 @@ body.show-config .config-bar{display:flex}
       Dane osobowe są wykorzystywane wyłącznie w programie lojalnościowym Wabi Navi
       i nie są przekazywane osobom trzecim.<br>
       <small>Personal data is used solely for the Wabi Navi loyalty programme and is not shared with third parties.
-      個人情報はWabi Naviのポイントプログラムにのみ使用され、第三者には提供されません。</small>
+      個人情報はWabi Naviのポイントプログラムにのみ使用され、第三者には提供されません。</small><br>
+      <a href="polityka.html" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">
+        📄 Polityka prywatności</a> ·
+      <a href="polityka.html#en" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">
+        Privacy Policy</a> ·
+      <a href="polityka.html#jp" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">
+        プライバシーポリシー</a>
     </div>
     <div class="rp-btns">
       <button class="rp-btn-register" onclick="goToRegisterForm()">
@@ -912,11 +932,19 @@ body.show-config .config-bar{display:flex}
       <span class="om-en">Select people in this group</span><br>
       <span class="om-jp">このグループの人を選んでください</span></div>
     <div class="person-grid" id="person-grid"></div>
-    <button class="om-takeaway-btn" id="gs-takeaway-btn" onclick="toggleSetupTakeaway()">
-      🥡 Ta grupa: na wynos<br>
-      <small>This group: takeaway (collect at the register)</small><br>
-      <small>このグループは持ち帰り（会計時にお渡し）</small>
-    </button>
+    <div class="serve-pick-label">Jak podać? / How would you like it? / お召し上がり方</div>
+    <div class="serve-pick">
+      <button id="gs-serve-in" class="on" onclick="setSetupTakeaway(false)">
+        🍽️ Na miejscu<br>
+        <small>Eat in</small><br>
+        <small>店内</small>
+      </button>
+      <button id="gs-serve-out" onclick="setSetupTakeaway(true)">
+        🥡 Na wynos<br>
+        <small>Takeaway — collect at the register</small><br>
+        <small>持ち帰り（会計時にお渡し）</small>
+      </button>
+    </div>
     <button class="om-next-btn" id="gs-confirm-btn" onclick="confirmCurrentGroup()" disabled>
       Zacznij zamawiać dla tej grupy<br>
       <small>Start ordering for this group</small><br>
@@ -1830,10 +1858,16 @@ function openGroupSetup(opts) {
 }
 
 // v41 ⑤: 「このグループは持ち帰り」トグル
-function toggleSetupTakeaway() { setupTakeaway = !setupTakeaway; updateTakeawayBtn(); }
+// 店内／持ち帰りの2択。既定は店内なので、持ち帰りの方だけが押せばよい。
+function setSetupTakeaway(v) { setupTakeaway = !!v; updateTakeawayBtn(); }
+function toggleSetupTakeaway() { setSetupTakeaway(!setupTakeaway); }   // 旧名も残す
 function updateTakeawayBtn() {
-  const b = document.getElementById('gs-takeaway-btn');
-  if (b) b.classList.toggle('on', setupTakeaway);
+  const inBtn  = document.getElementById('gs-serve-in');
+  const outBtn = document.getElementById('gs-serve-out');
+  if (inBtn)  inBtn.classList.toggle('on', !setupTakeaway);
+  if (outBtn) outBtn.classList.toggle('on', setupTakeaway);
+  const legacy = document.getElementById('gs-takeaway-btn');   // 念のため
+  if (legacy) legacy.classList.toggle('on', setupTakeaway);
 }
 // 一覧画面から持ち帰り注文だけを後から追加する
 function addTakeawayGroup() {
@@ -2569,6 +2603,9 @@ function addLine(itemId) {
   newLine(itemId);
   const cs = document.getElementById('cs-' + baseId(itemId));
   if (cs) cs.classList.add('open');
+  // 🛍️ 持ち帰りチップも、選んだ品にだけ出す（全カードに常時出すと煩わしいため）
+  const sv = document.getElementById('sv-' + baseId(itemId));
+  if (sv) sv.classList.add('open');
   syncCard(baseId(itemId));
   updateBadge();
   if (typeof persistState === 'function') persistState();
@@ -2673,6 +2710,8 @@ function syncCard(itemId) {
   if (card) card.classList.toggle('selected', !!o);
   const cs = document.getElementById('cs-' + b);
   if (cs) cs.classList.toggle('open', !!o);
+  const sv = document.getElementById('sv-' + b);
+  if (sv) sv.classList.toggle('open', !!o);
 
   // 抜く具材
   document.querySelectorAll(`#card-${b} .remove-chip`).forEach(c => {
@@ -2775,6 +2814,20 @@ function onTopChange(itemId, ti, sel, priceDeltas) {
 // ════════════════════════════════════════════════════════════════════
 let borrowBookId = '';
 
+// ══════════════════════════════════════════════════════════════
+//  🚧 準備中フラグ（2026年10月開始予定）
+//    開始するときは、下の2行を false に変えるだけです。
+//    true の間はボタンを押しても案内だけが出て、ポイントは動きません。
+// ══════════════════════════════════════════════════════════════
+const BOOKS_COMING_SOON = true;   // 📚 書籍の貸し出し
+const QUIZ_COMING_SOON  = true;   // 🎌 クイズによるポイント付与
+
+function comingSoonText() {
+  return 'Ta usługa będzie dostępna od października — trwają przygotowania. ' +
+         '／ Available from October — we are getting ready. ' +
+         '／ 10月開始予定です。ただいま準備中です。';
+}
+
 function openBooksView() {
   document.getElementById('category-grid-screen').style.display = 'none';
   const tabs = document.getElementById('cat-tabs'); if (tabs) tabs.style.display = 'none';
@@ -2833,6 +2886,11 @@ async function loadBooks() {
 }
 
 function openBorrowModal(id, title, author) {
+  // 🚧 準備中（BOOKS_COMING_SOON を false にすると解除されます）
+  if (BOOKS_COMING_SOON) {
+    showToast('📚 ' + comingSoonText(), true);
+    return;
+  }
   // 会員限定チェック
   if (!isMember || !memberContact) {
     showToast('📚 書籍貸し出しは会員特典です。会員登録（無料）をお願いします。 / Tylko dla członków', true);
@@ -4062,8 +4120,13 @@ function renderTrivia() {
 }
 
 async function tvAnswer(qid, ans) {
-  document.querySelectorAll('#tv-opts .tv-opt').forEach(b => b.disabled = true);
   const area = document.getElementById('tv-res');
+  // 🚧 準備中（QUIZ_COMING_SOON を false にすると解除されます）
+  if (QUIZ_COMING_SOON) {
+    area.innerHTML = '<div class="tv-res">🚧 ' + comingSoonText() + '</div>';
+    return;
+  }
+  document.querySelectorAll('#tv-opts .tv-opt').forEach(b => b.disabled = true);
   area.innerHTML = '<div class="tv-res">⏳ …</div>';
   try {
     const res = await fetch(getGasUrl(), {
@@ -4175,6 +4238,11 @@ function wlPick(n) {
 
 async function wlSubmit() {
   const area = document.getElementById('wl-res');
+  // 🚧 準備中（QUIZ_COMING_SOON を false にすると解除されます）
+  if (QUIZ_COMING_SOON) {
+    area.innerHTML = '<div class="wl-res">🚧 ' + comingSoonText() + '</div>';
+    return;
+  }
   if (!wlPicked) {
     area.innerHTML = '<div class="wl-res ng">⚠️ Wybierz odpowiedź / Choose an answer</div>';
     return;
