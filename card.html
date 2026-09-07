@@ -236,34 +236,33 @@ function getCardMemberId() {
 const RANKS = [
   {name:'Sakura', icon:'🌸', cls:'card-sakura', minPt:0,   maxPt:49,
     benefits:[
-      {icon:'🎁', text:'入会特典：ドリンク券1枚（コーヒー/紅茶/レモネード）\nBonus powitalny: voucher na napój'},
-      {icon:'🌸', text:'通常料金（1〜5杯目）\nNormalna cena (1-5 misek)'},
+      {icon:'🎁', text:'Bonus powitalny: voucher na napój (kawa / herbata / lemoniada)\nWelcome drink voucher (coffee / tea / lemonade) ／ 入会特典：ドリンク券1枚'},
+      {icon:'🌸', text:'Normalna cena (miski 1–5)\nStandard price (bowls 1–5) ／ 通常料金（1〜5杯目）'},
     ]},
   {name:'Ume', icon:'🏅', cls:'card-ume', minPt:50, maxPt:99,
     benefits:[
-      {icon:'⭐', text:'50pt → 6杯目：ラーメン半額！（学割・シニア割併用不可）\n50 pkt → 6. miska za pół ceny!'},
-      {icon:'🎁', text:'毎回：トッピング1品無料（1〜2złの品から）※竹に昇格するまで継続\nKażda wizyta: 1 dodatek gratis (1–2 zł)'},
-      {icon:'📱', text:'アプリ注文なら自動適用／レジ注文は係員へ\nW aplikacji naliczane automatycznie'},
+      {icon:'⭐', text:'50 pkt → 6. miska za pół ceny (nie łączy się ze zniżką studencką i senioralną)\n50 pts → 6th bowl half price ／ 50pt → 6杯目：ラーメン半額（学割・シニア割との併用不可）'},
+      {icon:'🎁', text:'Każda wizyta: 1 dodatek gratis (1–2 zł)\nEvery visit: one topping free (1–2 zł) ／ 毎回：トッピング1品無料（1〜2 zł の品から）'},
+      {icon:'📱', text:'W aplikacji naliczane automatycznie — przy kasie poproś obsługę\nApplied automatically in the app — at the till, just ask ／ アプリ注文なら自動適用、レジ注文は係員へ'},
     ]},
   {name:'Take', icon:'🥉', cls:'card-take', minPt:100, maxPt:199,
     benefits:[
-      {icon:'🎉', text:'100pt → 12杯目：ラーメン無料！（半額・無料の丼はpt対象外）\n100 pkt → 12. miska gratis!'},
-      {icon:'🎁', text:'毎回：トッピング2品無料（1〜3złの品から）※松に昇格するまで継続\nKażda wizyta: 2 dodatki gratis (1–3 zł)'},
-      {icon:'📱', text:'アプリ注文なら自動適用／レジ注文は係員へ\nW aplikacji naliczane automatycznie'},
+      {icon:'🎉', text:'100 pkt → 12. miska gratis (za miski −50% i gratis punkty nie są naliczane)\n100 pts → 12th bowl free ／ 100pt → 12杯目：ラーメン無料（半額・無料の丼はポイント対象外）'},
+      {icon:'🎁', text:'Każda wizyta: 2 dodatki gratis (1–3 zł)\nEvery visit: two toppings free (1–3 zł) ／ 毎回：トッピング2品無料（1〜3 zł の品から）'},
+      {icon:'📱', text:'W aplikacji naliczane automatycznie — przy kasie poproś obsługę\nApplied automatically in the app — at the till, just ask ／ アプリ注文なら自動適用、レジ注文は係員へ'},
     ]},
   {name:'Matsu', icon:'🥈', cls:'card-matsu', minPt:200, maxPt:499,
     benefits:[
-      {icon:'🎉', text:'200pt → 24杯目：ラーメン無料！\n200 pkt → 24. miska gratis!'},
-      {icon:'🎁', text:'毎回：トッピング3品無料（1〜4złの品から）※富士に昇格するまで継続\nKażda wizyta: 3 dodatki gratis (1–4 zł)'},
-      {icon:'🎫', text:'クーポンも継続：150pt半額・200pt無料・250pt半額…（50ptごとに交互）\nKupony co 50 pkt: na przemian −50% i gratis'},
-      {icon:'📱', text:'アプリ注文なら自動適用／レジ注文は係員へ\nW aplikacji naliczane automatycznie'},
+      {icon:'🎉', text:'200 pkt → 24. miska gratis\n200 pts → 24th bowl free ／ 200pt → 24杯目：ラーメン無料'},
+      {icon:'🎁', text:'Każda wizyta: 3 dodatki gratis (1–4 zł)\nEvery visit: three toppings free (1–4 zł) ／ 毎回：トッピング3品無料（1〜4 zł の品から）'},
+      {icon:'🎫', text:'Kupony co 50 pkt: na przemian −50% i gratis\nA coupon every 50 pts, alternating half price and free ／ 50ptごとにクーポン（半額と無料が交互）'},
+      {icon:'📱', text:'W aplikacji naliczane automatycznie — przy kasie poproś obsługę\nApplied automatically in the app — at the till, just ask ／ アプリ注文なら自動適用、レジ注文は係員へ'},
     ]},
   {name:'Fuji', icon:'👑', cls:'card-fuji', minPt:500, maxPt:99999,
     benefits:[
-      {icon:'🎁', text:'毎回：トッピング3品無料（1〜6złの品から・最上位特典）\nKażda wizyta: 3 dodatki gratis (1–6 zł)'},
-      {icon:'🎫', text:'クーポンも継続：50ptごとに半額と無料が交互\nKupony co 50 pkt: na przemian −50% i gratis'},
-      {icon:'🍜', text:'富士限定ラーメン（裏メニュー）注文権\nDostęp do ekskluzywnego ramen Fuji (ukryte menu)'},
-      {icon:'📱', text:'アプリ注文なら自動適用／レジ注文は係員へ\nW aplikacji naliczane automatycznie'},
+      {icon:'🎁', text:'Każda wizyta: 3 dodatki gratis (1–6 zł) — najwyższy poziom\nEvery visit: three toppings free (1–6 zł) — our highest tier ／ 毎回：トッピング3品無料（1〜6 zł の品から・最上位特典）'},
+      {icon:'🎫', text:'Kupony co 50 pkt: na przemian −50% i gratis\nA coupon every 50 pts, alternating half price and free ／ 50ptごとにクーポン（半額と無料が交互）'},
+      {icon:'📱', text:'W aplikacji naliczane automatycznie — przy kasie poproś obsługę\nApplied automatically in the app — at the till, just ask ／ アプリ注文なら自動適用、レジ注文は係員へ'},
     ]},
 ];
 
@@ -271,9 +270,22 @@ function getRank(pt) {
   return [...RANKS].reverse().find(r => pt >= r.minPt) || RANKS[0];
 }
 
+// 50ptごとにクーポンが出るので、次の目標は常に「次の50の倍数」。
+// 上限はありません（550, 600 … と続きます）。
 function getNextMilestone(pt) {
-  const milestones = [50,100,200,300,400,500];
-  return milestones.find(m => pt < m) || null;
+  return (Math.floor(pt / 50) + 1) * 50;
+}
+
+// 会員シートの来店履歴に日付型のセルが混ざると
+// 「Mon Sep 07 2026 00:00:00 GMT+0200 …」と出るため整える
+function fmtVisitDate(v) {
+  if (v === null || v === undefined) return '';
+  const s = v.toString().trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s);
+  if (isNaN(d)) return s;
+  const p = n => ('0' + n).slice(-2);
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -346,25 +358,25 @@ function renderFullCard(m) {
   const visits  = (m.history||[]).length;
   const rank    = getRank(pt);
   const nextMs  = getNextMilestone(pt);
-  const prevMs  = rank.minPt;
-  const pct     = nextMs
-    ? Math.min(100, Math.round(((pt-prevMs)/(nextMs-prevMs))*100))
-    : 100;
+  const prevMs  = Math.floor(pt / 50) * 50;   // 直前のクーポン到達点
+  const pct     = Math.min(100, Math.round(((pt - prevMs) / (nextMs - prevMs)) * 100));
 
   // スタンプグリッド（最大20個まで表示）
   let stampHtml = '';
   for (let i = 1; i <= 20; i++) {
     let cls='', emoji='⬜';
+    // 50ptごとに交互：6杯目=半額 / 12杯目=無料 / 18杯目=半額 …
     if (i <= visits) {
-      if (i===6||i===11) { cls='half-price'; emoji='⭐'; }
+      if (i===6||i===18) { cls='half-price'; emoji='⭐'; }
       else { cls='filled'; emoji='🍜'; }
     }
-    if (i===11 && visits>=11) { cls='free'; emoji='🎉'; }
+    if (i===12 && visits>=12) { cls='free'; emoji='🎉'; }
     stampHtml += `<div class="stamp-bowl ${cls}">${i<=visits?emoji:i}</div>`;
   }
 
   // 来店履歴（最新10件）
   const historyHtml = (m.history||[]).slice(-10).reverse()
+    .map(fmtVisitDate).filter(Boolean)
     .map(d=>`<span class="history-chip">${d}</span>`).join('');
 
   // 特典一覧
