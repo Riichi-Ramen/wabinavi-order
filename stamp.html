@@ -570,13 +570,64 @@ if (!GAS_URL) {
   document.querySelector('.subtitle').textContent = '⚠️ GAS URL未設定 / URL nie ustawiony / URL not configured';
 }
 
+// 特典は [ポーランド語, 英語, 日本語] の3点セットで持ちます。
+// 文言を直すときは、必ず3つとも直してください。
+const ASK_STAFF = ['Poproś obsługę przy kasie',
+                   'Just ask our staff at the till',
+                   'お会計時に係員へお申し付けください'];
+
 const RANK_INFO = {
-  Sakura: {icon:'🌸', cls:'rank-sakura', benefits:['入会ドリンク券1枚（コーヒー/紅茶/レモネード）','通常料金（1〜5杯目）']},
-  Ume:    {icon:'🏅', cls:'rank-ume',    benefits:['1〜3 PLN トッピング1品無料（毎回）','お会計時に係員へお申し付けください']},
-  Take:   {icon:'🥉', cls:'rank-take',   benefits:['1〜3 PLN トッピング2〜3品無料（毎回）','お会計時に係員へお申し付けください']},
-  Matsu:  {icon:'🥈', cls:'rank-matsu',  benefits:['1〜6 PLN トッピング2品＋麺半盛り無料','36杯目以降はドリンクも無料','お会計時に係員へお申し付けください']},
-  Fuji:   {icon:'👑', cls:'rank-fuji',   benefits:['同伴者1名トッピング無料','富士限定ラーメン（裏メニュー）注文権']},
+  Sakura: {icon:'🌸', cls:'rank-sakura', benefits:[
+    ['Voucher powitalny na napój (kawa / herbata / lemoniada)',
+     'Welcome drink voucher (coffee / tea / lemonade)',
+     '入会ドリンク券1枚（コーヒー・紅茶・レモネード）'],
+    ['Cena standardowa (miski 1–5)',
+     'Standard price (bowls 1–5)',
+     '通常料金（1〜5杯目）'],
+  ]},
+  Ume:    {icon:'🏅', cls:'rank-ume', benefits:[
+    ['Jeden dodatek 1–3 zł gratis — przy każdej wizycie',
+     'One topping worth 1–3 zł free — every visit',
+     'トッピング1品無料（1〜3 zł・毎回）'],
+    ASK_STAFF,
+  ]},
+  Take:   {icon:'🥉', cls:'rank-take', benefits:[
+    ['Dwa lub trzy dodatki 1–3 zł gratis — przy każdej wizycie',
+     'Two or three toppings worth 1–3 zł free — every visit',
+     'トッピング2〜3品無料（1〜3 zł・毎回）'],
+    ASK_STAFF,
+  ]},
+  Matsu:  {icon:'🥈', cls:'rank-matsu', benefits:[
+    ['Dwa dodatki 1–6 zł oraz pół porcji makaronu gratis',
+     'Two toppings worth 1–6 zł plus half a portion of noodles, free',
+     'トッピング2品＋麺半盛り無料（1〜6 zł）'],
+    ['Od 36. miski napój również gratis',
+     'From your 36th bowl, a drink is free as well',
+     '36杯目以降はドリンクも無料'],
+    ASK_STAFF,
+  ]},
+  Fuji:   {icon:'👑', cls:'rank-fuji', benefits:[
+    ['Dodatek gratis również dla osoby towarzyszącej',
+     'A free topping for your companion too',
+     '同伴者1名のトッピングも無料'],
+    ['Prawo do zamówienia ramenu Fuji — menu ukryte',
+     'The right to order the Fuji ramen — secret menu',
+     '富士限定ラーメン（裏メニュー）の注文権'],
+  ]},
 };
+
+// 日付を yyyy-MM-dd に整える。
+// 会員シートの来店履歴に日付型のセルが混ざると
+// 「Mon Sep 07 2026 00:00:00 GMT+0200 …」と出てしまうため。
+function fmtVisitDate(v) {
+  if (v === null || v === undefined) return '';
+  const s = v.toString().trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s);
+  if (isNaN(d)) return s;
+  const p = n => ('0' + n).slice(-2);
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1039,9 +1090,11 @@ function renderCard(member) {
     ? Math.min(100, Math.round((pts / nextMilestone)*100)) : 100;
 
   const benefitsHtml = rank.benefits.map(b =>
-    `<div class="benefit-item">✅ ${b}</div>`).join('');
+    `<div class="benefit-item">✅ ${b[0]}<br>
+      <small style="opacity:.75;font-size:.78em">${b[1]} ／ ${b[2]}</small></div>`).join('');
 
-  const historyHtml = (member.history||[]).slice(-10).reverse().map(d =>
+  const historyHtml = (member.history||[]).slice(-10).reverse()
+    .map(fmtVisitDate).filter(Boolean).map(d =>
     `<span class="history-chip">${d}</span>`).join('');
 
   // レジ用QR（会員IDのみ埋め込み。カードは複数画面で描画されるため一意IDで生成）
@@ -1079,10 +1132,10 @@ function renderCard(member) {
       </div>
     </div>
     <div class="benefit-box">
-      <div class="benefit-title">🎁 現在の特典 / Aktualne korzyści</div>
+      <div class="benefit-title">🎁 Aktualne korzyści / Your benefits / 現在の特典</div>
       ${benefitsHtml}
     </div>
-    ${historyHtml ? `<div class="history-title">来店履歴 / Historia wizyt</div>
+    ${historyHtml ? `<div class="history-title">Historia wizyt / Visit history / 来店履歴</div>
     <div class="history-list">${historyHtml}</div>` : ''}`;
 }
 
