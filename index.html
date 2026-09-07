@@ -2661,7 +2661,7 @@ function renderTargets(topId) {
     const nn = (cart[b.key].extras && cart[b.key].extras[topId]) || 0;
     // v48: 客番号を主、何杯目かは同じ客が複数持つときだけ補助として出す
     const same = lineKeys(b.key).filter(x => payerKey(cart[x]) === payerKey(cart[b.key]));
-    const seq  = same.length > 1 ? ` ${same.indexOf(b.key) + 1}杯目` : '';
+    const seq  = same.length > 1 ? ` #${same.indexOf(b.key) + 1}` : '';
     const who  = b.payers.length ? `👤${b.payers.join('+')} · ` : '';
     return `<span class="tg-chip${nn ? ' on' : ''}" id="tg-${topId}-${b.key}"
         onclick="addToBowl('${topId}','${b.key}',1,event)">
@@ -2701,17 +2701,22 @@ function renderLines(itemId) {
     const o = cart[k];
     const pk = payerKey(o);
     const same = keys.filter(x => payerKey(cart[x]) === pk);
-    const seq  = same.length > 1 ? `<small>${same.indexOf(k) + 1}杯目</small>` : '';
+    // 数字は言語を選ばないので「#1 / #2」で表す。意味は title で3言語補足。
+    const nth  = same.indexOf(k) + 1;
+    const seq  = same.length > 1 ? `<small>#${nth}</small>` : '';
+    const tip  = same.length > 1 ? ` title="Miska ${nth} / Bowl ${nth} / ${nth}杯目"` : '';
     const label = (o.payers && o.payers.length) ? `👤${o.payers.join('+')}` : `🍜 ${i + 1}`;
     const mine = !defaultPayers.length || pk === defaultPayers.join('+');
-    return `<span class="line-tab${k === cur ? ' on' : ''}${mine ? '' : ' other'}"
+    return `<span class="line-tab${k === cur ? ' on' : ''}${mine ? '' : ' other'}"${tip}
       onclick="selectLine('${itemId}','${k}')">${label}${seq}</span>`;
   }).join('');
   html += `<span class="line-tab line-add" onclick="addLine('${itemId}')">
-      ＋ ${keys.length ? 'Jeszcze jedna' : 'Dodaj'}<small>${keys.length ? 'もう1杯（内容を変えて）' : '追加する'}</small></span>`;
+      ＋ ${keys.length ? 'Jeszcze jedna' : 'Dodaj'}<small>${keys.length ? 'One more / もう1杯' : 'Add / 追加する'}</small></span>`;
   if (keys.length) {
-    html += `<span class="line-tab line-del" onclick="removeLine('${itemId}')">🗑<small>削除</small></span>`;
+    html += `<span class="line-tab line-del" onclick="removeLine('${itemId}')"
+      title="Usuń / Remove / 削除">🗑<small>Usuń</small></span>`;
     html += `<div class="line-hint">Każda miska osobno — możesz zmienić dodatki dla każdej.<br>
+      Each bowl is separate — switch tabs to set toppings for each one.<br>
       1杯ごとに別々です。タブを切り替えて、それぞれのトッピングを設定できます。</div>`;
   }
   bar.innerHTML = html;
