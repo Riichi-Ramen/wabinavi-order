@@ -2828,6 +2828,7 @@ function toggleRemove(itemId, ingredient, el) {
   else removed.splice(idx, 1);
   el.classList.toggle('active', idx === -1);
   refreshPrice(key);   // 交換減額を即時反映
+  updateBadge();       // 下部バーの合計も即時反映（2026-09-08 修正）
   if (typeof persistState === 'function') persistState();
 }
 
@@ -2842,6 +2843,7 @@ function onTopChange(itemId, ti, sel, priceDeltas) {
   const dEl = document.getElementById(`td-${baseId(itemId)}-${ti}`);
   if (dEl) dEl.textContent = delta>0?`+${delta} zł`:delta<0?`${delta} zł`:'';
   refreshPrice(key);
+  updateBadge();       // 下部バーの合計も即時反映（2026-09-08 修正）
   if (typeof persistState === 'function') persistState();
 }
 
