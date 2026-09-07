@@ -2271,10 +2271,27 @@ function restoreCartState(catId) {
     syncCard(item.id);
   });
 }
+// いま持ち帰りを選んでいるか（グループ設定画面の2択で決まる）
+function isTakeawayNow() {
+  return currentGroupIndex >= 0 && !!groupTakeaway[currentGroupIndex];
+}
+
+// 持ち帰りでは意味をなさない選択肢
+//   「一人前を2杯に分割」は店内で取り分けるための機能なので、
+//   持ち帰りのときは出しません（替え玉などは従来どおり表示）。
+function isDineInOnlyOption(name) {
+  const s = (name || '').toString();
+  return s.indexOf('dwie miseczki') !== -1 || s.indexOf('2杯に分割') !== -1;
+}
+
 // オプション描画：おにぎり(o1/o1b)はチップボタン、他はプルダウン
 function renderToppingRows(item) {
   const isOnigiri = (item.id === 'o1' || item.id === 'o1b');
+  const takeaway  = isTakeawayNow();
   return (item.toppings || []).map((t, ti) => {
+    // ⚠️ ti は cart の toppingDeltas / toppingIdx の添字と対応しているため、
+    //    配列から除外せず、描画だけを飛ばします。
+    if (takeaway && isDineInOnlyOption(t.name)) return '';
     if (isOnigiri) {
       const saved = cart[item.id]?.toppingLabels?.[ti] || null;
       let selIdx = saved ? t.options.indexOf(saved) : 0;
