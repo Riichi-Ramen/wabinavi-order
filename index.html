@@ -360,6 +360,9 @@ body{
 .i-ing{font-size:.72rem;color:#7a6858;margin-bottom:.5rem;line-height:1.4}
 .i-allergens{font-size:.68rem;color:#a85a3a;margin-bottom:.7rem;font-weight:600;cursor:help}
 .i-price{font-size:1.15rem;font-weight:700;color:var(--accent);margin-bottom:.7rem}
+.line-now{font-size:.74rem;font-weight:600;color:var(--text);opacity:.9;margin-top:.2rem;
+  background:rgba(192,57,43,.07);border-radius:6px;padding:.25rem .45rem;line-height:1.4}
+.line-now strong{color:var(--accent);font-size:.95rem}
 .card-actions{display:flex;align-items:center;gap:.6rem}
 .chk-label{display:flex;align-items:center;gap:.4rem;cursor:pointer;flex:1;font-size:.8rem;color:var(--muted)}
 .chk-label input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
@@ -2770,10 +2773,13 @@ function syncCard(itemId) {
   });
   const sm = document.getElementById('exsum-' + b);
   if (sm) sm.textContent = (o && extrasTotal(o)) ? ('➕ Dodatki razem / トッピング合計: +' + extrasTotal(o) + ' zł') : '';
+  // 💰 金額は refreshPrice に一本化（プルダウン・具材・トッピング・
+  //    杯の切り替えのどれでも同じ描画になるようにするため）
+  refreshPrice(line || b);
+
   // 数量（数量方式の商品のみ）。未選択なら1に戻す（前の客の数量が残らないように）
   const qn = document.getElementById('qn-' + b);
   if (qn) qn.textContent = o ? o.qty : 1;
-  refreshPrice(line || b);
 }
 
 function onCheck(id, checked) {
@@ -3062,18 +3068,32 @@ function swapCalc(item, o) {
   return { delta, disc };
 }
 
+// カードの金額表示。定価を上に残し、その下に「いま選んでいる1杯」の実売価格を出す。
+//   id は cart のキー（1杯ぶん）でも商品IDでも受け付ける。
+//   syncCard・onTopChange・toggleRemove・setExtra のすべてがここを通るので、
+//   どの操作でも同じ表示になり、更新漏れが起きない。
 function refreshPrice(id) {
-  const item = findItem(id);
-  const el = document.getElementById('pr-' + baseId(id));
+  const b    = baseId(id);
+  const item = findItem(b);
+  const el   = document.getElementById('pr-' + b);
   if (!item || !el) return;
-  if (!cart[id]) {   // 行が無くなったら通常価格に戻す
-    el.innerHTML = (item.origPrice ? `<span class="price-old">${item.origPrice} zł</span> ` : '') + item.price + ' zł';
-    return;
+
+  const base = (item.origPrice ? `<span class="price-old">${item.origPrice} zł</span> ` : '')
+             + item.price + ' zł';
+
+  // 対象の1杯を決める（cartのキーで来ればそれ、商品IDで来れば選択中の行）
+  const key = cart[id] ? id : curLineKey(b, false);
+  const o   = key ? cart[key] : null;
+  if (!o) { el.innerHTML = base; return; }
+
+  const now  = lineTotalOf(key);
+  let tag = '';
+  if (isLineItem(b)) {
+    const same = lineKeys(b).filter(x => payerKey(cart[x]) === payerKey(o));
+    if (same.length > 1) tag = ` #${same.indexOf(key) + 1}`;
   }
-  const delta = swapCalc(item, cart[id]).delta;
-  const ex = extrasTotal(cart[id]);
-  el.innerHTML = (item.price + delta) + ' zł' +
-    (ex ? ` <span style="font-size:.8rem;color:#2d7a3a">＋ dodatki ${ex} zł</span>` : '');
+  el.innerHTML = base +
+    `<div class="line-now">Ta miska${tag} / This bowl / この1杯：<strong>${now} zł</strong></div>`;
 }
 
 function updateBadge() {
