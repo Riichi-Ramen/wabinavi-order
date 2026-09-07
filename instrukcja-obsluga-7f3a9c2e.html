@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wabi Navi — Instrukcja obsługi / 操作マニュアル</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#2c1810;--accent:#c0392b;--gold:#c8a96e;--muted:#6a5a4a;
+  --line:#e0d3c2;--bg:#fbf6ee;--soft:#fdf3ea}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:var(--ink);background:var(--bg);
+  line-height:1.6;padding:1.5rem}
+.sheet{max-width:900px;margin:0 auto;background:#fff;border:1px solid var(--line);
+  border-radius:8px;overflow:hidden}
+header{background:var(--ink);color:var(--gold);padding:1.4rem 1.6rem;text-align:center}
+header h1{font-size:1.35rem;letter-spacing:.02em}
+header .sub{font-size:.82rem;opacity:.85;margin-top:.3rem;color:#e8dcc4}
+header .ver{font-size:.7rem;opacity:.6;margin-top:.4rem}
+.intro{padding:1rem 1.6rem;background:var(--soft);border-bottom:1px solid var(--line);
+  font-size:.86rem;color:var(--muted)}
+.intro b{color:var(--ink)}
+.jp-note{margin-top:.5rem;padding-top:.5rem;border-top:1px dashed var(--line);font-size:.8rem;color:#9a8a78}
+section{padding:1.3rem 1.6rem;border-bottom:1px solid var(--line)}
+section:last-child{border-bottom:none}
+h2{font-size:1.05rem;color:var(--accent);margin-bottom:.2rem;
+  display:flex;align-items:center;gap:.5rem}
+h2 .pl{font-size:.72rem;color:var(--muted);font-weight:400;font-style:italic}
+h3{border-left:3px solid var(--gold);padding-left:.6rem;margin-bottom:.3rem}
+.path{display:inline-block;font-size:.78rem;background:var(--soft);border:1px solid var(--line);
+  border-radius:5px;padding:.15rem .5rem;margin:.4rem 0;color:var(--ink)}
+ol,ul{margin:.5rem 0 .3rem 1.3rem}
+li{margin-bottom:.35rem;font-size:.9rem}
+li .pl{display:block;font-size:.76rem;color:#9a8a78;margin-top:.1rem}
+.note{background:var(--soft);border-left:3px solid var(--gold);padding:.6rem .9rem;
+  margin-top:.7rem;font-size:.82rem;border-radius:0 5px 5px 0}
+.warn{border-left-color:var(--accent)}
+.warn b{color:var(--accent)}
+table{width:100%;border-collapse:collapse;margin-top:.6rem;font-size:.84rem}
+th,td{border:1px solid var(--line);padding:.4rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:700}
+code{background:var(--soft);padding:.05rem .35rem;border-radius:4px;font-size:.85em}
+td .jp,th .jp{color:#9a8a78;font-size:.92em}   /* 表内の日本語補助 */
+.foot{padding:1rem 1.6rem;font-size:.76rem;color:var(--muted);text-align:center}
+kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;
+  padding:.05rem .4rem;font-size:.82em;font-family:inherit}
+@media print{
+  body{background:#fff;padding:0}
+  .sheet{border:none;max-width:none}
+  section{break-inside:avoid;border-bottom:1px solid #ccc}
+  header{background:#2c1810 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .no-print{display:none}
+}
+.printbtn{position:fixed;right:1rem;bottom:1rem;background:var(--accent);color:#fff;
+  border:none;border-radius:999px;padding:.7rem 1.3rem;font-size:.9rem;cursor:pointer;
+  box-shadow:0 3px 10px rgba(0,0,0,.2)}
+</style>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<script>
+// ══════════════════════════════════════════════════════════════
+//  🔒 かんたんな入口の鍵（係員パスワードとは別物です）
+//
+//  ⚠️ これは「通りすがりを止めるカーテン」であって、金庫ではありません。
+//     予約台帳や会員情報を守っているのは係員パスワードのほうです。
+//     こちらには機密は書かないでください。
+//
+//  合言葉を変えるには：
+//    このページを  instrukcja.html?sethash=あたらしいことば  で開くと
+//    画面に新しいハッシュが出ます。それを下の MANUAL_HASH に貼り替えて
+//    GitHubへアップロードしてください。
+//  既定の合言葉： wabi-obsluga
+// ══════════════════════════════════════════════════════════════
+const MANUAL_HASH = "29722c62a6b4817878b1522bd95e3ec3034c0921eb6fe2d3fee6eddab4e00ede";
+
+(async function () {
+  const q = new URLSearchParams(location.search);
+
+  // ハッシュ生成モード（合言葉を変えたいとき）
+  const gen = q.get('sethash');
+  if (gen) {
+    const h = await sha256(gen);
+    document.addEventListener('DOMContentLoaded', function () {
+      document.body.innerHTML =
+        '<div style="font-family:monospace;padding:2rem;line-height:2;word-break:break-all">' +
+        '<b>Nowe hasło / 新しい合言葉：</b><br>' + gen +
+        '<br><br><b>MANUAL_HASH に貼る値：</b><br>' + h + '</div>';
+    });
+    return;
+  }
+
+  // すでに通っている端末はそのまま
+  try {
+    if (localStorage.getItem('wabi_manual_ok') === MANUAL_HASH) return;
+  } catch (e) {}
+
+  const input = prompt(
+    'Hasło do instrukcji / Manual password / マニュアルの合言葉');
+  if (input === null) { location.href = 'https://riichi-ramen.github.io/'; return; }
+  const h = await sha256(input.trim());
+  if (h !== MANUAL_HASH) {
+    alert('Nieprawidłowe hasło / Incorrect password / 合言葉が違います');
+    location.href = 'https://riichi-ramen.github.io/';
+    return;
+  }
+  try { localStorage.setItem('wabi_manual_ok', MANUAL_HASH); } catch (e) {}
+})();
+
+async function sha256(t) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+</script>
+</head>
+<body>
+
+<div class="sheet">
+<header>
+  <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
+  <div class="sub">日常操作マニュアル / Codzienne operacje</div>
+  <div class="ver">System v8.3 · Toruń</div>
+</header>
+
+<div class="intro">
+  <b>Wszystkie zmiany robisz w arkuszu Google.</b> Menu, ceny i dostępność aktualizują się
+  automatycznie w aplikacji przy stoliku ORAZ na stronie WWW — w ciągu <b>1 minuty</b>.
+  Zdjęcie wgrywasz raz — pojawia się i w aplikacji, i na stronie.
+  <div class="jp-note"><b>すべての操作はGoogleスプレッドシートで行います。</b>メニュー・価格・在庫は注文アプリとHPの両方に<b>1分以内</b>で自動反映。写真は1か所に置けば両方に出ます。</div>
+</div>
+
+<!-- 1. 価格変更 -->
+<section>
+  <h2>💰 Zmiana ceny <span class="pl">価格を変える</span></h2>
+  <span class="path">Arkusz「メニュー / Menu」→ kolumna F (価格)</span>
+  <ol>
+    <li>Znajdź danie i wpisz nową cenę w kolumnie <b>F</b>.
+      <span class="pl">「メニュー / Menu」シートで商品を探し、F列（価格）に新しい数字を入力。</span></li>
+    <li>Gotowe. Nowa cena pojawi się wszędzie w ciągu 1 minuty.
+      <span class="pl">それだけ。1分以内に注文アプリとHPの両方に反映されます。</span></li>
+  </ol>
+</section>
+
+<!-- 2. 売り切れ・非表示 -->
+<section>
+  <h2>🚫 Wyprzedane / ukrycie <span class="pl">売り切れ・非表示にする</span></h2>
+  <span class="path">Arkusz「メニュー / Menu」→ kolumna G (状態)</span>
+  <p style="font-size:.88rem;margin-top:.3rem">W kolumnie <b>G</b> wybierz z listy /
+    G列のプルダウンから選ぶ：</p>
+  <table>
+    <tr><th>Wybór <span class="jp">/ 選択</span></th><th>Efekt <span class="jp">/ 効果</span></th></tr>
+    <tr><td><code>表示</code> (widoczne)</td><td>Normalnie w menu <span class="jp">/ 通常表示</span></td></tr>
+    <tr><td><code>売り切れ</code> (wyprzedane)</td><td>Pokazuje „Wyprzedane", nie można zamówić <span class="jp">/ 「売り切れ」表示・注文不可</span></td></tr>
+    <tr><td><code>非表示</code> (ukryte)</td><td>Znika całkowicie <span class="jp">/ 完全に非表示</span></td></tr>
+  </table>
+  <div class="note">💡 Wyprzedane wraca jednym kliknięciem — wystarczy zmienić z powrotem na
+    <code>表示</code>. / 売り切れは<code>表示</code>に戻すだけで即復活します。</div>
+</section>
+
+<!-- 3. おすすめ -->
+<section>
+  <h2>⭐ Dodanie „Polecane" <span class="pl">おすすめ商品を掲載する</span></h2>
+  <span class="path">Arkusz「おすすめ / Polecane」→ nowy wiersz</span>
+  <p style="font-size:.88rem;margin-top:.3rem">Dodaj nowy wiersz i wypełnij /
+    新しい行を追加して入力：</p>
+  <table>
+    <tr><th>Kol. <span class="jp">/ 列</span></th><th>Co wpisać <span class="jp">/ 入力するもの</span></th><th>Przykład <span class="jp">/ 例</span></th></tr>
+    <tr><td>A</td><td>ID dania (z arkusza Menu, kol. B) <span class="jp">/ 商品ID</span></td><td><code>r4</code></td></tr>
+    <tr><td>B</td><td>Data od <span class="jp">/ 開始日</span></td><td><code>2026-09-01</code></td></tr>
+    <tr><td>C</td><td>Data do <span class="jp">/ 終了日</span></td><td><code>2026-09-30</code></td></tr>
+    <tr><td>D</td><td>Cena promo (puste = normalna) <span class="jp">/ 特価（空欄=通常価格）</span></td><td><code>39</code></td></tr>
+    <tr><td>E</td><td>Znaczek PL <span class="jp">/ バッジPL</span></td><td><code>Oferta −8 zł</code></td></tr>
+    <tr><td>F</td><td>Znaczek JP <span class="jp">/ バッジ日本語</span></td><td><code>9月のおすすめ</code></td></tr>
+    <tr><td>G</td><td>Kolejność <span class="jp">/ 表示順</span></td><td><code>1</code></td></tr>
+  </table>
+  <div class="note"><b>🗑 Koniec promocji / やめる時：</b> usuń wiersz LUB niech minie data w kol. C —
+    zniknie sam. / 行を削除するか、C列の終了日を過ぎさせれば自動で消えます。</div>
+  <div class="note warn"><b>⚠️ Uwaga / 注意：</b> Pełną instrukcję masz zawsze po prawej
+    stronie arkusza (kolumna I「📖 書き方」). / 詳しい書き方はシート右側（I列「📖 書き方」）に
+    いつでも表示されています。<br>
+    Menu / メニュー：<b>🍜 Wabi Navi → ⭐ Polecane: jak dodać?</b></div>
+</section>
+
+<!-- 4. 写真 -->
+<section>
+  <h2>📸 Zdjęcia przez e-mail <span class="pl">写真をメールで送る（かんたん・自動）</span></h2>
+  <span class="path">Wyślij e-mail na / 送信先： <b>wabinavi@gmail.com</b></span>
+  <div class="note warn"><b>⚠️ NAJWAŻNIEJSZE / 最重要：</b>
+    Temat MUSI zaczynać się od <code>foto:</code> — inaczej system zignoruje wiadomość.
+    To chroni przed pomyłką ze zwykłą pocztą. /
+    <span class="jp">件名は必ず <code>foto:</code> で始めること。付けないとシステムは無視します（通常メールとの混同を防ぐため）。</span></div>
+  <div class="note">Nie musisz wchodzić na GitHub. Wyślij e-mail — zdjęcie samo trafi
+    do aplikacji i na stronę (ok. 10 min). /
+    <span class="jp">GitHubを触る必要はありません。メールを送れば、写真は自動で注文アプリとHPに反映されます（約10分）。</span></div>
+
+  <h3 style="margin-top:1rem;font-size:.98rem;color:var(--ink)">
+    🍜 Zdjęcie istniejącego dania <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 既存メニューの写真を更新</span></h3>
+  <ol>
+    <li>Zrób zdjęcie dania telefonem.
+      <span class="pl">スマホで料理写真を撮る。</span></li>
+    <li>Wyślij e-mail: <b>Temat = foto:ID</b> (np. <code>foto:r4</code>), zdjęcie w załączniku.
+      <span class="pl">メール送信：<b>件名＝foto:商品ID</b>（例 <code>foto:r4</code>）、写真を添付。本文は空でOK。</span></li>
+    <li>Dostaniesz odpowiedź „✅ zaktualizowano". Gotowe.
+      <span class="pl">「✅ 更新しました」と返信が来たら完了。</span></li>
+  </ol>
+  <div class="note">ID dania znajdziesz w arkuszu „メニュー / Menu", kolumna B.
+    / <span class="jp">商品IDはメニューシートのB列で確認できます。</span></div>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    🆕 Nowe danie <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 新商品を追加する</span></h3>
+  <ol>
+    <li><b>Najpierw</b> dodaj danie w arkuszu „メニュー / Menu": nowy wiersz,
+        wpisz ID, nazwę, cenę, kategorię.
+      <span class="pl"><b>先に</b>メニューシートに行を追加し、ID・名前・価格・カテゴリを入力。</span></li>
+    <li>ID nadaj wg wzoru: ramen <code>foto:r29</code>, onigiri <code>foto:o13</code>,
+        przystawka <code>foto:a19</code>, napój <code>foto:n41</code>.
+      <span class="pl">IDは規則どおり：<code>foto:r29</code>（ラーメン）／<code>foto:o13</code>（おにぎり）／<code>foto:a19</code>（前菜）／<code>foto:n41</code>（ドリンク）。</span></li>
+    <li><b>Potem</b> wyślij zdjęcie e-mailem z tym ID w temacie (jak wyżej).
+      <span class="pl"><b>その後</b>、そのIDを件名にして写真をメール送信（上と同じ手順）。</span></li>
+  </ol>
+  <div class="note warn"><b>⚠️ Ważne / 重要：</b>
+    Kolejność jest ważna — <b>najpierw arkusz, potem zdjęcie</b>.
+    Jeśli wyślesz zdjęcie z ID, którego nie ma w menu, system je odrzuci
+    i odpisze „未登録". /
+    <span class="jp">順番が大事：<b>先にメニュー登録、後で写真</b>。メニューに無いIDで写真を送ると、システムが拒否して「未登録」と返信します。</span></div>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    ⭐ Zdjęcie do „Polecane" <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ おすすめ商品の写真</span></h3>
+  <p style="font-size:.9rem;margin-top:.3rem">To samo danie = to samo ID. Wyślij zdjęcie
+    z ID dania — pojawi się też w sekcji „Polecane". /
+    <span class="jp">おすすめも商品そのものなので、通常の商品IDで送ればOK。おすすめ欄にも同じ写真が出ます。</span></p>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    🎉 Zdjęcie promocyjne / baner <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ プロモ・宣伝用の写真</span></h3>
+  <ol>
+    <li>Temat = <code>foto:promo_nazwa</code> (np. <code>foto:promo_lato</code>).
+      <span class="pl">件名＝<code>foto:promo_名前</code>（例 <code>foto:promo_lato</code>＝夏）。</span></li>
+    <li>Dowolna nazwa po <code>promo_</code>. Nie musi być w menu.
+      <span class="pl"><code>promo_</code>の後は自由な名前でOK。商品IDでなくてよい。</span></li>
+    <li>Zapisze się jako <code>images/promo/nazwa.jpg</code> — do użycia na stronie.
+      <span class="pl"><code>images/promo/名前.jpg</code>に保存され、HPで使えます。</span></li>
+  </ol>
+
+  <div class="note" style="margin-top:1rem"><b>📱 Wzór wiadomości / メールの書き方：</b><br>
+    Do / 宛先： <b>wabinavi@gmail.com</b><br>
+    Temat / 件名： <code>foto:r4</code> &nbsp;lub / または&nbsp; <code>foto:promo_lato</code><br>
+    Treść / 本文： — (puste / 空でOK)<br>
+    Załącznik / 添付： 1 zdjęcie / 写真1枚</div>
+</section>
+
+<!-- 4b. SNS投稿パッケージ -->
+<section>
+  <h2>📣 Post na social media <span class="pl">SNSに投稿する（プロモ写真から自動生成）</span></h2>
+  <div class="note">Gdy wyślesz zdjęcie promo (temat <code>promo_...</code>), dostaniesz e-mail
+    z gotowymi tekstami na Facebook, Instagram, TikTok i WhatsApp. Wklej i opublikuj. /
+    <span class="jp">プロモ写真（件名 <code>promo_...</code>）を送ると、Facebook・Instagram・TikTok・WhatsApp用の投稿文が入ったメールが届きます。貼って投稿するだけ。</span></div>
+
+  <h3 style="margin-top:1rem;font-size:.98rem;color:var(--ink)">
+    Jak to działa <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 使い方</span></h3>
+  <ol>
+    <li>Wyślij zdjęcie z tematem <code>foto:promo_nazwa</code> (np. <code>foto:promo_lato</code>).
+      <span class="pl">件名 <code>foto:promo_名前</code> で写真を送る（例 <code>foto:promo_lato</code>＝夏）。</span></li>
+    <li><b>W treści e-maila wpisz swój tekst reklamowy po polsku</b> (1–3 zdania).
+        Jeśli zostawisz puste — użyjemy gotowego szablonu.
+      <span class="pl"><b>メール本文にポーランド語で宣伝文を書く</b>（1〜3文）。空なら定型文が使われます。</span></li>
+    <li>Za chwilę dostaniesz e-mail „📣 Pakiet social media" z tekstami + zdjęciem w załączniku.
+      <span class="pl">まもなく「📣 SNS投稿パッケージ」メールが、投稿文＋写真添付で届きます。</span></li>
+    <li>Skopiuj tekst dla danej aplikacji, otwórz Facebook/Instagram/TikTok/WhatsApp,
+        wklej i dodaj zdjęcie z załącznika.
+      <span class="pl">アプリごとの文をコピーし、各SNSを開いて貼り付け、添付写真を付けて投稿。</span></li>
+  </ol>
+
+  <div class="note warn"><b>⚠️ Ważne / 重要：</b>
+    To <b>nie jest automatyczny post</b> — system przygotowuje teksty, ale
+    publikujesz ręcznie (wklejasz). Tak jest bezpieczniej i nic się nie psuje. /
+    <span class="jp">これは<b>自動投稿ではありません</b>。文面は自動で用意されますが、投稿は手で貼り付けます。この方が安全で壊れません。</span></div>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    Wskazówki do tekstu <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 宣伝文のコツ</span></h3>
+  <ul>
+    <li>Pisz po polsku, krótko i konkretnie. Co to za danie, dlaczego warto.
+      <span class="pl">ポーランド語で短く具体的に。何の料理か、なぜおすすめか。</span></li>
+    <li>Np.: <i>„Letnie Tantan Ramen już w menu! Ostry, kremowy, idealny na lato."</i>
+      <span class="pl">例：「夏のタンタンメン登場！辛くてクリーミー、夏にぴったり。」</span></li>
+    <li>Tekst angielski i hashtagi dodają się automatycznie.
+      <span class="pl">英語とハッシュタグは自動で付きます。</span></li>
+  </ul>
+
+  <div class="note" style="margin-top:1rem"><b>📱 Wzór / 書き方の例：</b><br>
+    Do / 宛先： <b>wabinavi@gmail.com</b><br>
+    Temat / 件名： <code>foto:promo_lato</code><br>
+    Treść / 本文： <i>Letnie Tantan Ramen już w menu! Ostry i kremowy.</i><br>
+    Załącznik / 添付： 1 zdjęcie / 写真1枚</div>
+</section>
+
+<!-- 5. 予約確認 -->
+<section>
+  <h2>📅 Rezerwacje na dziś <span class="pl">本日の予約を見る</span></h2>
+  <span class="path">Arkusz「Rezerwacja / Dziś」（先頭タブ）</span>
+  <ul>
+    <li>Pierwsza zakładka pokazuje dzisiejsze rezerwacje + kalendarz 3 tygodni.
+      <span class="pl">先頭タブに本日の予約と3週間カレンダーが自動表示。</span></li>
+    <li>Ręczne odświeżenie / 手動更新： <b>🍜 Wabi Navi → 📅 Rezerwacje: odśwież dziś</b></li>
+    <li>Na tablecie przy barze masz też <b>panel rezerwacji</b> (<code>…/reservations.html</code>) —
+        tam przyjmujesz rezerwacje telefoniczne i odznaczasz przyjścia. Patrz następne dwie sekcje.
+      <span class="pl">カウンターのタブレットには<b>予約パネル</b>（<code>…/reservations.html</code>）もあります。電話予約の受付と来店チェックはこちら。次の2つのセクション参照。</span></li>
+  </ul>
+</section>
+
+<!-- 5b. 電話予約の受付 -->
+<section>
+  <h2>📞 Rezerwacja przez telefon <span class="pl">電話で予約を受ける</span></h2>
+  <span class="path">Tablet przy barze / カウンターのタブレット → <code>…/reservations.html</code></span>
+
+  <div class="note">Gość dzwoni — <b>wszystko wpisujesz jednym palcem, trzymając słuchawkę</b>.
+    Kolejność pytań na ekranie jest taka sama jak w rozmowie: dzień → godzina → osoby → numer → imię. /
+    <span class="jp">お客様から電話が来たら、受話器を持ったまま<b>片手で入力</b>できます。画面の順番は会話の順番（日→時間→人数→番号→名前）と同じです。</span></div>
+
+  <h3 style="margin-top:1rem;font-size:.98rem;color:var(--ink)">
+    Krok po kroku <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 手順</span></h3>
+  <ol>
+    <li>Otwórz stronę rezerwacji na tablecie. Za pierwszym razem wpisz <b>hasło personelu</b> —
+        tablet je zapamięta.
+      <span class="pl">タブレットで予約画面を開く。初回だけ<b>係員パスワード</b>を入力（以後は自動ログイン）。</span></li>
+    <li>Naciśnij czerwony przycisk <b>„📞 Rezerwacja przez telefon"</b>.
+      <span class="pl">赤い「📞 Rezerwacja przez telefon」ボタンを押す。</span></li>
+    <li><b>Kiedy?</b> — dotknij „Dziś" / „Jutro" albo wybierz datę w kalendarzu.
+      <span class="pl"><b>いつ？</b>「今日」「明日」を押すか、カレンダーで日付を選ぶ。</span></li>
+    <li><b>O której?</b> — dotknij godziny. <b>Mała liczba w rogu przycisku = ile osób jest już
+        zapisanych na tę godzinę.</b> Dzięki temu od razu widzisz, czy jest luźno.
+      <span class="pl"><b>何時？</b>時間ボタンを押す。<b>ボタン右上の小さな数字＝その時刻の既存予約人数</b>。混み具合がその場で分かります。</span></li>
+    <li><b>Ile osób?</b> — dotknij cyfry. Powyżej 8 osób wpisz liczbę w polu pod przyciskami.
+      <span class="pl"><b>何名様？</b>数字ボタンを押す。9名以上は下の入力欄に数字を入れる。</span></li>
+    <li><b>Numer telefonu</b> — wpisz. <b>Po 9 cyfrach system sam sprawdza gościa</b>
+        — nie musisz nic klikać. Pod polem pojawi się jedna z trzech ramek:
+      <span class="pl"><b>電話番号</b>を入力。<b>9桁入れた時点で自動照会</b>されます（ボタン操作不要）。
+        入力欄の下に、次の3つのどれかが出ます：</span>
+      <table style="margin:.5rem 0">
+        <tr><th>Co widzisz <span class="jp">/ 表示</span></th><th>Co zrobić <span class="jp">/ 対応</span></th></tr>
+        <tr><td>⭐ <b>Imię, ranga, numer członka</b>
+              <span class="jp">/ 氏名・ランク・会員ID</span></td>
+            <td>Imię wpisze się samo. Tylko potwierdź: <b>„Pan Kowalski, tak?"</b>
+              <span class="jp">/ 名前は自動で入ります。<b>「〇〇様ですね」と確認するだけ</b></span></td></tr>
+        <tr><td>🍜 <b>Ile razy był, ostatnia wizyta</b>
+              <span class="jp">/ 来店回数・前回の来店日</span></td>
+            <td>Stały gość. Jeśli jest 👻 No-show — <b>uprzejmie potwierdź rezerwację</b>
+              <span class="jp">/ 常連さん。👻No-showがある方は<b>やんわり念押し</b>を</span></td></tr>
+        <tr><td>🆕 <b>Nowy gość</b>
+              <span class="jp">/ 新しいお客様</span></td>
+            <td>Zapytaj o imię jak zwykle
+              <span class="jp">/ 通常どおりお名前を伺う</span></td></tr>
+      </table>
+      Jeśli gość już u nas rezerwował, pojawi się też przycisk
+      <b>↩︎ „Uzupełnij"</b> — wstawia liczbę osób i uwagi z poprzedniej rezerwacji.
+      Wtedy wystarczy zapytać: <b>„Tak jak ostatnio, cztery osoby?"</b>
+      <span class="pl">過去に予約歴があれば <b>↩︎「前回の内容を入れる」</b> ボタンも出ます。
+        人数とご要望が入るので、<b>「いつもの4名様でよろしいですか」</b>と聞くだけで済みます。</span>
+    </li>
+    <li><b>Imię</b> — sprawdź lub wpisz. <b>E-mail wpisz tylko wtedy, gdy gość sam go poda</b> —
+        nie trzeba o niego pytać.
+      <span class="pl"><b>お名前</b>を確認・入力。<b>メールはお客様から言われた時だけ</b>入力（こちらから聞かなくてよい）。</span></li>
+    <li><b>Uwagi</b> — dotknij gotowych przycisków (krzesełko, alergia, urodziny, przy oknie…)
+        albo dopisz ręcznie.
+      <span class="pl"><b>ご要望</b>…定型ボタン（ベビーチェア・アレルギー・誕生日・窓際など）を押すか、自由入力。</span></li>
+    <li>Wpisz <b>swoje imię</b> („Kto odebrał") i naciśnij zielone <b>„✅ Zapisz rezerwację"</b>.
+      <span class="pl"><b>受付者名</b>を入れて、緑の「✅ この内容で登録」を押す。</span></li>
+    <li>Pojawi się <b>numer rezerwacji</b> (np. <code>RSV-20260903-471</code>).
+        Dalej: „➕ Następna" (kolejny telefon) albo „📋 Lista" (powrót do listy).
+      <span class="pl"><b>予約番号</b>（例 <code>RSV-20260903-471</code>）が出ます。「➕ 続けて登録」か「📋 一覧へ」。</span></li>
+  </ol>
+
+  <div class="note"><b>ℹ️ Skąd system wie, kto dzwoni / なぜ番号だけで分かるのか</b><br>
+    System szuka numeru <b>w rezerwacjach i w bazie członków</b>. Jeśli gość kiedyś
+    podał u nas e-mail przy rezerwacji, od tej pory <b>sam numer telefonu wystarczy</b>. /
+    <span class="jp">電話番号を<b>予約台帳と会員台帳の両方</b>から探します。過去の予約でメールを頂いていれば、
+    以降は<b>電話番号だけで会員情報まで表示</b>されます。</span><br>
+    ⚠️ Gość, który zapisał się na e-mail i <b>nigdy jeszcze nie rezerwował</b>, nie pokaże się
+    jako członek — <b>to nie błąd</b>. Po tej rezerwacji już się połączy. /
+    <span class="jp">⚠️ メールで会員登録し、<b>まだ一度も予約したことがない</b>方は会員として出ません。
+    <b>故障ではありません</b>。今回の予約を登録すれば次回からつながります。</span></div>
+
+  <div class="note warn"><b>📵 Gość bez e-maila / メールの無いお客様：</b>
+    Nie wyśle się żaden e-mail z potwierdzeniem. <b>Przeczytaj gościowi numer rezerwacji</b>
+    i powiedz, że zmiany i odwołanie <b>tylko telefonicznie</b> (nie ma linku do klikania). /
+    <span class="jp">確認メールは送られません。<b>予約番号を口頭でお伝えし</b>、変更・取消は<b>お電話で</b>とご案内してください（クリックできるリンクはありません）。</span></div>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    Żółte ostrzeżenie — co robić <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 黄色い警告が出たら</span></h3>
+  <p style="font-size:.88rem;margin-top:.3rem">System <b>nie blokuje</b> — tylko pyta.
+    Przeczytaj ostrzeżenie, powiedz gościowi, i jeśli wszystko się zgadza, naciśnij
+    <b>„それでも登録する / Zapisz mimo to"</b>. Jeśli to pomyłka — <b>„修正する / Popraw"</b>. /
+    <span class="jp">システムは<b>止めません</b>。確認するだけです。内容をお客様に伝え、問題なければ「それでも登録する」、間違いなら「修正する」。</span></p>
+  <table>
+    <tr><th>Ostrzeżenie <span class="jp">/ 警告</span></th><th>Co to znaczy <span class="jp">/ 意味と対応</span></th></tr>
+    <tr><td>👥 Duża grupa</td>
+        <td>Powyżej 7 osób. <b>Sprawdź, czy jest tyle miejsc</b>, w razie potrzeby zapytaj szefa.
+          <span class="jp">8名以上。<b>席が取れるか確認</b>を。必要なら店長に相談。</span></td></tr>
+    <tr><td>🌙 Po 19:45</td>
+        <td>Późna godzina tylko w piątki i soboty. W inne dni zapisz tylko za zgodą szefa.
+          <span class="jp">19:45以降は金・土のみ。他の曜日は店長の了解がある時だけ登録。</span></td></tr>
+    <tr><td>🚫 Dzień zamknięty</td>
+        <td><b>Poniedziałek</b> — nie pracujemy. Zaproponuj inny dzień.
+          <span class="jp"><b>月曜は定休日</b>。別の日をご提案してください。</span></td></tr>
+    <tr><td>♻️ Już istnieje</td>
+        <td>Ten numer ma już rezerwację na ten sam dzień i godzinę.
+            <b>Zapytaj, czy to nie pomyłka</b> — inaczej stolik zablokuje się dwa razy.
+          <span class="jp">同じ番号・同じ日時の予約が既にあります。<b>二重予約でないか確認</b>を。</span></td></tr>
+    <tr><td>⏳ Data w przeszłości</td>
+        <td>Najczęściej zły miesiąc lub rok — popraw datę.
+          <span class="jp">たいてい月か年の入力ミス。日付を直してください。</span></td></tr>
+  </table>
+</section>
+
+<!-- 5c. 変更・取消 -->
+<section>
+  <h2>❌ Zmiana i anulowanie rezerwacji <span class="pl">予約の変更・取消</span></h2>
+
+  <table>
+    <tr><th>Kto <span class="jp">/ 誰が</span></th><th>Jak <span class="jp">/ 方法</span></th><th>Do kiedy <span class="jp">/ 期限</span></th></tr>
+    <tr><td>Gość z e-mailem<br><span class="jp">メールのあるお客様</span></td>
+        <td>Link w e-mailu potwierdzającym, albo strona <code>…/reserve.html</code> →
+            numer rezerwacji + e-mail
+          <span class="jp">確認メール内のリンク、または予約ページで<b>予約番号＋メール</b>を入力</span></td>
+        <td>2 godz. przed wizytą<br><span class="jp">来店2時間前まで</span></td></tr>
+    <tr><td>Gość bez e-maila<br><span class="jp">メールの無いお客様</span></td>
+        <td><b>Tylko telefonicznie do nas</b> — nie ma linku. Ty anulujesz w panelu.
+          <span class="jp"><b>お電話のみ</b>（リンクがないため）。従業員が画面で取消します。</span></td>
+        <td>—</td></tr>
+    <tr><td>Personel<br><span class="jp">従業員</span></td>
+        <td>Panel rezerwacji → przycisk <b>❌ Anuluj</b>
+          <span class="jp">予約一覧画面の <b>❌ Anuluj / 取消</b> ボタン</span></td>
+        <td><b>Zawsze</b>, także w ostatniej chwili<br><span class="jp"><b>いつでも</b>（直前・当日も可）</span></td></tr>
+  </table>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    Gość dzwoni, żeby odwołać <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 取消の電話を受けたら</span></h3>
+  <ol>
+    <li>Otwórz panel rezerwacji → zakładka <b>🔜 Nadchodzące</b>
+        (dla dalszych terminów: <b>🗂 Wszystkie</b>).
+      <span class="pl">予約一覧を開き <b>🔜 今後</b> タブへ（先の日付は <b>🗂 全件</b>）。</span></li>
+    <li>Znajdź rezerwację. <b>Potwierdź nazwisko, dzień, godzinę i numer telefonu</b> —
+        żeby nie anulować cudzej.
+      <span class="pl">該当の予約を探し、<b>氏名・日付・時間・電話番号を必ず確認</b>（他の方の予約を消さないため）。</span></li>
+    <li>Naciśnij <b>❌ Anuluj / 取消</b> → potwierdź w okienku.
+      <span class="pl"><b>❌ Anuluj / 取消</b> を押し、確認画面で「OK」。</span></li>
+    <li>Jeśli gość ma e-mail — potwierdzenie anulowania wyjdzie automatycznie.
+        Jeśli nie — powiedz przez telefon: „anulowane".
+      <span class="pl">メールがあるお客様には取消確認メールが自動送信されます。無い場合は口頭で「取り消しました」とお伝えください。</span></li>
+  </ol>
+
+  <div class="note"><b>🔄 Zmiana godziny lub liczby osób / 時間・人数の変更：</b>
+    W panelu nie ma edycji. Najprościej: <b>❌ Anuluj starą → 📞 zapisz nową</b>
+    (numer rezerwacji się zmieni — podaj gościowi nowy). /
+    <span class="jp">一覧画面に編集機能はありません。<b>❌ 古い予約を取消 → 📞 新しく登録</b>が一番確実です（予約番号が変わるので新しい番号をお伝えください）。</span></div>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    Pozostałe przyciski <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ その他のボタン</span></h3>
+  <table>
+    <tr><th>Przycisk <span class="jp">/ ボタン</span></th><th>Kiedy naciskać <span class="jp">/ いつ押すか</span></th></tr>
+    <tr><td>🍜 <b>Przyszli</b></td><td>Gdy goście przyjdą i usiądą
+      <span class="jp">/ お客様が来店され席に着いた時</span></td></tr>
+    <tr><td>👻 <b>No-show</b></td><td>Gdy nie przyszli i się nie odezwali
+      <span class="jp">/ 連絡なく来店されなかった時</span></td></tr>
+    <tr><td>🗒 <b>Memo</b></td><td>Notatka dla zespołu (np. „stolik 5", „przyjdą 15 min później")
+      <span class="jp">/ スタッフ間の申し送り（例「5番卓」「15分遅れ」）</span></td></tr>
+  </table>
+  <div class="note warn"><b>⚠️ Dlaczego to ważne / なぜ大事か：</b>
+    Z tych przycisków system liczy, ile razy gość był i ile razy nie przyszedł.
+    Przy następnym telefonie zobaczysz to od razu przy jego numerze. /
+    <span class="jp">このボタンの記録から来店回数・No-show回数が集計され、<b>次に電話が来た時にその場で表示</b>されます。必ず押してください。</span></div>
+</section>
+
+<!-- 6. ポイント操作 -->
+<section>
+  <h2>🔑 Kod tygodnia <span class="pl">今週のスタンプコード</span></h2>
+  <span class="path">Arkusz「🔑 コード / Kod」— pierwsza zakładka <span class="jp">/ スプレッドシートの最初のタブ</span></span>
+
+  <div class="note"><b>Gość, który chce pieczątkę, musi wpisać kod tygodnia.
+    Podaj mu go ustnie.</b> Kod chroni przed zbieraniem punktów z domu, bez wizyty
+    w lokalu. / <span class="jp">スタンプを押したいお客様には、今週のコードを口頭でお伝えください。
+    ご来店なしに自宅からポイントを貯められることを防ぐための仕組みです。</span></div>
+
+  <table>
+    <tr><th>Pytanie <span class="jp">/ 質問</span></th><th>Odpowiedź <span class="jp">/ 答え</span></th></tr>
+    <tr><td>Gdzie sprawdzić kod?<br><span class="jp">どこで確認する？</span></td>
+        <td>Arkusz「🔑 コード / Kod」— duże czerwone cyfry.<br>
+            <span class="jp">スプレッドシートの「🔑 コード / Kod」タブ。赤い大きな数字です。</span></td></tr>
+    <tr><td>Jak często się zmienia?<br><span class="jp">どのくらいで変わる？</span></td>
+        <td>Co tydzień, we wtorek rano — automatycznie.<br>
+            <span class="jp">毎週火曜の朝に自動で変わります。発行作業は不要です。</span></td></tr>
+    <tr><td>Czy trzeba drukować?<br><span class="jp">印刷は必要？</span></td>
+        <td>Nie. Wystarczy powiedzieć gościowi.<br>
+            <span class="jp">不要です。口頭でお伝えするだけで結構です。</span></td></tr>
+    <tr><td>Gość mówi, że już wpisywał<br><span class="jp">前に入れたと言われたら</span></td>
+        <td>Telefon pamięta kod. Po zmianie kodu trzeba wpisać raz jeszcze.<br>
+            <span class="jp">端末が記憶しています。コードが変わった週の初回だけ再入力が必要です。</span></td></tr>
+    <tr><td>Kod z zeszłego tygodnia<br><span class="jp">先週のコード</span></td>
+        <td>Też działa — przez jeden tydzień.<br>
+            <span class="jp">1週間だけ有効です。週明けの混乱を避けるためです。</span></td></tr>
+  </table>
+
+  <div class="note">⚠️ <b>Nie publikujemy kodu w internecie ani na social media.</b>
+    Nie zapisujemy go na kartce widocznej dla gości.<br>
+    <span class="jp">⚠️ コードをSNSやインターネットに載せないでください。
+    お客様から見える場所に貼り出すのも避けてください。</span></div>
+
+  <div class="note">🍜 <b>Goście przy jednym stoliku:</b> każdy skanuje i wpisuje kod
+    sam, na swoim telefonie. Nie dodajemy już punktów automatycznie osobom
+    towarzyszącym.<br>
+    <span class="jp">🍜 <b>同席のお客様へ：</b>お一人ずつ、ご自身のスマホでコードを入れて押していただきます。
+    同席者への自動付与は廃止しました。</span></div>
+</section>
+
+<!-- 6a-2. ポイント操作 -->
+<section>
+  <h2>🎫 Punkty gości <span class="pl">お客様のポイント操作</span></h2>
+  <span class="path">Arkusz「係員操作 / Staff」→ kolumny E / F / G</span>
+  <table>
+    <tr><th>Kol. <span class="jp">/ 列</span></th><th>Kliknij ✔ aby <span class="jp">/ チェックで</span></th></tr>
+    <tr><td>E 🍜</td><td>+10 pkt (1 ramen) <span class="jp">/ ラーメン1杯 +10pt</span></td></tr>
+    <tr><td>F 🎌</td><td>+5 pkt (quiz) <span class="jp">/ クイズ正解 +5pt</span></td></tr>
+    <tr><td>G ↩️</td><td>Cofnij <span class="jp">/ 取り消し</span></td></tr>
+  </table>
+  <div class="note">Zaznacz pole ✔ — system pokaże potwierdzenie przed dodaniem.
+    / チェックを入れると確認画面が出てから付与されます。</div>
+</section>
+
+<!-- 6b. 書籍貸出 -->
+<section>
+  <h2>📚 Wypożyczalnia książek <span class="pl">本の貸出・返却</span></h2>
+  <span class="path">Tablet przy barze / カウンターのタブレット → <code>…/books.html</code></span>
+
+  <div class="note"><b>Bezpłatnie, dla członków, na 3 tygodnie. Nie pobieramy żadnych kar
+    za spóźnienie.</b> Książka to pretekst, żeby gość wrócił — nigdy nie upominamy. /
+    <span class="jp"><b>会員限定・無料・3週間。延滞料は一切いただきません。</b>本は「また来ていただく口実」です。督促は絶対にしません。</span></div>
+
+  <p style="font-size:.88rem;margin-top:.6rem">Trzy zakładki / 3つのタブ：
+    <b>📕 Wypożycz</b>（貸出） · <b>📗 Zwrot</b>（返却） · <b>📋 Wydane</b>（貸出中の一覧）</p>
+
+  <h3 style="margin-top:1rem;font-size:.98rem;color:var(--ink)">
+    📕 Wypożyczenie <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 貸出</span></h3>
+  <ol>
+    <li>Zakładka <b>📕 Wypożycz</b>. Naciśnij <b>📷 Kamera</b> i zeskanuj <b>dwa kody</b>:
+        kod z tylnej okładki książki i kartę członkowską gościa.
+        <b>Kolejność dowolna</b> — system sam rozpozna, co zeskanowałeś.
+      <span class="pl"><b>📕 貸出</b>タブで<b>📷 カメラ</b>を押し、<b>本の裏表紙のQR</b>と<b>会員カードのQR</b>を読む。
+        <b>順番はどちらが先でもOK</b>。種類は自動判別されます。</span></li>
+    <li>Kod się nie czyta? <b>Wpisz ręcznie</b>: numer książki (<code>Cook-01</code>),
+        numer członka (<code>WN-M-0001</code>), e-mail albo telefon gościa.
+      <span class="pl">読めない時は<b>手入力</b>：管理番号（<code>Cook-01</code>）・会員ID（<code>WN-M-0001</code>）・
+        メール・電話番号のどれでも可。<code>cook01</code> のような表記ゆれも通ります。</span></li>
+    <li>Dwa pola u góry (📕 książka / 🎫 członek) wypełniają się same.
+        Pomyłka? Naciśnij <b>✕</b> przy złym polu — skasuje tylko jedno.
+      <span class="pl">上の2枠（📕書籍／🎫会員）が埋まっていきます。読み間違えたら
+        その枠の<b>✕</b>で片方だけ取り消せます。</span></li>
+    <li>Gdy oba pola są pełne — wypożyczenie zapisuje się samo.
+        Na ekranie pojawi się <b>termin zwrotu</b> (dziś + 3 tygodnie).
+      <span class="pl">両方そろうと自動的に貸出確定。画面に<b>返却予定日</b>（本日＋3週間）が出ます。</span></li>
+    <li><b>Przeczytaj gościowi termin zwrotu na głos.</b> Jeśli ma e-mail — dostanie też
+        potwierdzenie. Jeśli nie („✉️ Brak e-maila") — <b>koniecznie powiedz ustnie</b>.
+      <span class="pl"><b>返却予定日は必ず口頭でお伝えください。</b>メール登録があれば確認メールも届きます。
+        「✉️ メール未登録」と出た場合は<b>口頭のみ</b>になります。</span></li>
+  </ol>
+  <div class="note warn"><b>⚠️ Co może się pojawić / 出ることのある表示：</b><br>
+    🔴 <b>„Ten członek ma książki po terminie"</b> — poproś uprzejmie o ich zwrot przy okazji.
+       Możesz mimo to wypożyczyć kolejną. /
+    <span class="jp">🔴「この会員は期限超過の本をお持ちです」…次のご来店時のご返却をやんわりお願いしてください。<b>それでも貸出は可能</b>です。</span><br>
+    📕 <b>Książka jest już wypożyczona</b> — ekran pokaże, kto ją ma i do kiedy.
+       Wtedy masz przyciski <b>📗 Zwrot</b> albo <b>➕ 3 tyg.</b> (przedłużenie, tylko raz). /
+    <span class="jp">📕 すでに貸出中の本…誰がいつまで借りているか表示され、<b>📗 返却</b>か<b>➕ 3週間延長</b>（1回のみ）が選べます。</span><br>
+    🎫 <b>Gość nie jest członkiem</b> — rejestracja zajmuje minutę (<code>…/stamp.html</code>),
+       jest bezpłatna i od razu daje punkty. /
+    <span class="jp">🎫 非会員の方…その場で1分の会員登録（無料・ポイントも付く）をご案内してください。</span></div>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    📗 Zwrot <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 返却</span></h3>
+  <ol>
+    <li>Zakładka <b>📗 Zwrot</b> → zeskanuj <b>tylko kod książki</b>. Gotowe.
+      <span class="pl"><b>📗 返却</b>タブで<b>本のQRを読むだけ</b>。それで完了です。</span></li>
+    <li>Gość przyniósł kilka książek? Zeskanuj <b>kartę członkowską</b> — pokaże się
+        lista jego książek i oddajesz je z listy jednym dotknięciem.
+      <span class="pl">3冊まとめて返しに来られた時は<b>会員カード</b>を読むと、
+        その方の貸出一覧が出て、そこから1タップずつ返却できます。</span></li>
+    <li>Po zapisaniu pojawi się żółta ramka 🎁 — <b>przeczytaj ją i zrób, co mówi</b>:
+      <span class="pl">記録すると黄色い🎁枠が出ます。<b>書かれているとおりに対応</b>してください：</span>
+      <ul>
+        <li><b>Zwrot w terminie</b> → zaproponuj kolejną książkę.
+          <span class="pl">期限内 → 次の1冊をおすすめする。</span></li>
+        <li><b>Zwrot po terminie</b> → <b>wręcz drobny upominek i podziękuj</b>, że przyniósł.
+            Żadnych uwag, żadnych opłat.
+          <span class="pl">期限超過 → <b>サービス品をお渡しし、お礼を伝える</b>。
+            小言も料金も一切なし。</span></li>
+      </ul>
+    </li>
+  </ol>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    📋 Sprawdzanie i nowe książki <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 確認・新しい本</span></h3>
+  <ul>
+    <li>Zakładka <b>📋 Wydane</b> — kto co ma i ile dni zostało (po terminie na czerwono).
+      <span class="pl"><b>📋 貸出中</b>タブ…誰が何を借りていて残り何日か（超過は赤）。</span></li>
+    <li>W arkuszu: <b>🍜 Wabi Navi → 📚 Status książek</b> daje to samo zestawienie.
+      <span class="pl">スプレッドシートの <b>🍜 Wabi Navi → 📚 書籍の貸出状況</b> でも同じ一覧が見られます。</span></li>
+    <li><b>Nowa książka:</b> dodaj wiersz w arkuszu「書籍 / Books」(numer wg wzoru
+        <code>Cook-13</code>) → otwórz <code>…/book_labels.html</code>, zaznacz tylko tę książkę
+        i wydrukuj naklejkę na tylną okładkę.
+      <span class="pl"><b>新しい本を入れる時：</b>「書籍 / Books」シートに1行追加（IDは <code>Cook-13</code>
+        のように連番）→ <code>…/book_labels.html</code> でその本だけチェックして印刷し、裏表紙に貼る。</span></li>
+  </ul>
+  <div class="note">System sam wysyła gościowi 4 przypomnienia (3 dni przed, w dniu,
+    3 i 10 dni po terminie) — <b>w miłym tonie, z zaproszeniem na herbatę</b>. Ty nie musisz dzwonić. /
+    <span class="jp">案内メールは自動で4回（3日前・当日・3日超過・10日超過）。
+    <b>催促ではなく「来店のついでにどうぞ、サービス品あります」という文面</b>です。こちらから電話する必要はありません。</span></div>
+</section>
+
+<!-- 6c. キッチン表示 -->
+<section>
+  <h2>🍳 Ekran kuchenny (KDS) <span class="pl">キッチン表示システム</span></h2>
+  <span class="path">Tablet w kuchni / 厨房のタブレット → <code>…/kitchen.html</code></span>
+
+  <div class="note">Zamówienia z aplikacji przy stoliku pojawiają się tu <b>same, co ok. 12 sekund</b>.
+    <b>Nie trzeba nic odświeżać.</b> Ekran zostaw włączony na cały serwis. /
+    <span class="jp">卓上アプリからの注文が<b>約12秒ごとに自動で表示</b>されます。
+    <b>更新操作は不要</b>。営業中は開いたままにしておいてください。</span></div>
+
+  <h3 style="margin-top:1rem;font-size:.98rem;color:var(--ink)">
+    Co widać na ekranie <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 画面の見かた</span></h3>
+  <table>
+    <tr><th>Element <span class="jp">/ 要素</span></th><th>Znaczenie <span class="jp">/ 意味</span></th></tr>
+    <tr><td>Górny pasek <span class="jp">/ 上部の集計</span></td>
+        <td>Ile misek którego bulionu, ile 玉 kaedama, ile porcji gyoza i smażonych —
+            <b>gotuj partiami wg tego paska</b>
+          <span class="jp">/ だし別のラーメン杯数・替え玉の玉数・餃子や揚げ物の皿数。<b>この集計を見てまとめて仕込む</b></span></td></tr>
+    <tr><td>Duża karta u góry <span class="jp">/ 一番大きいカード</span></td>
+        <td>Najstarsze zamówienie — <b>robisz je pierwsze</b>
+          <span class="jp">/ 最も古い注文。<b>これから作る</b></span></td></tr>
+    <tr><td>Zegar na karcie <span class="jp">/ カードの時計</span></td>
+        <td>Ile minut czeka. <b>🟡 10 min</b> — miga na żółto. <b>🔴 20 min</b> — miga na czerwono
+          <span class="jp">/ 経過時間。<b>10分で黄色点滅</b>、<b>20分で赤点滅</b></span></td></tr>
+    <tr><td>Znaczki przy daniu <span class="jp">/ 品名の横のタグ</span></td>
+        <td>🍜 rodzaj bulionu · 🥡 na wynos · 🍜＋玉 kaedama · ✌️ 2 miski
+          <span class="jp">/ だしの種類・持ち帰り・替え玉の玉数・2器に分け</span></td></tr>
+    <tr><td>Kolory w składnikach <span class="jp">/ 具材の色分け</span></td>
+        <td>Standardowe składniki na szaro, <b>zmiany i dodatki wyróżnione</b>,
+            usunięte przekreślone
+          <span class="jp">/ 既定の具材は灰色、<b>変更・追加は強調</b>、抜きは打ち消し線</span></td></tr>
+    <tr><td>📝 Notatka <span class="jp">/ メモ</span></td>
+        <td>Życzenie gościa — <b>przeczytaj zawsze</b> (alergie!)
+          <span class="jp">/ お客様のご要望。<b>必ず読む</b>（アレルギー！）</span></td></tr>
+  </table>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    Obsługa <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 操作</span></h3>
+  <table>
+    <tr><th>Chcesz <span class="jp">/ したいこと</span></th><th>Zrób <span class="jp">/ 操作</span></th></tr>
+    <tr><td>Zaczynam całe zamówienie <span class="jp">/ 注文全体の調理開始</span></td>
+        <td><b>👨‍🍳 Zaczynam</b> na dole karty <span class="jp">/ カード下の「調理開始」</span></td></tr>
+    <tr><td>Zaczynam jedną pozycję <span class="jp">/ 1品だけ着手</span></td>
+        <td>Dotknij tę pozycję — podświetli się <span class="jp">/ その品をタップ（色が変わる）</span></td></tr>
+    <tr><td>Jedna pozycja gotowa <span class="jp">/ 1品だけ完成</span></td>
+        <td><b>✓</b> po prawej stronie pozycji <span class="jp">/ 品の右端の「✓」</span></td></tr>
+    <tr><td>Całe zamówienie gotowe <span class="jp">/ 注文全体が完成</span></td>
+        <td><b>✅ Gotowe — wydać</b> albo <b>przesuń kartę w prawo</b>
+          <span class="jp">/「✅ 調理済み・配膳OK」か<b>カードを右にスワイプ</b></span></td></tr>
+    <tr><td>Pomyłka — wróć <span class="jp">/ 間違えて消した</span></td>
+        <td>Zakładka <b>📋 Gotowe</b> → <b>↩︎ Cofnij do kuchni</b>
+          <span class="jp">/ <b>📋 完了・履歴</b>タブ →「↩︎ キッチンに戻す」</span></td></tr>
+  </table>
+
+  <div class="note warn"><b>⚠️ Najważniejsza zasada / いちばん大事なルール：</b>
+    <b>„✅ Gotowe" naciskaj dopiero wtedy, gdy danie naprawdę wychodzi na salę.</b>
+    Karta wtedy znika z ekranu — jeśli naciśniesz za wcześnie, zamówienie zniknie z oczu
+    i gość będzie czekał. /
+    <span class="jp"><b>「✅ 完了」は、料理が実際に出ていく時だけ押す。</b>
+    押した瞬間にカードが画面から消えるため、早く押すと注文が見えなくなり、
+    お客様をお待たせすることになります。</span></div>
+</section>
+
+<!-- 7. こまった時 -->
+<section>
+  <h2>🔧 Coś nie działa? <span class="pl">うまくいかない時</span></h2>
+  <table>
+    <tr><th>Objaw <span class="jp">/ 症状</span></th><th>Rozwiązanie <span class="jp">/ 対処</span></th></tr>
+    <tr><td>Zmiana się nie pokazuje <span class="jp">/ 変更が出ない</span></td>
+        <td>Poczekaj 1 min, odśwież stronę <kbd>Ctrl+Shift+R</kbd> / 1分待って強制再読込</td></tr>
+    <tr><td>Menu puste w aplikacji <span class="jp">/ メニューが空</span></td>
+        <td>Sprawdź połączenie internetu <span class="jp">/ ネット接続を確認</span></td></tr>
+    <tr><td>Nie widzę rezerwacji gościa <span class="jp">/ 予約が見つからない</span></td>
+        <td>Zakładka „Dziś" pokazuje tylko dzisiaj — sprawdź <b>🔜 Nadchodzące</b> lub <b>🗂 Wszystkie</b>
+          <span class="jp">/「今日」タブは本日のみ。<b>🔜 今後</b>か<b>🗂 全件</b>を見る</span></td></tr>
+    <tr><td>Gość nie dostał e-maila <span class="jp">/ 確認メールが届かない</span></td>
+        <td>Rezerwacja telefoniczna <b>bez e-maila</b> go nie wysyła — podaj numer rezerwacji ustnie
+          <span class="jp">/ メール未登録の電話予約では送信されません。予約番号を口頭で伝える</span></td></tr>
+    <tr><td>Panel prosi o hasło <span class="jp">/ パスワードを聞かれる</span></td>
+        <td>Wpisz hasło personelu. Po 5 błędach blokada na 15 minut — poczekaj
+          <span class="jp">/ 係員パスワードを入力。5回間違えると15分ロック、待つしかない</span></td></tr>
+    <tr><td>Ekran kuchenny pusty <span class="jp">/ キッチン画面に何も出ない</span></td>
+        <td>Poczekaj 15 s (odświeża się sam). Dalej pusto → sprawdź internet i <kbd>Ctrl+Shift+R</kbd>
+          <span class="jp">/ 15秒待つ（自動更新）。それでも空なら通信確認＋強制再読込</span></td></tr>
+    <tr><td>Kod QR książki się nie czyta <span class="jp">/ 本のQRが読めない</span></td>
+        <td>Wpisz numer ręcznie, np. <code>Cook-01</code> — jest wydrukowany na naklejce
+          <span class="jp">/ 管理番号を手入力（例 <code>Cook-01</code>）。ラベルに印字されています</span></td></tr>
+    <tr><td>Kamera się nie włącza <span class="jp">/ カメラが起動しない</span></td>
+        <td>Zezwól przeglądarce na dostęp do kamery, albo wpisz numer ręcznie
+          <span class="jp">/ ブラウザのカメラ許可を出すか、手入力に切り替える</span></td></tr>
+    <tr><td>Nie pamiętam jak… <span class="jp">/ やり方を忘れた</span></td>
+        <td>Ta instrukcja + „書き方" w arkuszu <span class="jp">/ この紙＋シート内の凡例</span></td></tr>
+  </table>
+</section>
+
+<!-- 8. メニュー早見表 -->
+<section>
+  <h2>🗂️ Gdzie co jest w menu „🍜 Wabi Navi" <span class="pl">メニュー早見表</span></h2>
+  <p style="font-size:.86rem;margin-top:.3rem">
+    W arkuszu Google, u góry: menu <b>🍜 Wabi Navi</b>. Podzielone na grupy /
+    スプレッドシート上部の「🍜 Wabi Navi」メニュー。用途別に整理：</p>
+  <table>
+    <tr><th>Grupa <span class="jp">/ グループ</span></th><th>Co tam jest <span class="jp">/ 中身</span></th></tr>
+    <tr><td>👆 <b>Na górze</b> / 直下<br><span class="pl">Codziennie / 毎日</span></td>
+        <td>Odśwież rezerwacje dziś · Odśwież personel · <b>Polecane: jak dodać</b> ·
+        📅 Włącz kalendarz · <b>📚 Status książek</b><br>
+        <span class="pl">本日の予約更新・係員シート更新・おすすめの書き方・日付選択を有効化・<b>📚書籍の貸出状況</b></span></td></tr>
+    <tr><td>⚙️ <b>Ustawienia</b><br><span class="pl">設定</span></td>
+        <td>Happy Hour · Quiz · Lekcje ON/OFF · WhatsApp<br>
+        <span class="pl">時間帯ボーナス・クイズ・講座公開・WhatsApp</span></td></tr>
+    <tr><td>📊 <b>Raporty</b><br><span class="pl">分析</span></td>
+        <td>Analiza ruchu · Sprawdź zdjęcia · Sprawdź wygasłe punkty<br>
+        <span class="pl">客足分析・写真チェック・失効チェック</span></td></tr>
+    <tr><td>🆕 <b>Pierwsze uruchomienie</b><br><span class="pl">初回設定</span></td>
+        <td>Tworzenie arkuszy — <b>tylko raz na starcie</b><br>
+        <span class="pl">各シートの新規作成。<b>最初の1回だけ</b>。普段は触らない</span></td></tr>
+    <tr><td>🩹 <b>Konserwacja</b><br><span class="pl">保守・修復</span></td>
+        <td>Naprawy · 🍳 kolumna kuchni · 🍳 przyciemnij wydane — <b>tylko gdy coś się zepsuje</b><br>
+        <span class="pl">履歴の修復・🍳キッチン用T列追加・🍳提供済みを薄く表示。<b>不具合時だけ</b>。普段は触らない</span></td></tr>
+  </table>
+  <div class="note warn"><b>⚠️ Uwaga / 注意：</b>
+    Grupy „Pierwsze uruchomienie" i „Konserwacja" — <b>nie ruszaj na co dzień</b>.
+    Używaj tylko według tej instrukcji. /
+    「初回設定」と「保守・修復」は<b>日常では触らないこと</b>。この紙の指示がある時だけ使う。</div>
+</section>
+
+<div class="foot">
+  📍 Wabi Navi — ul. Małe Garbary 5A, 87-100 Toruń<br>
+  和美なび · System v8.3 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
+</div>
+</div>
+
+<button class="printbtn no-print" onclick="window.print()">🖨️ Drukuj / 印刷</button>
+
+</body>
+</html>
