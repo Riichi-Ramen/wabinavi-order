@@ -224,6 +224,13 @@ body{
   <input class="form-input" type="text" id="reg-name" placeholder="Imię i Nazwisko">
   <label class="form-label">📧 E-mail <span style="color:var(--accent)">★</span></label>
   <input class="form-input" type="email" id="reg-email" placeholder="jan@email.com" autocomplete="email">
+  <label class="form-label">📱 Telefon <span style="font-weight:400;font-size:.72rem;opacity:.8">(opcjonalnie / optional / 任意)</span></label>
+  <input class="form-input" type="tel" id="reg-phone" placeholder="+48 600 000 000" autocomplete="tel">
+  <p style="font-size:.68rem;color:var(--muted);margin:-.6rem 0 1rem;line-height:1.6">
+    Podaj telefon, aby otworzyć kartę także numerem.<br>
+    Add your phone to open your card by number too.<br>
+    電話番号を登録すると、番号でも会員カードを開けます。
+  </p>
   <label class="form-label">🎂 生年月日 / Data urodzenia / Date of birth</label>
   <div style="display:flex;gap:.5rem;margin-bottom:1rem">
     <div style="flex:2">
@@ -478,17 +485,17 @@ let cardTab  = 'email';
 function notRegisteredHtml() {
   return `<div style="text-align:center;padding:.5rem 0">
     <div style="font-size:.85rem;color:var(--text);line-height:1.8;margin-bottom:.6rem">
-      ⚠️ 会員IDをご確認のうえ、もう一度入力してください。<br>
+      ⚠️ Sprawdź kontakt podany przy rejestracji i spróbuj ponownie.<br>
       <small style="color:var(--muted)">
-        Sprawdź swoje ID i spróbuj ponownie.<br>
-        Please check your member ID and try again.
+        Please try the e-mail or phone you used when registering.<br>
+        ご登録時にお使いの連絡先（メールまたは電話）をお試しください。
       </small>
     </div>
     <div style="font-size:.85rem;color:var(--accent);font-weight:700;line-height:1.8;margin-bottom:.8rem">
-      🌸 会員登録されていないようです。登録しますか？<br>
+      🌸 Wygląda na to, że nie jesteś jeszcze zarejestrowany/a. Zarejestrować się?<br>
       <small style="font-weight:400">
-        Wygląda na to, że nie jesteś zarejestrowany/a. Zarejestrować się?<br>
-        You don't seem to be registered yet. Would you like to register?
+        You don't seem to be registered yet. Would you like to register?<br>
+        会員登録されていないようです。登録しますか？
       </small>
     </div>
     <button class="btn btn-primary" style="width:auto;padding:.65rem 1.6rem"
@@ -508,7 +515,7 @@ function connectionErrorHtml() {
     </div>`;
   }
   return `<div style="text-align:center;padding:.5rem;color:var(--accent);font-size:.82rem;line-height:1.8">
-    📡 通信エラーが発生しました。<br>会員IDをご確認のうえ、もう一度お試しください。<br>
+    📡 通信エラーが発生しました。<br>もう一度お試しください。<br>
     <small style="color:var(--muted)">Błąd połączenia — sprawdź ID i spróbuj ponownie.<br>
     Connection error — please check your ID and try again.</small>
   </div>`;
@@ -652,8 +659,8 @@ async function doStamp() {
     showError('email-error','正しい電話番号を入力してください / Enter valid phone number');
     return;
   }
-  saveEmail(email);
-
+  // 見つからなかった連絡先を記憶すると、次に開いたとき誤った値が
+  // 入ったままになるため、照合が通ってから保存します（下の renderStampResult）。
   showScreen('screen-result');
   document.getElementById('result-icon').textContent  = '';
   document.getElementById('result-title').textContent = '';
@@ -682,6 +689,10 @@ async function doStamp() {
 }
 
 function renderStampResult(res) {
+  // 照合が通った連絡先だけを端末に記憶する
+  if (res && res.status !== 'notMember' && res.status !== 'error') {
+    try { saveEmail(getStampId()); } catch (e) {}
+  }
   document.getElementById('card-area').innerHTML = '';
   const icon  = document.getElementById('result-icon');
   const title = document.getElementById('result-title');
@@ -816,8 +827,11 @@ async function doRegister() {
       if (age >= 65) memberType = 'SR';
     }
 
+    const altContact = document.getElementById('reg-phone')
+      ? document.getElementById('reg-phone').value.trim() : '';
     const res = await postGAS({action:'register', name, email,
       birthYear, birthMonth:birth, birthDay, gender, memberType,
+      altContact,
       consent: true, consentSource: 'stamp.html'});
     if (res.status === 'ok') {
       saveEmail(email);
