@@ -3027,8 +3027,12 @@ function extrasText(o) {
 function lineTotalOf(id) {
   const item = findItem(id), o = cart[id];
   if (!item || !o) return 0;
-  return (item.price + swapCalc(item, o).delta) * (o.qty || 1)
-         + extrasTotal(o) + serveFee(id, o);
+  const sw   = swapCalc(item, o);
+  const qty  = o.qty || 1;
+  const sfee = serveFee(id, o);
+  const gross = (item.price + sw.delta) * qty + sw.ex + sfee;
+  // 相殺後も定価（＋容器代）を下回らない（最終防壁）
+  return Math.max(item.price * qty + sfee, gross - sw.disc);
 }
 
 // トッピングを1つ増減する（未選択の商品なら自動でカートに入れる）
@@ -3066,6 +3070,13 @@ function refreshExtraSum(lineKey) {
 }
 
 // ── 交換ルール：外し単価を「追加額を上限」に減額（ベース価格未満なし） ──
+// 具材を抜いた分（credit）で、有料の追加分を相殺する。
+//   2026-09-08 変更：これまではプルダウンのオプション（toppingDeltas）だけが
+//   相殺対象で、Dodatki から足したトッピング（extras）は対象外だった。
+//   お客様から見ると「1zł抜いて1zł足したのに1zł増える」と映るため、
+//   extras も相殺対象に加える。
+//   ⚠️ 大原則は維持：どんな組み合わせでも元の商品価格を下回らない。
+//      相殺できるのは「定価に上乗せされた分」までで、それを超えて値引きはしない。
 function swapCalc(item, o) {
   const deltas = Object.values(o.toppingDeltas||{});
   const paid = deltas.reduce((a,b)=>a+(b>0?b:0),0);
@@ -3073,10 +3084,16 @@ function swapCalc(item, o) {
   let credit = 0;
   const rv = item.removableValues||{};
   (o.removed||[]).forEach(n => { credit += rv[n]||0; });
-  const disc = Math.min(credit, paid);
-  // 事業ルール：どんな組み合わせでも元の商品価格を下回らない（最終防壁）
-  const delta = Math.max(0, paid + neg - disc);
-  return { delta, disc };
+
+  // 単価に乗る差額。値引き方向には行かない（従来どおり）
+  const delta = Math.max(0, paid + neg);
+  // 上乗せされた総額 ＝ 単価差額×数量 ＋ Dodatki
+  const qty     = o.qty || 1;
+  const ex      = extrasTotal(o);
+  const addedUp = delta * qty + ex;
+  // 相殺額は「上乗せ分」を超えない → 定価を下回らないことが保証される
+  const disc = Math.min(credit, addedUp);
+  return { delta, disc, ex };
 }
 
 // カードの金額表示。定価を上に残し、その下に「いま選んでいる1杯」の実売価格を出す。
