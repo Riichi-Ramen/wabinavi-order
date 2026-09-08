@@ -342,8 +342,14 @@ async function loadCard() {
     } else {
       document.getElementById('card-area').innerHTML = `
         <div class="not-found">
-          このメールアドレスは登録されていません。<br>
-          Ten e-mail nie jest zarejestrowany.<br><br>
+          Ten kontakt nie jest zarejestrowany.<br>
+          This contact is not registered.<br>
+          この連絡先は登録されていません。<br>
+          <small style="opacity:.8">
+            Spróbuj kontaktu podanego przy rejestracji.<br>
+            Try the contact you used when registering.<br>
+            ご登録時の連絡先をお試しください。
+          </small><br><br>
           <a href="stamp.html" style="color:var(--accent);font-weight:700">🌸 新規登録はこちら / Zarejestruj się</a>
         </div>`;
     }
