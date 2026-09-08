@@ -392,6 +392,11 @@ body{
 .top-delta{font-size:.72rem;color:var(--accent);text-align:right;font-weight:600;min-height:1em}
 
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(60,20,10,0.65);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;padding:1rem}
+/* 確認画面などを開いている間は、下部の緑バーを隠す。
+   バーは z-index:450 でモーダル(200)より手前にあり、
+   「注文する」ボタンを覆ってしまっていたため（2026-09-08 修正）。 */
+body.modal-open #order-bar,
+body.modal-open #app-version{display:none !important}
 .modal-overlay.open{display:flex}
 .modal{background:rgba(255,252,245,0.97);backdrop-filter:blur(16px);border:1px solid rgba(192,57,43,0.25);border-radius:16px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(80,30,20,0.25)}
 .modal-hd{padding:1.3rem 1.3rem .5rem;border-bottom:1px solid var(--border)}
@@ -624,7 +629,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v48</div>
+<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v49-20260908</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -2397,11 +2402,15 @@ function renderCard(item) {
 
   const isRamen = /^r\d+$/.test(item.id);
   const isDon = /^o[3-9]$/.test(item.id);
+  // 🍵 みそ汁の無料サービスは、メニューシートのオプション（選択式）に移しました。
+  //    「係員にお申し付けください」の掲示だけでは注文データに残らず、
+  //    キッチンに指示が届かないためです。ここでは案内だけを短く残します。
   const donJumpBtn = isDon ? `
     <div style="background:rgba(184,134,11,.1);border:1.5px solid #b8860b;border-radius:10px;
       padding:.5rem .7rem;margin-bottom:.5rem;font-size:.78rem;color:#8e6b00;font-weight:600">
-      🍵 Zupa miso GRATIS do tego dania — poproś obsługę!<br>
-      <small style="font-weight:400">Free miso soup with this bowl — ask our staff / みそ汁無料サービス（係員にお申し付けください）</small>
+      🍵 Zupa miso GRATIS do tego dania<br>
+      <small style="font-weight:400">Free miso soup with this bowl ／ みそ汁 無料サービス<br>
+      Wybierz poniżej / Choose below / 下の選択欄からお選びください</small>
     </div>
     ` : '';
   // v44: Dodatkiページへ飛ばず、このカードの中でトッピングを足せるようにする
@@ -3794,6 +3803,26 @@ function refreshConfItems() {
   document.getElementById('conf-items').innerHTML = buildConfHtml(ids);
   renderSplitUI();
 }
+
+// モーダルの開閉に合わせて body にクラスを付け外しする。
+// 画面上のどのモーダルが開いていても下部バーを隠せるよう、
+// 実際に開いている要素を数えて判定する。
+function syncModalOpenClass() {
+  const anyOpen = !!document.querySelector('.modal-overlay.open')
+    || ['sending-screen','allergen-modal','mismatch-modal'].some(function (id) {
+         const el = document.getElementById(id);
+         return el && getComputedStyle(el).display !== 'none';
+       });
+  document.body.classList.toggle('modal-open', anyOpen);
+}
+
+// classList への変更を監視して自動で反映（呼び忘れを防ぐ）
+document.addEventListener('DOMContentLoaded', function () {
+  syncModalOpenClass();
+  const mo = new MutationObserver(syncModalOpenClass);
+  document.querySelectorAll('.modal-overlay, #sending-screen, #allergen-modal, #mismatch-modal')
+    .forEach(function (el) { mo.observe(el, { attributes:true, attributeFilter:['class','style'] }); });
+});
 
 function openConfirm() {
   setTimeout(checkAllergyWarning, 50);
