@@ -630,7 +630,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v50-20260908</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v51-20260908</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -684,7 +684,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v50-20260908</div>
+    <div class="ver-tag">v51-20260908</div>
   </div>
 </div>
 
@@ -4853,7 +4853,23 @@ function tryRestoreState() {
     if (!raw) return false;
     const s = JSON.parse(raw);
     if (!s.inMenu) return false;
-    if (Date.now() - (s.t || 0) > 3 * 3600 * 1000) { clearPersistedState(); return false; } // 3時間で失効
+
+    // ── 復元の条件（2026-09-08 見直し）──────────────────────────
+    //   店舗アプリなので、長く残すと「同じ席に座った次のお客様に
+    //   前の方のカートが復元される」事故が起きる。
+    //   30分あれば、誤ってページを閉じた・電話が来た等には十分対応できる。
+    if (Date.now() - (s.t || 0) > 30 * 60 * 1000) { clearPersistedState(); return false; }
+
+    //   QRで読み取ったテーブル番号が違うなら、別のお客様とみなして復元しない
+    const urlTbl = new URLSearchParams(location.search).get('table') || '';
+    if (urlTbl && s.tableNum && String(s.tableNum) !== String(urlTbl)) {
+      clearPersistedState(); return false;
+    }
+
+    //   カートが空なら復元する意味がない（通知だけ出て紛らわしい）
+    const hasItems = s.cart && Object.keys(s.cart).length > 0;
+    const hasSent  = s.sessionOrders && s.sessionOrders.length > 0;
+    if (!hasItems && !hasSent) { clearPersistedState(); return false; }
     tableNum = s.tableNum; guestNum = s.guestNum; isMember = s.isMember;
     memberContact = s.memberContact || ''; memberName = s.memberName || '';
     memberInfo = s.memberInfo || {};
@@ -4877,9 +4893,8 @@ function tryRestoreState() {
     launchMenu();
     updateGroupProgressBar();
     updateBadge();
-    if (Object.keys(cart).length) {
-      showToast('🔄 前回のカート内容を復元しました / Przywrócono koszyk / Cart restored', false);
-    }
+    // 復元の通知は出さない。カートに商品が入っていることは画面で分かるうえ、
+    // 3.5秒で消える通知は読めず、かえって不安を与えるため。
     return true;
   } catch (e) { return false; }
 }
@@ -4895,7 +4910,13 @@ function tryRestoreState() {
 (function () {
   const origPlace = window.placeOrder;
   if (typeof origPlace === 'function') {
-    window.placeOrder = async function () { const r = await origPlace.apply(this, arguments); persistState(); return r; };
+    window.placeOrder = async function () {
+      const r = await origPlace.apply(this, arguments);
+      // 送信済みの注文を復元する意味はなく、次のお客様に見えると事故になる。
+      // 画面遷移で再保存されるのを避けるため、少し待ってから消す。
+      setTimeout(clearPersistedState, 1500);
+      return r;
+    };
   }
   const origReset = window.resetApp;
   if (typeof origReset === 'function') {
