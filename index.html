@@ -119,6 +119,13 @@ body{
 .mc-btn.selected{border-color:var(--accent);background:rgba(192,57,43,0.10);color:var(--accent)}
 .mc-btn .mc-btn-icon{font-size:1.6rem}
 .mc-btn .mc-btn-en{font-size:.68rem;color:var(--muted);font-weight:400}
+.rice-inline{background:rgba(45,122,58,.10);border:1.5px dashed rgba(45,122,58,.45);
+  border-radius:10px;padding:.7rem .75rem;margin:.15rem 0 .8rem}
+.rice-inline-t{font-weight:700;font-size:.85rem;color:#2d7a3a;margin-bottom:.3rem}
+.rice-inline-d{font-size:.74rem;line-height:1.6;color:var(--text);opacity:.9;margin-bottom:.6rem}
+.rice-inline-btn{width:100%;background:#2d7a3a;color:#fff;border:none;border-radius:9px;
+  padding:.6rem;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;line-height:1.4}
+.rice-inline-btn small{display:block;font-weight:400;font-size:.68rem;opacity:.9}
 .ver-tag{text-align:center;font-size:10px;color:rgba(120,90,70,.5);margin-top:.9rem;letter-spacing:.04em}
 .member-id-box{display:none;border-top:1px solid rgba(192,57,43,0.2);padding-top:1.2rem;margin-top:.2rem}
 .consent-box{display:flex;gap:.6rem;align-items:flex-start;background:rgba(192,57,43,.06);
@@ -630,7 +637,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v52-20260908</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v55-20260908</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -684,7 +691,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v52-20260908</div>
+    <div class="ver-tag">v55-20260908</div>
   </div>
 </div>
 
@@ -1269,7 +1276,7 @@ body.show-config .config-bar{display:flex}
   <button class="new-btn" style="background:linear-gradient(135deg,#2d7a3a,#3d9c4a)"
     onclick="backToMenuKeepSession()">➕ Zamów więcej / Order more / 追加注文する</button>
   <button class="new-btn" style="background:linear-gradient(135deg,#5b3b8e,#7a52b8);margin-top:.5rem"
-    onclick="openCheckout()">💳 Zapłać — do kasy / Pay / 支払い（レジへ）</button>
+    onclick="openCheckout()">🧾 Rachunek / The bill / お会計</button>
   <button style="background:none;border:none;color:var(--muted);font-size:.75rem;
     margin-top:.7rem;cursor:pointer;text-decoration:underline"
     onclick="resetApp()">🔄 Nowy stolik / 次のお客様（リセット）</button>
@@ -2308,6 +2315,9 @@ function renderToppingRows(item) {
     // ⚠️ ti は cart の toppingDeltas / toppingIdx の添字と対応しているため、
     //    配列から除外せず、描画だけを飛ばします。
     if (takeaway && isDineInOnlyOption(t.name)) return '';
+    // 🍚 替え玉の直後にライスセットの案内を挟む（分割より前）
+    const riceAfter = (/kaedama/i.test(t.name || '') && /^r\d+$/.test(item.id))
+      ? riceSetInlineHtml() : '';
     if (isOnigiri) {
       const saved = cart[item.id]?.toppingLabels?.[ti] || null;
       let selIdx = saved ? t.options.indexOf(saved) : 0;
@@ -2332,8 +2342,38 @@ function renderToppingRows(item) {
             ${t.options.map((o, oi) => `<option value="${oi}">${o}</option>`).join('')}
           </select>
           <span class="top-delta" id="td-${item.id}-${ti}"></span>
-        </div>`;
+        </div>${riceAfter}`;
   }).join('');
+}
+
+// 🍚 ライスセットの案内（替え玉の直後に差し込む）
+//    ポップアップをやめ、選択肢の流れの中に置くことで、
+//    トッピングを考えている手を止めずに済むようにしています。
+function riceSetInlineHtml() {
+  if (typeof riceAlreadyInCart === 'function' && riceAlreadyInCart()) return '';
+  return `
+    <div class="rice-inline">
+      <div class="rice-inline-t">🍚 Zestaw z ryżem? / Make it a set? / ライスをセットに？</div>
+      <div class="rice-inline-d">
+        Miseczka ryżu za pół ceny — tylko <strong>+6 zł</strong> (zamiast 12 zł).<br>
+        A bowl of rice at half price — just <strong>+6 zł</strong> (instead of 12 zł).<br>
+        ライスが半額の <strong>+6 zł</strong>（通常12 zł）。
+      </div>
+      <button class="rice-inline-btn" onclick="addRiceSet();this.closest('.rice-inline').remove()">
+        ✅ Tak, poproszę! <small>Yes please ／ お願いします</small>
+      </button>
+    </div>`;
+}
+
+// ライスが既にカートに入っているか
+function riceAlreadyInCart() {
+  try {
+    return Object.keys(cart).some(function (k) {
+      const it = findItem(k);
+      const n  = ((it && it.namePL) || '').toLowerCase();
+      return n.indexOf('ryż') !== -1 || n.indexOf('ryz') !== -1;
+    });
+  } catch (e) { return false; }
 }
 
 // おにぎりチップ選択：未チェックなら自動でカートに追加してから記録
@@ -3141,12 +3181,9 @@ function updateBadge() {
   // 🍚 ライス半額の案内（ラーメンあり・ライスなしのとき1回だけ）
   const hasRamen = Object.keys(cart).some(id => (findCatOfItem(id)||{}).id === 'ramen');
   const hasRice = Object.keys(cart).some(id => RICE_IDS.indexOf(baseId(id)) >= 0);
-  if (hasRamen && !hasRice && !window._ricePromoShown) {
-    window._ricePromoShown = true;
-    // 3.5秒のトーストでは読む間もなく消えていたため、
-    //「はい／また今度」を選べるパネルに変更（2026-09-08）
-    showRiceSetOffer();
-  }
+  // 🍚 ライスセットの案内はカード内の選択肢の並びに移しました（2026-09-08）。
+  //    注文の途中でポップアップが割り込むと、トッピングを考えている手を
+  //    止めてしまうため。替え玉のすぐ後・分割の前に出しています。
 }
 // 画面下部の「注文へ進む」バー
 function updateOrderBar(n) {
@@ -3163,7 +3200,7 @@ function updateOrderBar(n) {
     if (sessionOrders.length) {
       bar.onclick = openCheckout;
       bar.style.background = 'linear-gradient(135deg,#5b3b8e,#7a52b8)';
-      bar.innerHTML = `💳 <strong>Zapłać — do kasy / 支払い（レジへ）▶</strong>
+      bar.innerHTML = `🧾 <strong>Rachunek / お会計 ▶</strong>
         &nbsp;<span style="opacity:.9">${sessionOrders.reduce((a,o)=>a+(o.total||0),0)} zł</span>`;
       bar.style.display = 'flex';
     } else { bar.style.display = 'none'; }
