@@ -630,7 +630,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v51-20260908</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v52-20260908</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -684,7 +684,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v51-20260908</div>
+    <div class="ver-tag">v52-20260908</div>
   </div>
 </div>
 
@@ -2416,22 +2416,26 @@ function renderCard(item) {
   //    「下の選択欄から」が成立しなかった）ので削除しています。
   const donJumpBtn = '';
   // v44: Dodatkiページへ飛ばず、このカードの中でトッピングを足せるようにする
-  const dodatkiJumpBtn = (isDon ? donJumpBtn : '') +
-    ((isRamen || isDon) ? extrasHtml(item) : '');
+  // 🧩 並び順（2026-09-08 変更）
+  //    「抜く」と「トッピング追加」は対になる操作なので隣り合わせにする。
+  //    間にみそ汁・分割・替え玉などのプルダウンが挟まると読みにくいため、
+  //    プルダウンはそのあとにまとめる。
+  const extrasBlock = (isRamen || isDon) ? extrasHtml(item) : '';
 
-  const toppingHtml = (item.toppings?.length || isRamen || isDon) ? `
+  const optionRows = renderToppingRows(item);
+  const hasOptionRows = !!(optionRows && optionRows.replace(/\s/g, ''));
+  const toppingHtml = hasOptionRows ? `
     <div class="topping-rows" style="background:rgba(45,122,58,0.06);
       border:1.5px solid rgba(45,122,58,0.3);border-radius:10px;
-      padding:.7rem;margin-top:.5rem">
+      padding:.7rem;margin-top:.7rem">
       <div class="remove-title" style="color:#2d7a3a">
         ✨ Zamiast usuwać — zmień lub dodaj!<br>
         <small style="font-weight:400;opacity:.85">Instead of removing — change or add! / 取り消す代わりに、変更・追加！</small>
       </div>
-      ${renderToppingRows(item)}
-      ${dodatkiJumpBtn}
+      ${optionRows}
     </div>` : '';
 
-  const hasCustom = item.removable?.length || item.toppings?.length;
+  const hasCustom = item.removable?.length || item.toppings?.length || !!extrasBlock;
   const lineMode = isLineItem(item.id) && !item.comingSoon && !item.soldOut;
   // 🛍️ v40: 対象カテゴリのみ「店内/持ち帰り/会計時渡し」チップを表示
   const _svCat = findCatOfItem(item.id);
@@ -2486,7 +2490,7 @@ function renderCard(item) {
         ${serveHtml}
         ${hasCustom ? `<div class="custom-section" id="cs-${item.id}">
           <div class="custom-head">✏️ Dostosuj / Customize / カスタマイズ</div>
-          ${removableHtml}${toppingHtml}
+          ${removableHtml}${extrasBlock}${toppingHtml}
         </div>` : ''}
       </div>
     </div>`;
