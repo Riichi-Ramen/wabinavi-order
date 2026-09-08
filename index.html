@@ -119,6 +119,7 @@ body{
 .mc-btn.selected{border-color:var(--accent);background:rgba(192,57,43,0.10);color:var(--accent)}
 .mc-btn .mc-btn-icon{font-size:1.6rem}
 .mc-btn .mc-btn-en{font-size:.68rem;color:var(--muted);font-weight:400}
+.ver-tag{text-align:center;font-size:10px;color:rgba(120,90,70,.5);margin-top:.9rem;letter-spacing:.04em}
 .member-id-box{display:none;border-top:1px solid rgba(192,57,43,0.2);padding-top:1.2rem;margin-top:.2rem}
 .consent-box{display:flex;gap:.6rem;align-items:flex-start;background:rgba(192,57,43,.06);
   border:1px solid rgba(192,57,43,.28);border-radius:10px;padding:.75rem .8rem;
@@ -629,7 +630,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;bottom:4px;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none">v50-20260908</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v50-20260908</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -682,6 +683,8 @@ body.show-config .config-bar{display:flex}
       🎌 ROZPOCZNIJ ZAMÓWIENIE<br>
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
+    <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
+    <div class="ver-tag">v50-20260908</div>
   </div>
 </div>
 
