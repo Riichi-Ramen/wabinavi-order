@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.3 · Toruń</div>
+  <div class="ver">System v8.4 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -737,9 +737,50 @@ async function sha256(t) {
     「初回設定」と「保守・修復」は<b>日常では触らないこと</b>。この紙の指示がある時だけ使う。</div>
 </section>
 
+<!-- 9. 10月開始（店主のみ） -->
+<section>
+  <h2>🎁 Start klubu — październik 2026 <span class="pl">会員制度の開始（10月・店主のみ）</span></h2>
+  <span class="path">Apps Script → 24_Web.gs ・ index.html ・ nihongo.html</span>
+
+  <div class="note warn"><b>⚠️ Tylko właściciel / 店主専用：</b>
+    Personel nie zmienia tych ustawień. /
+    従業員はここを触らないこと。</div>
+
+  <p style="font-size:.86rem;margin-top:.3rem">
+    Od 2026-09-09 klub jest <b>wyłączony</b> — działają tylko rezerwacje.
+    Aby uruchomić klub w październiku, zmień trzy przełączniki. /
+    2026-09-09以降、会員制度は<b>停止中</b>で、予約機能だけが稼働しています。
+    10月に開始するときは、下の3つを切り替えます。</p>
+
+  <table>
+    <tr><th>Co / 対象</th><th>Plik / ファイル</th><th>Zmiana / 変更</th></tr>
+    <tr><td>Blok klubowy w e-mailu potwierdzającym rezerwację<br>
+        <span class="pl">予約確認メールの会員ブロック（会員ID・ランク・カード）と、非会員への入会案内</span></td>
+        <td><code>24_Web.gs</code></td>
+        <td><code>SHOW_MEMBER_INVITE</code><br>→ <code>true</code></td></tr>
+    <tr><td>Wypożyczalnia książek<br><span class="pl">書籍の貸し出し</span></td>
+        <td><code>index.html</code></td>
+        <td><code>BOOKS_COMING_SOON</code><br>→ <code>false</code></td></tr>
+    <tr><td>Quiz<br><span class="pl">クイズによるポイント付与</span></td>
+        <td><code>index.html</code> ・ <code>nihongo.html</code></td>
+        <td><code>QUIZ_COMING_SOON</code><br>→ <code>false</code></td></tr>
+  </table>
+
+  <div class="note warn"><b>⚠️ Po zmianie w .gs / GASを直したら：</b>
+    Wdróż → Zarządzaj wdrożeniami → <b>Nowa wersja</b>. Samo zapisanie nie wystarczy. /
+    「デプロイを管理 → <b>新しいバージョン</b>」まで必ず行うこと。
+    保存しただけでは反映されない。</div>
+
+  <div class="note"><b>📝 Uwaga / 補足：</b>
+    Przy <code>false</code> nawet zarejestrowany gość nie dostaje bloku klubowego w e-mailu —
+    to normalne. /
+    <code>false</code> の間は、登録済みのお客様が予約してもメールに会員ブロックは出ません。
+    不具合ではありません。</div>
+</section>
+
 <div class="foot">
   📍 Wabi Navi — ul. Małe Garbary 5A, 87-100 Toruń<br>
-  和美なび · System v8.3 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
+  和美なび · System v8.4 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
 </div>
 </div>
 
