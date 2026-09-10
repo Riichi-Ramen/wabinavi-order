@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.4 · Toruń</div>
+  <div class="ver">System v8.5 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -357,15 +357,32 @@ async function sha256(t) {
     <li><b>Imię</b> — sprawdź lub wpisz. <b>E-mail wpisz tylko wtedy, gdy gość sam go poda</b> —
         nie trzeba o niego pytać.
       <span class="pl"><b>お名前</b>を確認・入力。<b>メールはお客様から言われた時だけ</b>入力（こちらから聞かなくてよい）。</span></li>
-    <li><b>Uwagi</b> — dotknij gotowych przycisków (krzesełko, alergia, urodziny, przy oknie…)
-        albo dopisz ręcznie.
-      <span class="pl"><b>ご要望</b>…定型ボタン（ベビーチェア・アレルギー・誕生日・窓際など）を押すか、自由入力。</span></li>
-    <li>Wpisz <b>swoje imię</b> („Kto odebrał") i naciśnij zielone <b>„✅ Zapisz rezerwację"</b>.
-      <span class="pl"><b>受付者名</b>を入れて、緑の「✅ この内容で登録」を押す。</span></li>
+    <li><b>Uwagi</b> — dotknij gotowych przycisków albo dopisz ręcznie.
+        <b>Okno A</b> = stolik dla 2 osób, <b>Okno B</b> = duży stół na 5–6 osób.
+      <span class="pl"><b>ご要望</b>…定型ボタンを押すか、自由入力。
+        <b>Okno A</b>＝カップル用2人掛け、<b>Okno B</b>＝大グループ用5〜6人掛け。</span>
+      <div style="font-size:.82rem;margin:.35rem 0 0">
+        🚼 Krzesełko ・ 🎂 Urodziny ・ 🪟 Okno A (2 os.) ・ 🪟 Okno B (5–6 os.) ・ 🐕 Z psem</div></li>
+    <li><b>Wybierz swoje imię z listy</b> („Kto odebrał") i naciśnij zielone
+        <b>„✅ Zapisz rezerwację"</b>. Jeśli cię tam nie ma — wybierz
+        <b>„その他 / Inne"</b> i wpisz imię ręcznie.
+      <span class="pl"><b>受付者</b>をプルダウンから<b>選んで</b>、緑の「✅ この内容で登録」を押す。
+        一覧に名前が無い場合は<b>「その他 / Inne」</b>を選べば自由入力欄が出ます。</span></li>
     <li>Pojawi się <b>numer rezerwacji</b> (np. <code>RSV-20260903-471</code>).
         Dalej: „➕ Następna" (kolejny telefon) albo „📋 Lista" (powrót do listy).
       <span class="pl"><b>予約番号</b>（例 <code>RSV-20260903-471</code>）が出ます。「➕ 続けて登録」か「📋 一覧へ」。</span></li>
   </ol>
+
+  <div class="note warn"><b>👥 Lista „Kto odebrał" — tylko właściciel / 受付者の名簿（店主のみ）</b><br>
+    Nazwiska pochodzą z arkusza <b>„👥 従業員 / Personel"</b> w głównym arkuszu WABI NAVI.
+    Wpisz imię w kolumnie A — pojawi się na liście. /
+    <span class="jp">プルダウンの名前は、WABI NAVI のスプレッドシートの
+    <b>「👥 従業員 / Personel」タブ</b>から読んでいます。A列に名前を書けば選択肢に出ます。</span><br><br>
+    ⚠️ <b>Gdy ktoś odchodzi z pracy — NIE usuwaj wiersza.</b>
+    Wpisz „はい" w kolumnie B, żeby ukryć go z listy. /
+    <span class="jp"><b>辞めた人の行を消さないこと。</b>B列に「はい」を入れて隠してください。<br>
+    行ごと消すと、<b>過去の予約台帳に残った受付者名と突き合わせられなくなります</b>。
+    「この予約は誰が受けたのか」をあとから調べられなくなるためです。</span></div>
 
   <div class="note"><b>ℹ️ Skąd system wie, kto dzwoni / なぜ番号だけで分かるのか</b><br>
     System szuka numeru <b>w rezerwacjach i w bazie członków</b>. Jeśli gość kiedyś
@@ -780,7 +797,7 @@ async function sha256(t) {
 
 <div class="foot">
   📍 Wabi Navi — ul. Małe Garbary 5A, 87-100 Toruń<br>
-  和美なび · System v8.4 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
+  和美なび · System v8.5 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
 </div>
 </div>
 
