@@ -528,6 +528,37 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
 
 .group-list{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.6rem}
 /* v41 ⑤: 持ち帰りグループ切替 */
+.co-split-btns{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem}
+.co-split-btn{flex:1;min-width:76px;padding:.55rem .3rem;border-radius:10px;cursor:pointer;
+  border:1.5px solid rgba(91,59,142,.35);background:rgba(255,252,248,.9);color:#5b3b8e;
+  font-family:inherit;font-size:.92rem;font-weight:700;line-height:1.3}
+.co-split-btn small{display:block;font-size:.62rem;font-weight:400;opacity:.8}
+.co-split-btn.on{background:linear-gradient(135deg,#5b3b8e,#7a55b0);color:#fff;border-color:#5b3b8e}
+.co-bills{display:flex;flex-direction:column;gap:.45rem;margin-bottom:.6rem}
+.co-bill{display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,252,245,.97);border:2px solid #5b3b8e;border-radius:12px;padding:.55rem .85rem}
+.co-bill-label{font-size:.9rem;font-weight:700;color:#5b3b8e}
+.co-bill-label span{font-weight:400;opacity:.75}
+.co-bill-amt{font-size:1.55rem;font-weight:800;color:#2c1810;letter-spacing:-.01em}
+.co-total{text-align:right;font-size:.85rem;color:#7a6858;margin-bottom:.9rem}
+.co-line{background:rgba(255,252,248,.9);border:1px solid rgba(120,100,80,.22);
+  border-radius:10px;padding:.5rem .6rem;margin-bottom:.4rem}
+.co-line-hd{display:flex;justify-content:space-between;gap:.6rem;font-size:.84rem;
+  color:#2c1810;margin-bottom:.35rem}
+.co-note{background:rgba(240,235,250,.85);border-radius:9px;padding:.55rem .7rem;
+  font-size:.78rem;color:#5b3b8e;line-height:1.6;margin-top:.5rem}
+.co-note span{color:#7a6858;font-size:.73rem}
+.clear-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);
+  color:#fff;border-radius:10px;padding:.42rem .6rem;font-size:1rem;cursor:pointer;
+  line-height:1;margin-right:.4rem}
+.clear-btn:hover{background:rgba(255,255,255,.26)}
+.solo-choices{display:flex;flex-direction:column;gap:.7rem;margin-bottom:1.1rem}
+.solo-btn{width:100%;padding:.95rem .7rem;border-radius:14px;cursor:pointer;
+  border:2px solid rgba(120,100,80,.28);background:rgba(255,252,248,.95);
+  color:#5a4632;font-family:inherit;font-size:1.05rem;font-weight:700;line-height:1.35}
+.solo-btn small{display:block;font-size:.74rem;font-weight:400;opacity:.85}
+.solo-btn.on{border-color:#c0392b;background:linear-gradient(135deg,#fdecec,#f9dcdc);
+  color:#8e2418;box-shadow:0 2px 10px rgba(192,57,43,.18)}
 .om-takeaway-btn{width:100%;margin-bottom:1rem;padding:.7rem;border-radius:12px;
   border:2px solid var(--border);background:var(--card);color:var(--muted);font-family:inherit;
   font-size:.9rem;font-weight:700;cursor:pointer;line-height:1.5}
@@ -637,7 +668,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v56-20260910</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v58-20260910</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -691,7 +722,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v56-20260910</div>
+    <div class="ver-tag">v58-20260910</div>
   </div>
 </div>
 
@@ -991,6 +1022,32 @@ body.show-config .config-bar{display:flex}
   </div>
 </div>
 
+<!-- 🍱 1名のときの「店内 / 持ち帰り」2択（2026-09-10 新設）
+     旧版は 2名以上のときだけグループ画面を出し、持ち帰りのボタンも
+     その中にしか無かったため、**1名の客は持ち帰りを選べず容器代を取れなかった**。
+     既定は「店内」。持ち帰りのときだけ押してもらう。 -->
+<div id="solo-mode-screen" style="display:none">
+  <div class="om-wrap" style="max-width:460px">
+    <div class="om-title">🍱 Gdzie zjesz?<br>
+      <span class="om-en">Where will you eat?</span><br>
+      <span class="om-jp">お召し上がり方法</span></div>
+    <div class="om-sub" id="solo-sub"></div>
+    <div class="solo-choices">
+      <button class="solo-btn on" id="solo-lokal" onclick="setSoloMode(false)">
+        🍽️ Na miejscu<br>
+        <small>Dine in</small><br><small>店内でお召し上がり</small>
+      </button>
+      <button class="solo-btn" id="solo-wynos" onclick="setSoloMode(true)">
+        🥡 Na wynos<br>
+        <small>Takeaway (+ opakowanie)</small><br><small>お持ち帰り（容器代が加算されます）</small>
+      </button>
+    </div>
+    <button class="om-next-btn" onclick="confirmSoloMode()">
+      Zaczynamy!<br><small>Let's start</small><br><small>始める ▶</small>
+    </button>
+  </div>
+</div>
+
 <!-- 👥 グループ一覧（全グループ入力後・編集可能）。
      各グループを個別に開いて商品を追加/変更できる目次画面。 -->
 <div id="group-review-screen" style="display:none">
@@ -1184,6 +1241,9 @@ body.show-config .config-bar{display:flex}
   <div class="top-bar">
     <img onclick="configTapCount=(configTapCount||0)+1;if(configTapCount>=5){document.body.classList.toggle('show-config');configTapCount=0;}" src="" data-logo="main" alt="WABI NAVI" style="height:38px;width:auto;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))">
     <div class="table-chip" id="top-table-chip"></div>
+    <!-- 🧹 入力内容のクリア（2026-09-10 新設）。誤操作防止に確認画面を挑む。 -->
+    <button class="clear-btn" id="clear-btn" onclick="openClearModal()"
+            title="Wyczyść / 入力を消す">🧹</button>
     <button class="cart-btn" id="cart-btn" onclick="openConfirm()">
       🛒 Koszyk / Cart
       <span class="cart-badge" id="cart-badge"></span>
@@ -1246,6 +1306,31 @@ body.show-config .config-bar{display:flex}
     <div class="modal-ft">
       <button class="btn-back" onclick="closeConfirm()">← Wróć / Back</button>
       <button class="btn-order" id="btn-order" onclick="placeOrder()">🎌 ZAMAWIAM / ORDER NOW</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🧹 「本当にクリアしますか」確認（2026-09-10 新設） -->
+<div class="modal-overlay" id="clear-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-body" style="text-align:center;padding:1.6rem 1.3rem">
+      <div style="font-size:2.4rem;margin-bottom:.6rem">🧹</div>
+      <div style="font-weight:700;font-size:1.08rem;line-height:1.6;color:#2c1810">
+        Czy na pewno wyczyścić zamówienie?<br>
+        <span style="font-size:.92rem;font-weight:400">Clear the whole order?</span><br>
+        <span style="font-size:.92rem;font-weight:400">入力内容をすべて消しますか？</span>
+      </div>
+      <div id="clear-what" style="font-size:.86rem;color:#8e2418;line-height:1.7;
+        margin-top:.9rem;background:rgba(255,240,238,.9);border-radius:10px;padding:.7rem"></div>
+      <div style="font-size:.8rem;color:#7a6a58;line-height:1.6;margin-top:.8rem">
+        Tej operacji nie można cofnąć. Już wysłane zamówienia zostają w kuchni.<br>
+        <span>この操作は元に戻せません。すでに送信済みの注文は厨房に残ります。</span>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-back" onclick="closeClearModal()">← Nie / いいえ</button>
+      <button class="btn-order" style="background:#c0392b" onclick="doClearAll()">
+        🧹 Tak, wyczyść / はい、消す</button>
     </div>
   </div>
 </div>
@@ -1909,6 +1994,30 @@ function updateTakeawayBtn() {
   if (legacy) legacy.classList.toggle('on', setupTakeaway);
 }
 // 一覧画面から持ち帰り注文だけを後から追加する
+// 🍱 1名のときの「店内 / 持ち帰り」（2026-09-10）
+let soloTakeaway = false;
+
+function setSoloMode(wynos) {
+  soloTakeaway = !!wynos;
+  document.getElementById('solo-lokal').classList.toggle('on', !soloTakeaway);
+  document.getElementById('solo-wynos').classList.toggle('on',  soloTakeaway);
+}
+
+function confirmSoloMode() {
+  document.getElementById('solo-mode-screen').style.display = 'none';
+  orderModeDecided = true;
+  // 1名でもグループの仕組みに乗せる。こうすれば defaultServeFor() が
+  // 自動で wynos を付け、容器代も既存の計算がそのまま使える。
+  if (soloTakeaway) {
+    orderGroups = [[1]];
+    groupTakeaway = [true];
+    currentGroupIndex = 0;
+    setupTakeaway = true;
+  }
+  try { persistState(); } catch (e) {}
+  launchMenuReal();
+}
+
 function addTakeawayGroup() {
   document.getElementById('group-review-screen').style.display = 'none';
   openGroupSetup({ takeaway: true, allowReuse: true });
@@ -2205,7 +2314,18 @@ function launchMenuReal() {
 // 呼び出し元は変更していない（この名前のまま差し替えるため、5箇所の呼び出しに影響なし）。
 function launchMenu() {
   const n = Math.max(parseInt(guestNum, 10) || 1, 1);
-  if (n < 2 || orderModeDecided) { launchMenuReal(); return; }
+  if (orderModeDecided) { launchMenuReal(); return; }
+  // 🍱 1名のときは「店内 / 持ち帰り」だけ尋ねる（2026-09-10）。
+  //    既定は店内なので、そのまま「始める」を押せば従来と同じ流れ。
+  if (n < 2) {
+    soloTakeaway = false;
+    document.getElementById('solo-lokal').classList.add('on');
+    document.getElementById('solo-wynos').classList.remove('on');
+    document.getElementById('solo-sub').innerHTML =
+      `Stolik / Table ${tableNum} · 1 os. / 1 guest / 1名`;
+    document.getElementById('solo-mode-screen').style.display = 'flex';
+    return;
+  }
   document.getElementById('order-mode-screen').style.display = 'flex';
   document.getElementById('om-sub').innerHTML =
     `Stolik / Table ${tableNum} · ${n} os. / ${n} guests / ${n}名`;
@@ -4148,8 +4268,27 @@ async function placeOrder() {
     if (ci >= 0) memberInfo.coupons.splice(ci, 1);
   }
   selectedCoupon = null;
+  // 🧾 v58: 会計画面で割り当てをやり直せるよう、商品明細も残す。
+//    旧版は id と total と persons しか保存していなかったため、
+//    送信後に「この餃子は誰の分か」を決め直すことができなかった。
+  const lineSnap = [];
+  try {
+    for (const cid in cart) {
+      const it = findItem(cid);
+      if (!it) continue;
+      lineSnap.push({
+        id: cid,
+        name: (it.nameJP || it.namePL || cid),
+        namePL: (it.namePL || cid),
+        qty: cart[cid].qty || 1,
+        line: lineTotalOf(cid),
+        payers: getPayers(cart[cid]).slice()
+      });
+    }
+  } catch (e) {}
   sessionOrders.push({ id: orderId, total: total,
-    persons: splitSnap ? splitSnap.finals.slice() : null });
+    persons: splitSnap ? splitSnap.finals.slice() : null,
+    lines: lineSnap });
   cart = Object.create(null);
   updateBadge();
   if (typeof persistState === 'function') persistState();
@@ -4444,12 +4583,205 @@ function openCheckout() {
   document.getElementById('co-sum').textContent =
     `Stolik ${tableNum} ・ ${sessionOrders.length} zamówień / 件 ・ Razem ${sum} zł`;
   document.getElementById('co-guests').innerHTML = buildCheckoutBreakdown();
-  showCoStep('co-step-type');
+  // 🧾 v58: 2名以上ならまず「会計を分けるか」を尋ねる。
+  //    1名なら従来どおり領収書の種類から。
+  const _n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  if (_n >= 2) {
+    if (!coAssign) coInitAssign();
+    renderCoSplit();
+    showCoStep('co-step-split');
+  } else {
+    showCoStep('co-step-type');
+  }
   document.getElementById('checkout-screen').style.display = 'block';
   window.scrollTo(0, 0);
 }
 
 // v48: この卓の全注文（追加注文も含む）を客ごとに合算する
+// ══ 🧾 v58: 会計の分割（2026-09-10）═══════════════════════════
+//  ポーランドでは「自分の分だけ払う」が通例なので、それを既定にする。
+//  ただし POS と同じように「÷2」「÷3」の等分ボタンも用意する。
+//
+//  splitMode:
+//    'each' … 商品ごとの割り当て。未割り当て（共有）は頭割り
+//    'div'  … 合計を splitDiv で等分（端数はそのまま。0.01zł単位）
+//
+//  ※ このアプリは「レジにいくら請求すればよいか」を伝えるだけ。
+//    実際の会計とレシート発行は POS で行う。
+let splitMode = 'each';
+let splitDiv  = 2;
+let coAssign  = null;   // { 注文index: { 行index: [客番号…] } }
+
+// 送信済みの全行を平らにして返す
+function coAllLines() {
+  const out = [];
+  (sessionOrders || []).forEach((o, oi) => {
+    (o.lines || []).forEach((ln, li) => {
+      out.push({ oi, li, ln, orderId: o.id });
+    });
+  });
+  return out;
+}
+
+function coHasLines() { return coAllLines().length > 0; }
+
+// 割り当ての初期化（送信時の payers を引き継ぐ）
+function coInitAssign() {
+  coAssign = {};
+  (sessionOrders || []).forEach((o, oi) => {
+    coAssign[oi] = {};
+    (o.lines || []).forEach((ln, li) => {
+      coAssign[oi][li] = (ln.payers || []).slice();
+    });
+  });
+}
+
+function coGetPayers(oi, li) {
+  if (!coAssign) coInitAssign();
+  return (coAssign[oi] && coAssign[oi][li]) ? coAssign[oi][li] : [];
+}
+
+function coTogglePayer(oi, li, p) {
+  if (!coAssign) coInitAssign();
+  const arr = coAssign[oi][li] || (coAssign[oi][li] = []);
+  if (p === 0) { coAssign[oi][li] = []; }
+  else {
+    const i = arr.indexOf(p);
+    if (i >= 0) arr.splice(i, 1); else arr.push(p);
+    arr.sort((a, b) => a - b);
+  }
+  renderCoSplit();
+  if (typeof persistState === 'function') persistState();
+}
+
+// 商品ごとの割り当てから客ごとの金額を出す
+function coComputeEach() {
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  const per = new Array(n).fill(0);
+  let shared = 0;
+  coAllLines().forEach(({ oi, li, ln }) => {
+    const payers = coGetPayers(oi, li).filter(p => p >= 1 && p <= n);
+    const amt = Number(ln.line) || 0;
+    if (payers.length) {
+      const each = amt / payers.length;
+      payers.forEach(p => { per[p - 1] += each; });
+    } else {
+      shared += amt;
+    }
+  });
+  const head = shared / n;
+  return { n, per: per.map(v => v + head), shared, head };
+}
+
+// 会計全体の合計（送信済みの total を素直に足す）
+function coGrandTotal() {
+  return (sessionOrders || []).reduce((a, o) => a + (Number(o.total) || 0), 0);
+}
+
+// 今の設定での「伝票一覧」
+//   → [{ label, amount, who }]
+function coBills() {
+  if (splitMode === 'div') {
+    const d = Math.max(2, parseInt(splitDiv, 10) || 2);
+    const sum = coGrandTotal();
+    // 端数はグロシュ単位で切り下げ、余りを先頭の伝票から1グロシュずつ配る。
+    // 単純な等分だと 200zł ÷ 3 = 66.67 × 3 = 200.01zł となり、
+    // レジで 1 グロシュ多く請求してしまう。
+    const cents = Math.round(sum * 100);
+    const base  = Math.floor(cents / d);
+    const extra = cents - base * d;          // 0 〜 d-1
+    return Array.from({ length: d }, (_, i) => ({
+      label: String.fromCharCode(65 + i),
+      amount: (base + (i < extra ? 1 : 0)) / 100,
+      who: ''
+    }));
+  }
+  const t = coComputeEach();
+  return t.per.map((v, i) => ({
+    label: String(i + 1),
+    amount: v,
+    who: '👤' + (i + 1)
+  }));
+}
+
+function setSplitMode(mode, d) {
+  splitMode = mode;
+  if (mode === 'div') splitDiv = d;
+  renderCoSplit();
+  if (typeof persistState === 'function') persistState();
+}
+
+function renderCoSplit() {
+  const n = Math.max(parseInt(guestNum, 10) || 1, 1);
+  const wrap = document.getElementById('co-split-body');
+  if (!wrap) return;
+
+  // 分割方式のボタン列
+  const divs = [2, 3, 4].filter(d => d <= Math.max(n, 4));
+  let btns = `<button class="co-split-btn${splitMode === 'each' ? ' on' : ''}"
+      onclick="setSplitMode('each')">👤 Każdy swoje<small>自分の分だけ</small></button>`;
+  divs.forEach(d => {
+    btns += `<button class="co-split-btn${splitMode === 'div' && splitDiv === d ? ' on' : ''}"
+      onclick="setSplitMode('div',${d})">÷${d}<small>${d}等分</small></button>`;
+  });
+  if (n >= 2 && divs.indexOf(n) < 0) {
+    btns += `<button class="co-split-btn${splitMode === 'div' && splitDiv === n ? ' on' : ''}"
+      onclick="setSplitMode('div',${n})">÷${n}<small>人数割</small></button>`;
+  }
+
+  // 伝票ごとの金額（大きく表示）
+  const bills = coBills();
+  const billHtml = bills.map(b => `
+    <div class="co-bill">
+      <div class="co-bill-label">🧾 ${b.label}${b.who ? ' <span>' + b.who + '</span>' : ''}</div>
+      <div class="co-bill-amt">${fmtZl(b.amount)}</div>
+    </div>`).join('');
+
+  // 商品別の割り当て（「自分の分だけ」のときだけ）
+  let itemsHtml = '';
+  if (splitMode === 'each' && n >= 2) {
+    const all = coAllLines();
+    if (!all.length) {
+      itemsHtml = `<div class="co-note">Brak szczegółów pozycji dla tych zamówień.<br>
+        <span>この注文には商品明細が保存されていません。÷ボタンでの等分をご利用ください。</span></div>`;
+    } else {
+      itemsHtml = all.map(({ oi, li, ln }) => {
+        const sel = coGetPayers(oi, li);
+        let chips = `<span class="payer-chip${sel.length === 0 ? ' sel' : ''}"
+          onclick="coTogglePayer(${oi},${li},0)">👥 wsp.</span>`;
+        for (let p = 1; p <= n; p++) {
+          chips += `<span class="payer-chip${sel.includes(p) ? ' sel' : ''}"
+            onclick="coTogglePayer(${oi},${li},${p})">👤${p}</span>`;
+        }
+        return `<div class="co-line">
+          <div class="co-line-hd"><span>${esc(ln.namePL || ln.name)}${ln.qty > 1 ? ' ×' + ln.qty : ''}</span>
+            <strong>${fmtZl(ln.line)}</strong></div>
+          <div class="payer-chips">${chips}</div></div>`;
+      }).join('');
+      const t = coComputeEach();
+      if (t.shared > 0) {
+        itemsHtml += `<div class="co-note">👥 Wspólne: ${fmtZl(t.shared)}
+          → ${fmtZl(t.head)} / os.<br>
+          <span>未割り当ての合計を人数で頭割りしています</span></div>`;
+      }
+    }
+  }
+
+  wrap.innerHTML = `<div class="co-split-btns">${btns}</div>
+    <div class="co-bills">${billHtml}</div>
+    <div class="co-total">Razem / 合計: <strong>${fmtZl(coGrandTotal())}</strong></div>
+    ${itemsHtml}`;
+}
+
+// レジへ送る内訳の文字列（v58）
+function coBreakdownText() {
+  const bills = coBills();
+  if (splitMode === 'div') {
+    return '÷' + splitDiv + ': ' + bills.map(b => '🧾' + b.label + '→' + fmtZl(b.amount)).join(' | ');
+  }
+  return bills.map(b => '👤' + b.label + '→' + fmtZl(b.amount)).join(' | ');
+}
+
 function checkoutTotals() {
   const n = Math.max(parseInt(guestNum, 10) || 1, 1);
   const per = new Array(n).fill(0);
@@ -4509,6 +4841,12 @@ function buildCheckoutBreakdown() {
 
 function showCoStep(id) {
   document.querySelectorAll('.co-step').forEach(d => d.style.display = 'none');
+  // 🧾 v58: 2名以上のときだけ「分け方に戻る」を出す
+  {
+    const bs = document.getElementById('co-back-split');
+    if (bs) bs.style.display =
+      (Math.max(parseInt(guestNum, 10) || 1, 1) >= 2 && id === 'co-step-type') ? 'block' : 'none';
+  }
   document.getElementById(id).style.display = 'block';
   if (id === 'co-step-nip') {
     document.getElementById('co-nip-err').style.display = 'none';
@@ -4578,7 +4916,8 @@ async function confirmCheckout() {
       body: JSON.stringify({ action: 'checkout',
         table: tableNum, guests: guestNum,
         orders: sessionOrders.map(o => o.id), sum,
-        guestBreakdown: checkoutBreakdownText(),
+        guestBreakdown: (Math.max(parseInt(guestNum,10)||1,1) >= 2
+                          ? coBreakdownText() : checkoutBreakdownText()),
         invoiceType: checkoutInvoice.type, nip: checkoutInvoice.nip,
         companyName: checkoutInvoice.name, companyAddress: checkoutInvoice.address,
         isMember, memberName: isMember ? memberName : '', memberContact: isMember ? memberContact : '' })
@@ -4755,12 +5094,39 @@ function finishWithdraw() {
   resetApp();
 }
 
+// 🧹 入力内容のクリア（2026-09-10 新設）
+//    注文は30分間保持される（sessionStorage）ため、途中でやり直したいときの逃げ道。
+//    誤って押すと全部消えるので、必ず確認画面を挑む。
+function openClearModal() {
+  const nCart = Object.keys(cart || {}).length;
+  const nSent = (sessionOrders || []).length;
+  const lines = [];
+  if (nCart) lines.push(`🛒 Koszyk / カート内：${nCart} poz. / 品`);
+  if (guestNum) lines.push(`👥 Stolik ${tableNum} · ${guestNum} os. / 席と人数`);
+  if (nSent)  lines.push(`⚠️ Już wysłano ${nSent} zam. — zostają w kuchni / `
+                       + `送信済み${nSent}件は取り消されません`);
+  if (!lines.length) lines.push('Nic do wyczyszczenia / 消すものはありません');
+  document.getElementById('clear-what').innerHTML = lines.join('<br>');
+  document.getElementById('clear-modal').classList.add('open');
+}
+
+function closeClearModal() {
+  document.getElementById('clear-modal').classList.remove('open');
+}
+
+function doClearAll() {
+  closeClearModal();
+  try { clearPersistedState(); } catch (e) {}
+  resetApp();
+}
+
 function resetApp() {
   cart = Object.create(null);
   sessionOrders = []; payGroups = {}; splitBill = false;
   orderModeDecided = false; orderGroups = []; groupSetupSelection = [];
   groupSetupAssigned = []; currentGroupIndex = -1; reviewEditMode = false;
   groupTakeaway = []; setupTakeaway = false; setupAllowReuse = false;
+  splitMode = 'each'; splitDiv = 2; coAssign = null;   // 🧾 v58
   groupBillingAuto = false; confView = 'category'; confViewLocked = false;
   defaultPayers = []; addOrderMode = false; activeLine = Object.create(null);
   { const el = document.getElementById('addorder-screen'); if (el) el.style.display = 'none'; }
@@ -5010,6 +5376,15 @@ window.addEventListener('load', () => { setTimeout(tryRestoreState, 150); });
     <div id="co-sum" style="text-align:center;font-size:.85rem;color:#7a6858;margin-bottom:.7rem"></div>
     <div id="co-guests" style="margin-bottom:1rem"></div>
 
+    <!-- STEP 0: 会計の分割（v58・2名以上のときだけ） -->
+    <div class="co-step" id="co-step-split" style="display:none">
+      <p style="font-size:.85rem;color:#2c1810;margin-bottom:.7rem;text-align:center">
+        Jak dzielimy rachunek? / How to split the bill?<br>お会計の分け方</p>
+      <div id="co-split-body"></div>
+      <button class="co-btn" style="background:linear-gradient(135deg,#5b3b8e,#7a55b0);color:#fff;margin-top:.8rem"
+        onclick="showCoStep('co-step-type')">→ Dalej / 次へ（領収書の種類）</button>
+    </div>
+
     <!-- STEP 1: 領収書タイプ -->
     <div class="co-step" id="co-step-type">
       <p style="font-size:.85rem;color:#2c1810;margin-bottom:.7rem;text-align:center">
@@ -5020,6 +5395,9 @@ window.addEventListener('load', () => { setTimeout(tryRestoreState, 150); });
         <small>NIP付きレシート（企業経費用）</small></button>
       <button class="co-btn" onclick="chooseInvoice('faktura')">📄 Faktura VAT<br>
         <small>VATインボイス（正式請求書）</small></button>
+      <button class="co-btn" id="co-back-split" style="display:none;border:1.5px solid rgba(91,59,142,.4);
+        background:transparent;color:#5b3b8e"
+        onclick="showCoStep('co-step-split')">← Podział rachunku / 会計の分け方に戻る</button>
     </div>
 
     <!-- STEP 2: NIP入力・照会 -->
