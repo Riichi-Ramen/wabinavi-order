@@ -668,7 +668,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v58-20260910</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v59-20260910</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -722,7 +722,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v58-20260910</div>
+    <div class="ver-tag">v59-20260910</div>
   </div>
 </div>
 
@@ -4336,8 +4336,10 @@ async function placeOrder() {
       <div style="margin-top:1.5rem;border-top:1px solid rgba(192,57,43,0.2);padding-top:1.5rem;text-align:center">
         <div style="font-size:1.5rem;margin-bottom:.4rem">⭐</div>
         <div style="font-size:.88rem;color:var(--muted);line-height:1.7;background:rgba(255,252,245,0.85);border-radius:10px;padding:.9rem;backdrop-filter:blur(8px)">
-          <strong style="color:var(--accent)">Dziękujemy, ${memberName}!</strong><br>
-          Thank you, ${memberName}! ${memberName}様、いつもありがとうございます！<br>
+          <!-- 氏名はポーランド語の1回だけ大きく出す。英語・日本語の重複表示は
+               同じ名前が3つ並ぶだけで煩わしかったため廃止（2026-09-10）。 -->
+          <strong style="color:var(--accent);font-size:1.25rem;display:block;line-height:1.4;
+            margin-bottom:.35rem">Dziękujemy, ${memberName}!</strong>
           <span style="font-size:.75rem">Punkty zostaną naliczone. / Points will be credited. / ポイントが加算されます。</span>
         </div>
       </div>`;
