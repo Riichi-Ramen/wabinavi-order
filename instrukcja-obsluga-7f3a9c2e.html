@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.5 · Toruń</div>
+  <div class="ver">System v8.6 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -137,6 +137,25 @@ async function sha256(t) {
     <li>Gotowe. Nowa cena pojawi się wszędzie w ciągu 1 minuty.
       <span class="pl">それだけ。1分以内に注文アプリとHPの両方に反映されます。</span></li>
   </ol>
+
+  <div class="note"><b>🛍️ Opłata za pojemnik / 容器代（T列）</b><br>
+    Cena pojemnika na wynos jest w tym samym arkuszu, w kolumnie <b>T</b>
+    „容器代(zł)". Zmienia się tak samo jak cenę — wpisz nową liczbę. /
+    <span class="jp">持ち帰り・配達の容器代は、同じシートの<b>T列「容器代(zł)」</b>です。
+    価格と同じように数字を書き換えるだけ。</span><br>
+    <span style="font-size:.82rem">Makaron i dania z ryżem 2 zł ・ onigiri, przystawki 1 zł ・
+    sosy 0 zł /
+    <span class="jp">麺類と丼物は2 zł、おにぎり・前菜は1 zł、ごまだれ等は0 zł。
+    丼にみそ汁を付ければ 2＋1＝3 zł と自動で計算されます。</span></span></div>
+
+  <div class="note warn"><b>⚠️ Tylko właściciel / 店主専用の重要な注意</b><br>
+    Jeśli kiedykolwiek uruchomisz <code>setupMenuSheet()</code> w Apps Script,
+    arkusz menu zostanie skasowany i utworzony na nowo — <b>kolumna T zniknie</b>.
+    Wtedy trzeba od razu uruchomić <code>setupServeFeeColumn()</code>. /
+    <span class="jp">Apps Script で <code>setupMenuSheet()</code> を実行すると、
+    メニューシートが削除されて作り直されるため、<b>T列の容器代が全部消えます</b>。<br>
+    その場合は、必ずその場で <code>setupServeFeeColumn()</code> を実行し直してください。<br>
+    忘れると、持ち帰り・配達の容器代が全品 0 zł になり、黙って損をします。</span></div>
 </section>
 
 <!-- 2. 売り切れ・非表示 -->
@@ -797,7 +816,7 @@ async function sha256(t) {
 
 <div class="foot">
   📍 Wabi Navi — ul. Małe Garbary 5A, 87-100 Toruń<br>
-  和美なび · System v8.5 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
+  和美なび · System v8.6 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
 </div>
 </div>
 
