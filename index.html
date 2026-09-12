@@ -668,7 +668,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v60-20260910</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v61-20260910</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -722,7 +722,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v60-20260910</div>
+    <div class="ver-tag">v61-20260910</div>
   </div>
 </div>
 
@@ -4175,21 +4175,40 @@ function buildMods(lineKey) {
     }
   }
 
-  // 具材の差し替え。toppingIdx に「枠番号 → 選んだ具材」が入っている。
+  // 具材の差し替え。
+  //   ⚠️ toppingIdx に入るのは **選択肢の番号**（0,1,2…）であって具材IDではない。
+  //   番号だけを送ってもサーバー側では何を選んだか復元できないので、
+  //   具材名（label）と差額（delta）も一緒に持たせる。
+  //   delta は検算用。F-1b ではメニューシート側の値と突き合わせる。
   const swaps = [];
   if (o.toppingIdx) {
     for (const slot in o.toppingIdx) {
-      const to = o.toppingIdx[slot];
-      if (to === undefined || to === null || to === '') continue;
-      swaps.push({ slot: String(slot), to: String(to) });
+      const idx = o.toppingIdx[slot];
+      if (idx === undefined || idx === null || idx === '' || Number(idx) === 0) continue;
+      swaps.push({
+        slot:  String(slot),
+        idx:   Number(idx),
+        label: (o.toppingLabels && o.toppingLabels[slot]) || '',
+        delta: Number((o.toppingDeltas && o.toppingDeltas[slot]) || 0)
+      });
     }
   }
+
+  // 具材を抜いたときの返金額は item.removableValues にある。
+  //   サーバー側でも removal_values.json で引けるが、
+  //   突き合わせのためブラウザが使った値も送る。
+  const it_ = findItem(lineKey);
+  const rv_ = (it_ && it_.removableValues) || {};
+  const removedDetail = (o.removed || []).map(function (nm) {
+    return { name: nm, value: Number(rv_[nm] || 0) };
+  });
 
   return {
     base:    baseId(lineKey),
     qty:     o.qty || 1,
     serve:   o.serve || 'lokal',
     removed: (o.removed || []).slice(),
+    removedDetail: removedDetail,
     swaps:   swaps,
     extras:  extras
   };
