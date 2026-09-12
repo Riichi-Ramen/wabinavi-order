@@ -668,7 +668,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v59-20260910</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v60-20260910</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -722,7 +722,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v59-20260910</div>
+    <div class="ver-tag">v60-20260910</div>
   </div>
 </div>
 
@@ -4137,6 +4137,64 @@ function renderSavingsCard(totalSavings, breakdown) {
   box.style.display = 'block';
 }
 
+// ══ 🔧 v60: 注文の構造化データ（F-1a・2026-09-10）═══════════════
+//
+//  【なぜ必要か】
+//   旧版は customizations を「Bez: szczypiorek | Dodatek: chashu」のような
+//   **表示用の文字列**として送っていた。これではサーバー側で
+//   金額を再計算できない（トッピングが何złか文字列からは分からない）。
+//   現状はブラウザが計算した金額をそのまま信用しており、
+//   開発者ツールを開ける客は任意の金額で注文を通せる。
+//
+//  【この段階（F-1a）でやること】
+//   構造化データ mods を**追加するだけ**。customizations は残す。
+//   金額の計算は従来どおりブラウザ側。
+//   → 合格条件は「貼る前と後で金額も画面表示も1 gr も変わらない」。
+//
+//  【次の段階（F-1b）】
+//   GAS が mods から金額を再計算し、ブラウザの値と突き合わせる。
+//   一致を確認できたらサーバー側の値を正とする。
+//
+//  【形式】
+//   { base, qty, serve, removed:[], swaps:[{slot,from,to}], extras:[{id,qty}] }
+//     base    … 商品ID（カスタマイズ接尾辞を取ったもの）
+//     serve   … 'lokal' / 'wynos' / 'kasa'（容器代の有無に関わる）
+//     removed … 抜いた具材名の配列（金額には影響しない）
+//     swaps   … 具材の差し替え。slotは何番目のトッピング枠か
+//     extras  … 追加トッピング。id はメニューの商品IDなので
+//               シートから単価を引ける。これが再計算の鍵。
+function buildMods(lineKey) {
+  const o = cart[lineKey];
+  if (!o) return null;
+
+  const extras = [];
+  if (o.extras) {
+    for (const tid in o.extras) {
+      const q = o.extras[tid] || 0;
+      if (q > 0) extras.push({ id: tid, qty: q });
+    }
+  }
+
+  // 具材の差し替え。toppingIdx に「枠番号 → 選んだ具材」が入っている。
+  const swaps = [];
+  if (o.toppingIdx) {
+    for (const slot in o.toppingIdx) {
+      const to = o.toppingIdx[slot];
+      if (to === undefined || to === null || to === '') continue;
+      swaps.push({ slot: String(slot), to: String(to) });
+    }
+  }
+
+  return {
+    base:    baseId(lineKey),
+    qty:     o.qty || 1,
+    serve:   o.serve || 'lokal',
+    removed: (o.removed || []).slice(),
+    swaps:   swaps,
+    extras:  extras
+  };
+}
+
 async function placeOrder() {
   const gasUrl  = getGasUrl();
   let uwagi   = document.getElementById('uwagi-ta').value.trim();
@@ -4178,7 +4236,8 @@ async function placeOrder() {
     return { id: baseId(id), namePL: payerTag + item.namePL, nameEN:item.nameEN, qty:o.qty,
               unitPrice:unit, lineTotal:line, customizations:customStr,
               serveMode: o.serve || 'lokal', serveFee: sfee,
-              payers: pl_.slice() };   // v42: キッチン表示用に商品IDと負担者を送る
+              payers: pl_.slice(),     // v42: キッチン表示用に商品IDと負担者を送る
+              mods: buildMods(id) };   // 🔧 v60: サーバー再計算用の構造化データ
   });
 
   // クーポン割引を合計に反映
