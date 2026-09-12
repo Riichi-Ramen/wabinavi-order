@@ -146,6 +146,12 @@ body{
 .guest-info button{margin-top:.4rem;background:#fff;border:1.5px solid currentColor;color:inherit;
   border-radius:8px;padding:.35rem .6rem;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit}
 .day-load{font-size:.75rem;color:var(--muted);margin-top:.5rem;line-height:1.6}
+/* ボタンを押したとき、電話口で伝えるべき一言を出す枠 */
+.memo-say{margin-top:.5rem;font-size:.8rem;line-height:1.6;border-radius:10px;
+  padding:.55rem .7rem;background:rgba(184,134,11,.1);border:1px solid rgba(184,134,11,.45);
+  color:#7a5a10;display:none}
+.memo-say b{color:#5e4409}
+
 .tel-save{width:100%;max-width:560px;padding:1.05rem;border:none;border-radius:14px;cursor:pointer;
   background:var(--green);color:#fff;font-weight:700;font-size:1.05rem;font-family:inherit;
   box-shadow:0 5px 18px rgba(45,122,58,.32);margin-top:.3rem}
@@ -237,6 +243,7 @@ body{
     <div class="sec">
       <div class="sec-title">👥 Ile osób? / 何名様</div>
       <div class="chips" id="guest-chips"></div>
+      <div class="memo-say" id="seat-hint"></div>
       <input type="number" class="tel-input" id="f-guests" min="1" max="30"
              style="margin-top:.5rem" inputmode="numeric" placeholder="9+ osób — wpisz tu / 9名以上はここに入力"
              onchange="onGuestInput()" oninput="onGuestInput()">
@@ -264,8 +271,9 @@ body{
     <div class="sec">
       <div class="sec-title">📝 Uwagi / ご要望</div>
       <div class="chips" id="memo-chips"></div>
+      <div class="memo-say" id="memo-say"></div>
       <input type="text" class="tel-input" id="f-comment" style="margin-top:.5rem"
-             placeholder="Alergie, miejsce przy oknie… / アレルギー・席の希望など">
+             placeholder="Alergia: orzechy, wózek… / アレルギーの中身・その他のご要望">
     </div>
 
     <!-- ⑦ 受付者 -->
@@ -606,11 +614,46 @@ const TEL_LATE_DAYS  = [5,6];    // 0=日,1=月…5=金,6=土
 const TEL_CLOSED_DAYS = [1];     // 定休日：月曜
 const TEL_MAX_ONLINE  = 7;       // これを超えると「大人数」警告
 
+/* ── 人数に応じた注意（2026-09-12 店主確認）─────────────────────
+   電話中に「その人数は入りますか」と聞かれた時に、
+   従業員がその場で答えられるようにするためのものです。
+   ⚠️ 卓番号は書きません。店は地下で窓が無く、どの席にご案内するかは
+      当日の混み具合を見て係員が決めるためです。
+      ここに書いてよいのは「事前の準備が要るかどうか」だけです。   */
+const SEAT_HINTS = [
+  { min: 7, max: 8,
+    say: '🪑 <b>Trzeba połączyć stoliki</b> / <b>卓をつなげる対応</b>が必要です<br>' +
+         '<span style="font-size:.74rem">Który stolik — decyduje obsługa w dniu wizyty. ' +
+         'Nie podawaj numeru przez telefon. / ' +
+         'どの席にするかは当日の係員判断。<b>電話で席番号を言わないこと</b></span>' },
+  { min: 9, max: 99,
+    say: '⚠️ <b>Powyżej 8 osób — zapytaj szefa</b> / <b>9名以上は店長に確認</b>してください<br>' +
+         '<span style="font-size:.74rem">Nie obiecuj miejsc przez telefon / ' +
+         '電話口で席をお約束しないこと</span>' }
+];
+
+function seatHintFor_(n){
+  const h = SEAT_HINTS.find(x => n >= x.min && n <= x.max);
+  return h ? h.say : '';
+}
+
+// ご要望の定型ボタン
+//   [絵文字, 'ポーランド語 / 日本語', 台帳に書き込まれる文字列, （任意）電話口で伝えること]
+//
+// ⚠️ 席の指定はボタンにしないこと。
+//    店は地下で窓が無く、どの席にご案内するかは
+//    当日の混み具合を見て係員が決めます。
+//    電話口で席を約束すると、当日それが使えず苦情になります。
 const MEMO_PRESETS = [
+  ['🐕','Z pieskiem / 犬同伴','z pieskiem / 犬同伴'],
   ['🚼','Krzesełko / ベビーチェア','krzesełko dla dziecka'],
-  ['🌾','Alergia / アレルギー','ALERGIA: '],
+  ['🌾','Alergia / アレルギー','ALERGIA: ',
+   '<b>Powiedz gościowi / お客様にお伝えください：</b><br>' +
+   '„Prosimy o rozmowę z obsługą na miejscu — potwierdzimy składniki przed zamówieniem."<br>' +
+   '「当日、係員にご相談ください。ご注文前に材料を確認いたします」<br>' +
+   '<span style="font-size:.74rem">⚠️ Wpisz poniżej <b>co to za alergia</b> ' +
+   '(orzechy, gluten, nabiał…) / 下の欄に<b>何のアレルギーか</b>を必ず書いてください</span>'],
   ['🎂','Urodziny / 誕生日','urodziny 🎂'],
-  ['🪟','Przy oknie / 窓際','stolik przy oknie'],
   ['🥡','Na wynos / 持ち帰り','na wynos']
 ];
 
@@ -622,6 +665,8 @@ function pad2(n){ return ('0'+n).slice(-2); }
 function ymd(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
 const DAY_PL = ['niedziela / 日','poniedziałek / 月','wtorek / 火','środa / 水',
                 'czwartek / 木','piątek / 金','sobota / 土'];
+// 日付ボタンの下に出す短い曜日表記（ポーランド語の略号＋日本語）
+const DAY_SHORT = ['ndz 日','pon 月','wt 火','śr 水','czw 木','pt 金','sob 土'];
 
 function openTel(){
   document.getElementById('panel').style.display = 'none';
@@ -641,6 +686,8 @@ function resetTelForm(){
   ['f-time','f-guests','f-phone','f-name','f-email','f-comment'].forEach(id =>
     document.getElementById(id).value = '');
   document.getElementById('guest-info').style.display = 'none';
+  document.getElementById('memo-say').style.display = 'none';
+  document.getElementById('seat-hint').style.display = 'none';
   document.getElementById('f-staff').value = localStorage.getItem('wabi_staff_name') || '';
   loadStaffNames();
   document.getElementById('f-date').value = ymd(new Date());
@@ -660,7 +707,7 @@ function buildDateChips(){
     const lab = labels[i] || (d.getDate()+'/'+(d.getMonth()+1));
     const closed = TEL_CLOSED_DAYS.indexOf(d.getDay()) >= 0;
     html += `<button class="chip ${closed?'risky':''}" data-date="${v}" onclick="pickDate('${v}')">
-      ${lab}<small>${DAY_PL[d.getDay()].split(' / ')[1]}${closed?' 休':''}</small></button>`;
+      ${lab}<small>${DAY_SHORT[d.getDay()]}${closed?' ✖':''}</small></button>`;
   }
   box.innerHTML = html;
 }
@@ -755,18 +802,28 @@ function syncGuestChips(){
   const v = document.getElementById('f-guests').value;
   document.querySelectorAll('#guest-chips .chip').forEach(c =>
     c.classList.toggle('on', c.dataset.g === v));
+  // 席の使い方を案内（5名以上のときだけ出す）
+  const box = document.getElementById('seat-hint');
+  const say = seatHintFor_(parseInt(v, 10) || 0);
+  if (say){ box.innerHTML = say; box.style.display = 'block'; }
+  else box.style.display = 'none';
 }
 
 /* ── 備考のよく使う文言 ── */
 function buildMemoChips(){
   document.getElementById('memo-chips').innerHTML = MEMO_PRESETS.map((p,i) =>
-    `<button class="chip" onclick="addMemo(${i})">${p[0]}<small>${p[1].split(' / ')[1]}</small></button>`
+    `<button class="chip" onclick="addMemo(${i})">${p[0]} ${p[1].split(' / ')[0]}` +
+    `<small>${p[1].split(' / ').slice(1).join(' / ')}</small></button>`
   ).join('');
 }
 function addMemo(i){
   const f = document.getElementById('f-comment');
   const t = MEMO_PRESETS[i][2];
-  if (f.value.indexOf(t) >= 0) return;
+  // 電話口で伝えるべきことがあるボタンは、その文言を画面に出す
+  const say = MEMO_PRESETS[i][3];
+  const box = document.getElementById('memo-say');
+  if (say){ box.innerHTML = say; box.style.display = 'block'; }
+  if (f.value.indexOf(t) >= 0){ f.focus(); return; }
   f.value = f.value ? f.value.replace(/\s*$/,'') + ', ' + t : t;
   f.focus();
 }
