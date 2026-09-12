@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- reservations.html ・ v1.3-personel-20260909 -->
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
@@ -28,6 +27,14 @@ body{
 .form-input:focus{outline:none;border-color:var(--accent)}
 .btn{padding:.8rem 1rem;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer}
 .btn-primary{background:var(--accent);color:#fff;width:100%;box-shadow:0 4px 14px rgba(192,57,43,0.3)}
+
+/* パスワード欄＋👁ボタン */
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:2.8rem !important;width:100%}
+.pw-eye{position:absolute;top:50%;right:.5rem;transform:translateY(-50%);
+  background:none;border:none;font-size:1.15rem;cursor:pointer;line-height:1;
+  padding:.25rem .35rem;border-radius:6px;opacity:.75}
+.pw-eye:hover{opacity:1;background:rgba(0,0,0,.06)}
 .error-msg{background:#fee;border:1px solid #f5c6c6;border-radius:8px;padding:.6rem;
   font-size:.78rem;color:#a00;text-align:center;margin-bottom:.8rem;display:none}
 /* タブ */
@@ -78,6 +85,29 @@ body{
 @keyframes spin{to{transform:rotate(360deg)}}
 #list-area{width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center}
 
+/* ══════════ 🕐 今日の時間帯表示（v8.5） ══════════ */
+.slots{width:100%;max-width:560px;margin-bottom:.6rem}
+.slot{display:flex;align-items:flex-start;gap:.6rem;padding:.35rem .6rem;
+  border-left:3px solid transparent;border-radius:0 8px 8px 0;margin-bottom:.15rem}
+.slot.has{background:rgba(192,57,43,.06);border-left-color:var(--accent)}
+.slot.empty{opacity:.45}
+.slot.now{background:rgba(45,122,58,.1);border-left-color:var(--green)}
+.slot-t{flex:none;width:3.4rem;font-size:.85rem;font-weight:700;color:var(--text);padding-top:.15rem}
+.slot.empty .slot-t{font-weight:400;color:var(--muted)}
+.slot-body{flex:1;min-width:0}
+.slot-dash{font-size:.8rem;color:var(--muted)}
+.slot-item{font-size:.82rem;color:var(--text);line-height:1.5;cursor:pointer;
+  padding:.1rem 0;border-bottom:1px dotted rgba(180,140,110,.35)}
+.slot-item:last-child{border-bottom:none}
+.slot-item .g{font-weight:700;color:var(--accent)}
+.slot-item.cancelled{opacity:.5;text-decoration:line-through}
+.slot-now-tag{font-size:.62rem;background:var(--green);color:#fff;border-radius:20px;
+  padding:.05rem .4rem;margin-left:.3rem;vertical-align:middle}
+.view-toggle{width:100%;max-width:560px;display:flex;gap:.4rem;margin-bottom:.5rem}
+.view-toggle button{flex:1;padding:.45rem;border-radius:8px;border:1.5px solid var(--border);
+  background:transparent;color:var(--muted);font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit}
+.view-toggle button.on{background:rgba(192,57,43,.1);border-color:var(--accent);color:var(--accent)}
+
 /* ══════════ 📞 電話予約（v8.3） ══════════ */
 .tel-open{width:100%;max-width:560px;display:flex;align-items:center;justify-content:center;gap:.5rem;
   padding:1rem;margin-bottom:.8rem;border:none;border-radius:14px;cursor:pointer;
@@ -106,10 +136,6 @@ body{
 .tel-input{width:100%;background:rgba(255,252,248,0.95);border:1.5px solid rgba(192,57,43,0.3);
   color:var(--text);border-radius:10px;padding:.7rem .8rem;font-size:1rem;font-family:inherit}
 .tel-input:focus{outline:none;border-color:var(--accent)}
-select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
-  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
-  background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;
-  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:2.2rem}
 .tel-input.big{font-size:1.25rem;font-weight:700;letter-spacing:.06em}
 .row2{display:flex;gap:.5rem;flex-wrap:wrap}
 .row2>*{flex:1;min-width:150px}
@@ -148,8 +174,12 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
 <div class="card" id="login-card">
   <div class="error-msg" id="login-err"></div>
   <label class="form-label">🔑 Hasło personelu / スタッフパスワード</label>
-  <input class="form-input" type="password" id="pw" placeholder="••••••••"
-         onkeydown="if(event.key==='Enter')login()">
+  <div class="pw-wrap">
+    <input class="form-input" type="password" id="pw" placeholder="••••••••" autocomplete="new-password" name="wabi-staff-pass" autocorrect="off" autocapitalize="off" spellcheck="false"
+           onkeydown="if(event.key==='Enter')login()">
+    <button type="button" class="pw-eye" id="pw-eye" onclick="togglePw_()"
+            title="Pokaż / 表示">👁</button>
+  </div>
   <button class="btn btn-primary" onclick="login()">Zaloguj / ログイン</button>
 </div>
 
@@ -163,6 +193,10 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
     <button class="tab active" id="tab-today" onclick="setRange('today')">📅 Dziś / 今日</button>
     <button class="tab" id="tab-upcoming" onclick="setRange('upcoming')">🔜 Nadchodzące / 今後</button>
     <button class="tab" id="tab-all" onclick="setRange('all')">🗂 Wszystkie / 全件</button>
+  </div>
+  <div class="view-toggle" id="view-toggle">
+    <button id="vt-slots" class="on" onclick="setView('slots')">🕐 Godziny / 時間帯</button>
+    <button id="vt-cards" onclick="setView('cards')">🗂 Lista / 一覧</button>
   </div>
   <div class="summary">
     <span id="sum-text"></span>
@@ -194,7 +228,7 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
     <!-- ② 時間 -->
     <div class="sec">
       <div class="sec-title">🕐 O której? / 何時
-        <span class="hint">数字＝その時刻の既存予約人数</span></div>
+        <span class="hint">Liczba = ile osób już zapisanych / 数字＝その時刻の既存予約人数</span></div>
       <div class="chips" id="time-chips"></div>
       <input type="time" class="tel-input" id="f-time" style="margin-top:.5rem" onchange="onTimeInput()">
     </div>
@@ -204,14 +238,14 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
       <div class="sec-title">👥 Ile osób? / 何名様</div>
       <div class="chips" id="guest-chips"></div>
       <input type="number" class="tel-input" id="f-guests" min="1" max="30"
-             style="margin-top:.5rem" inputmode="numeric" placeholder="9名以上はここに入力"
+             style="margin-top:.5rem" inputmode="numeric" placeholder="9+ osób — wpisz tu / 9名以上はここに入力"
              onchange="onGuestInput()" oninput="onGuestInput()">
     </div>
 
     <!-- ④ 電話番号（会員・履歴の自動照会） -->
     <div class="sec">
       <div class="sec-title">📞 Numer telefonu / 電話番号
-        <span class="hint">入力すると常連さんを自動照会</span></div>
+        <span class="hint">Sprawdza stałych gości / 入力すると常連さんを自動照会</span></div>
       <input type="tel" class="tel-input big" id="f-phone" inputmode="tel"
              placeholder="123 456 789" oninput="onPhoneInput()">
       <div class="guest-info" id="guest-info" style="display:none"></div>
@@ -220,7 +254,7 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
     <!-- ⑤ 名前・メール -->
     <div class="sec">
       <div class="sec-title">👤 Imię gościa / お名前
-        <span class="hint">メールは任意（あれば確認メール送信）</span></div>
+        <span class="hint">E-mail opcjonalny / メールは任意（あれば確認メール送信）</span></div>
       <input type="text" class="tel-input" id="f-name" placeholder="Imię i nazwisko / 氏名">
       <input type="email" class="tel-input" id="f-email" style="margin-top:.5rem"
              inputmode="email" placeholder="E-mail（任意 / opcjonalnie）">
@@ -231,16 +265,14 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
       <div class="sec-title">📝 Uwagi / ご要望</div>
       <div class="chips" id="memo-chips"></div>
       <input type="text" class="tel-input" id="f-comment" style="margin-top:.5rem"
-             placeholder="Jeśli są życzenia, prosimy wpisać / Any requests, please write here">
+             placeholder="Alergie, miejsce przy oknie… / アレルギー・席の希望など">
     </div>
 
     <!-- ⑦ 受付者 -->
     <div class="sec">
       <div class="sec-title">🙋 Kto odebrał? / 受付者
-        <span class="hint">台帳に残ります（任意）</span></div>
-      <select class="tel-input" id="f-staff-sel" onchange="onStaffSelect()"></select>
-      <input type="text" class="tel-input" id="f-staff" style="margin-top:.5rem;display:none"
-             placeholder="Imię pracownika / 従業員名">
+        <span class="hint">Zapisze się w rejestrze / 台帳に残ります（任意）</span></div>
+      <input type="text" class="tel-input" id="f-staff" placeholder="Imię pracownika / 従業員名">
     </div>
 
     <button class="tel-save" id="tel-save" onclick="submitTel(false)">
@@ -262,18 +294,52 @@ document.getElementById('logo-tap').onclick = () => {
 };
 
 let PW = localStorage.getItem('wabi_staff_pw') || '';
+const PW_FIELD_ID = 'pw';
+// ── パスワードの表示切替（👁）────────────────────────────────────
+//   入力した文字を目で確認できるようにします。
+//   打ち間違いか、パスワード自体が違うのかを切り分けられます。
+function togglePw_(){
+  const f = document.getElementById(PW_FIELD_ID);
+  const b = document.getElementById('pw-eye');
+  if (!f || !b) return;
+  const show = f.type === 'password';
+  f.type = show ? 'text' : 'password';
+  b.textContent = show ? '🙈' : '👁';
+  b.title = show ? 'Ukryj / 隠す' : 'Pokaż / 表示';
+  f.focus();
+}
+
+// ── ブラウザの自動入力対策 ────────────────────────────────────────
+//   Chrome等は autocomplete="off" を無視して、読み込み後に
+//   別サイトの古いパスワードを勝手に入れてしまうことがあります。
+//   「●が8個入っているのに違うと言われる」の原因がこれです。
+//   読み込み直後と少し遅れて2回、入力欄を空にします。
+function clearPwField_(){
+  const f = document.getElementById(PW_FIELD_ID);
+  if (f) f.value = '';
+}
+window.addEventListener('load', () => { clearPwField_(); setTimeout(clearPwField_, 400); });
+
 let RANGE = 'today';
 let TODAY = '';
 
-async function login(){
-  const pw = document.getElementById('pw').value;
+//  pwArg を渡すと入力欄ではなくその値でログインします（保存済みでの自動ログイン用）
+async function login(pwArg){
+  const field = document.getElementById('pw');
+  const pw = (typeof pwArg === 'string' && pwArg) ? pwArg : field.value;
   if (!pw){ showLoginErr('Wpisz hasło / パスワードを入力'); return; }
   PW = pw;
   const ok = await load(true);
   if (ok){
-    localStorage.setItem('wabi_staff_pw', pw);
+    try { localStorage.setItem('wabi_staff_pw', pw); } catch(e){}
+    field.value = '';                    // 画面に残さない
     document.getElementById('login-card').style.display = 'none';
     document.getElementById('panel').style.display = 'flex';
+  } else {
+    // 保存済みの値が古かった場合は捨てて、空欄から入力し直してもらう
+    PW = '';
+    try { localStorage.removeItem('wabi_staff_pw'); } catch(e){}
+    field.value = '';
   }
 }
 function showLoginErr(m){ const e = document.getElementById('login-err'); e.textContent = m; e.style.display = 'block'; }
@@ -299,7 +365,6 @@ async function load(silentAuth){
     }
     TODAY = d.today;
     render(d.reservations || []);
-    if (!staffNamesLoaded){ staffNamesLoaded = true; loadStaffNames(); }
     return true;
   }catch(e){
     area.innerHTML = '<p class="empty">⚠️ Błąd połączenia / 通信エラー</p>';
@@ -316,12 +381,124 @@ function statusClass(st){
   return '';
 }
 
+/* ══════════════════════════════════════════════════════════════
+   🕐 今日の時間帯表示（v8.5）
+
+   予約が1件も無い日でも、営業時間の枠を30分刻みで並べます。
+   「17:30は空いている」を一目で確認できるようにするためのものです。
+   ・終了時刻は曜日で変わります（金・土は21:30、それ以外は19:30）
+   ・現在時刻を含む枠に「TERAZ / 今」を表示します
+   ・枠内の予約をタップすると、そのカードまでスクロールします
+   「今日」タブのときだけ表示し、今後・全件では従来どおり一覧を出します。
+   ══════════════════════════════════════════════════════════════ */
+let VIEW = 'slots';   // 'slots' = 時間帯表示 / 'cards' = 従来の一覧
+
+function setView(v){
+  VIEW = v;
+  document.getElementById('vt-slots').classList.toggle('on', v === 'slots');
+  document.getElementById('vt-cards').classList.toggle('on', v === 'cards');
+  try { localStorage.setItem('wabi_res_view', v); } catch(e){}
+  load();
+}
+
+// その日の最終予約枠（日〜木は19:30、金・土は21:30）
+function lastSlotFor_(dateStr){
+  const day = new Date(dateStr + 'T12:00:00').getDay();
+  return TEL_LATE_DAYS.indexOf(day) >= 0 ? TEL_LAST : '19:30';
+}
+
+function renderSlots(list){
+  const area = document.getElementById('list-area');
+  const day  = new Date(TODAY + 'T12:00:00').getDay();
+
+  // 定休日でも、電話で特例の予約を受けている場合があるので必ず一覧を出す
+  if (TEL_CLOSED_DAYS.indexOf(day) >= 0){
+    let h = '<p class="empty">🚫 Dziś zamknięte / 本日は定休日です</p>';
+    if (list.length){
+      h += '<div class="date-head">⚠️ Mimo to są rezerwacje / 定休日ですが予約が入っています</div>';
+      list.forEach(r => { h += resCard(r); });
+    }
+    area.innerHTML = h;
+    return;
+  }
+
+  // 時刻ごとに予約を振り分け（30分枠に丸める）
+  const bucket = {};
+  list.forEach(r => {
+    const t = (r.time || '').slice(0,5);
+    if (!t) return;
+    const [h,m] = t.split(':').map(Number);
+    const key = pad2(h) + ':' + (m < 30 ? '00' : '30');
+    (bucket[key] = bucket[key] || []).push(r);
+  });
+
+  const now = new Date();
+  const nowKey = pad2(now.getHours()) + ':' + (now.getMinutes() < 30 ? '00' : '30');
+
+  const [oh,om] = TEL_OPEN.split(':').map(Number);
+  const [lh,lm] = lastSlotFor_(TODAY).split(':').map(Number);
+  let t = oh*60+om;
+  const end = lh*60+lm;
+  let html = '<div class="slots">';
+  while (t <= end){
+    const v    = pad2(Math.floor(t/60)) + ':' + pad2(t%60);
+    const rows = bucket[v] || [];
+    const isNow = (v === nowKey);
+    const cls  = (rows.length ? 'has' : 'empty') + (isNow ? ' now' : '');
+    html += `<div class="slot ${cls}"><div class="slot-t">${v}` +
+            (isNow ? '<span class="slot-now-tag">TERAZ</span>' : '') + `</div><div class="slot-body">`;
+    if (!rows.length){
+      html += '<span class="slot-dash">—</span>';
+    } else {
+      rows.forEach(r => {
+        const cancelled = statusClass(r.status) === 'grey';
+        html += `<div class="slot-item ${cancelled ? 'cancelled' : ''}"
+          onclick="jumpTo('${esc(r.id)}')">
+          <span class="g">👥${esc(r.guests)}</span> ${esc(r.name)}
+          ${r.memberId ? '⭐' : ''}${r.comment ? ' 📝' : ''}
+          ${(r.time||'').slice(0,5) !== v
+             ? '<span style="color:var(--muted);font-size:.74rem"> ' + esc(r.time) + '</span>' : ''}
+        </div>`;
+      });
+    }
+    html += '</div></div>';
+    t += TEL_STEP;
+  }
+  html += '</div>';
+
+  // 枠の下に、これまでどおりの詳細カードも並べる（操作ボタンはこちら）
+  if (list.length){
+    html += '<div class="date-head">📋 Szczegóły / 詳細・操作</div>';
+    list.forEach(r => { html += resCard(r); });
+  }
+  area.innerHTML = html;
+}
+
+// 時間帯の行をタップしたら、その予約カードへスクロール
+function jumpTo(id){
+  const el = document.getElementById('res-' + id);
+  if (el){
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    el.style.transition = 'box-shadow .3s';
+    el.style.boxShadow = '0 0 0 3px rgba(192,57,43,.45)';
+    setTimeout(() => { el.style.boxShadow = ''; }, 1400);
+  }
+}
+
 function render(list){
   const area = document.getElementById('list-area');
   const active = list.filter(r => statusClass(r.status) !== 'grey');
   const totalGuests = active.reduce((s,r) => s + (parseInt(r.guests,10)||0), 0);
   document.getElementById('sum-text').textContent =
     `${active.length} rezerwacji / 件 · ${totalGuests} osób / 名`;
+
+  // 「今日」タブで時間帯表示が選ばれていれば、予約0件でも枠を並べる
+  document.getElementById('view-toggle').style.display =
+    (RANGE === 'today') ? 'flex' : 'none';
+  if (RANGE === 'today' && VIEW === 'slots'){
+    renderSlots(list);
+    return;
+  }
 
   if (!list.length){
     area.innerHTML = '<p class="empty">🍃 Brak rezerwacji / 予約はありません</p>';
@@ -358,7 +535,7 @@ function histBadge(r){
 function resCard(r){
   const sc = statusClass(r.status);
   const cancelled = sc === 'grey';
-  return `<div class="res ${cancelled ? 'cancelled' : ''}">
+  return `<div class="res ${cancelled ? 'cancelled' : ''}" id="res-${esc(r.id)}">
     <div class="res-top">
       <span class="res-time">🕐 ${esc(r.time)}</span>
       <span class="res-guests">👥 ${esc(r.guests)}</span>
@@ -427,16 +604,12 @@ const TEL_LATE_DAYS  = [5,6];    // 0=日,1=月…5=金,6=土
 const TEL_CLOSED_DAYS = [1];     // 定休日：月曜
 const TEL_MAX_ONLINE  = 7;       // これを超えると「大人数」警告
 
-/* 備考のプリセット（2026-09-09 改訂）
-   [絵文字, ボタンの主表示（ポーランド語）, 小さい併記（英語）, 備考欄に入る文言]
-   ※ 窓際は2種類。A＝カップル用2人掛け、B＝大グループ用5〜6人掛け。
-   ※ 備考欄に入る文言（四つ目）は厨房・ホール共通なのでポーランド語のまま。 */
 const MEMO_PRESETS = [
-  ['🚼','Krzesełko',      'High chair',        'krzesełko dla dziecka'],
-  ['🎂','Urodziny',       'Birthday',          'urodziny 🎂'],
-  ['🪟','Okno A (2 os.)', 'Window A (couple)', 'stolik przy oknie A (2 os.)'],
-  ['🪟','Okno B (5–6 os.)','Window B (group)',  'stolik przy oknie B (5–6 os.)'],
-  ['🐕','Z psem',         'With dog',          'z psem 🐕']
+  ['🚼','Krzesełko / ベビーチェア','krzesełko dla dziecka'],
+  ['🌾','Alergia / アレルギー','ALERGIA: '],
+  ['🎂','Urodziny / 誕生日','urodziny 🎂'],
+  ['🪟','Przy oknie / 窓際','stolik przy oknie'],
+  ['🥡','Na wynos / 持ち帰り','na wynos']
 ];
 
 let telDay = [];       // 選択日の既存予約
@@ -466,7 +639,7 @@ function resetTelForm(){
   ['f-time','f-guests','f-phone','f-name','f-email','f-comment'].forEach(id =>
     document.getElementById(id).value = '');
   document.getElementById('guest-info').style.display = 'none';
-  buildStaffSelect();
+  document.getElementById('f-staff').value = localStorage.getItem('wabi_staff_name') || '';
   document.getElementById('f-date').value = ymd(new Date());
   buildDateChips(); buildGuestChips(); buildMemoChips();
   onDateChange();
@@ -581,70 +754,15 @@ function syncGuestChips(){
     c.classList.toggle('on', c.dataset.g === v));
 }
 
-/* ── 受付者（「👥 従業員 / Personel」シートから取得）──
-   シートのA列に名前を書くだけで選択肢が変わります。
-   取得に失敗しても「その他」だけは必ず出るので、
-   通信が不安定でも予約の登録は止まりません。 */
-let STAFF_NAMES = [], staffNamesLoaded = false;
-const STAFF_OTHER = 'その他 / Inne';
-
-async function loadStaffNames(){
-  try{
-    const url = GAS_URL + '?action=getStaffNames&password=' + encodeURIComponent(PW);
-    const d = await (await fetch(url)).json();
-    STAFF_NAMES = (d && d.status === 'ok' && Array.isArray(d.names)) ? d.names : [];
-  }catch(e){ STAFF_NAMES = []; }
-  buildStaffSelect();
-}
-
-function buildStaffSelect(){
-  const sel = document.getElementById('f-staff-sel');
-  if (!sel) return;
-  const saved = localStorage.getItem('wabi_staff_name') || '';
-  let html = '<option value="">— Wybierz / 選択 —</option>';
-  STAFF_NAMES.forEach(n => { html += '<option value="' + esc(n) + '">' + esc(n) + '</option>'; });
-  html += '<option value="' + STAFF_OTHER + '">' + STAFF_OTHER + '</option>';
-  sel.innerHTML = html;
-
-  // 前回の受付者を復元。名簿に無い名前なら「その他」扱いにする。
-  if (saved && STAFF_NAMES.indexOf(saved) >= 0){
-    sel.value = saved;
-    document.getElementById('f-staff').value = '';
-  } else if (saved){
-    sel.value = STAFF_OTHER;
-    document.getElementById('f-staff').value = saved;
-  } else {
-    sel.value = '';
-    document.getElementById('f-staff').value = '';
-  }
-  onStaffSelect();
-}
-
-function onStaffSelect(){
-  const sel = document.getElementById('f-staff-sel');
-  const other = document.getElementById('f-staff');
-  if (!sel || !other) return;
-  const isOther = (sel.value === STAFF_OTHER);
-  other.style.display = isOther ? 'block' : 'none';
-  if (!isOther) other.value = '';
-}
-
-function staffValue(){
-  const sel = document.getElementById('f-staff-sel');
-  if (!sel) return '';
-  if (sel.value === STAFF_OTHER) return document.getElementById('f-staff').value.trim();
-  return sel.value;
-}
-
 /* ── 備考のよく使う文言 ── */
 function buildMemoChips(){
   document.getElementById('memo-chips').innerHTML = MEMO_PRESETS.map((p,i) =>
-    `<button class="chip" onclick="addMemo(${i})">${p[0]} ${p[1]}<small>${p[2]}</small></button>`
+    `<button class="chip" onclick="addMemo(${i})">${p[0]}<small>${p[1].split(' / ')[1]}</small></button>`
   ).join('');
 }
 function addMemo(i){
   const f = document.getElementById('f-comment');
-  const t = MEMO_PRESETS[i][3];
+  const t = MEMO_PRESETS[i][2];
   if (f.value.indexOf(t) >= 0) return;
   f.value = f.value ? f.value.replace(/\s*$/,'') + ', ' + t : t;
   f.focus();
@@ -743,7 +861,7 @@ async function submitTel(force){
     name:    document.getElementById('f-name').value.trim(),
     email:   document.getElementById('f-email').value.trim(),
     comment: document.getElementById('f-comment').value.trim(),
-    staff:   staffValue()
+    staff:   document.getElementById('f-staff').value.trim()
   };
   localStorage.setItem('wabi_staff_name', payload.staff);
 
@@ -756,8 +874,8 @@ async function submitTel(force){
       telMsg('warn',
         '<b>⚠️ Sprawdź / 確認してください</b><br>' +
         d.warnings.map(w => '・' + esc(w)).join('<br>') +
-        '<br><button class="go" onclick="submitTel(true)">それでも登録する / Zapisz mimo to</button>' +
-        '<button class="no" onclick="document.getElementById(\'tel-msg\').style.display=\'none\'">修正する / Popraw</button>');
+        '<br><button class="go" onclick="submitTel(true)">Zapisz mimo to / それでも登録する</button>' +
+        '<button class="no" onclick="document.getElementById(\'tel-msg\').style.display=\'none\'">Popraw / 修正する</button>');
       return;
     }
     if (d.status !== 'ok'){
@@ -766,7 +884,7 @@ async function submitTel(force){
     }
     showDone(d, payload);
   }catch(e){
-    telMsg('err', '⚠️ Błąd połączenia / 通信エラー。もう一度お試しください。');
+    telMsg('err', '⚠️ Błąd połączenia — spróbuj jeszcze raz / 通信エラー。もう一度お試しください');
   }finally{
     btn.disabled = false;
     btn.textContent = '✅ Zapisz rezerwację / この内容で登録';
@@ -795,11 +913,19 @@ function showDone(d, p){
   window.scrollTo(0,0);
 }
 
+// 前回選んでいた表示モード（時間帯／一覧）を復元
+try {
+  const v = localStorage.getItem('wabi_res_view');
+  if (v === 'cards' || v === 'slots'){
+    VIEW = v;
+    document.getElementById('vt-slots').classList.toggle('on', v === 'slots');
+    document.getElementById('vt-cards').classList.toggle('on', v === 'cards');
+  }
+} catch(e){}
+
 // 保存済みパスワードがあれば自動ログイン
-if (PW){
-  document.getElementById('pw').value = PW;
-  login();
-}
+//   入力欄には入れません（失敗したときに●が残るのを防ぐため）
+if (PW) login(PW);
 </script>
 </body>
 </html>
