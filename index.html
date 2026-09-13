@@ -301,7 +301,11 @@ body{
   box-shadow:0 2px 8px rgba(192,57,43,.3)}
 .line-tab.other{opacity:.55}
 .line-add{border-style:dashed;border-color:#2d7a3a;color:#2d7a3a;background:#f5fbf2}
-.line-del{border-color:#b0a396;color:#8a7c6e;background:transparent;margin-left:auto}
+/* 🗑 削除タブ。藄い色で見つけられないという声があったため
+   赤系に変えて輪郭をはっきりさせた（2026-09-13） */
+.line-del{border-color:#c0392b;color:#c0392b;background:rgba(192,57,43,.07);
+  margin-left:auto;font-weight:700}
+.line-del:hover{background:rgba(192,57,43,.16)}
 .line-hint{width:100%;font-size:.68rem;color:var(--muted);line-height:1.5;margin-top:.25rem}
 .extras-area{margin-top:.6rem;border-top:1px dashed rgba(45,122,58,.4);padding-top:.55rem}
 .extras-note{font-size:.68rem;color:var(--muted);line-height:1.5;margin:.15rem 0 .5rem}
@@ -548,10 +552,15 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
 .co-note{background:rgba(240,235,250,.85);border-radius:9px;padding:.55rem .7rem;
   font-size:.78rem;color:#5b3b8e;line-height:1.6;margin-top:.5rem}
 .co-note span{color:#7a6858;font-size:.73rem}
-.clear-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);
-  color:#fff;border-radius:10px;padding:.42rem .6rem;font-size:1rem;cursor:pointer;
-  line-height:1;margin-right:.4rem}
-.clear-btn:hover{background:rgba(255,255,255,.26)}
+/* 🧹 クリアボタン。絵文字だけでは客に意味が伝わらないため、
+   ポーランド語を主表示し、英語と日本語を併記（2026-09-13） */
+.clear-btn{display:inline-flex;align-items:center;gap:.34rem;
+  background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.45);
+  color:#fff;border-radius:10px;padding:.34rem .62rem;font-size:1rem;cursor:pointer;
+  line-height:1.15;margin-right:.4rem;font-family:inherit}
+.clear-btn:hover{background:rgba(255,255,255,.3)}
+.clear-lbl{font-size:.78rem;font-weight:700;text-align:left;white-space:nowrap}
+.clear-lbl small{display:block;font-size:.6rem;font-weight:400;opacity:.85}
 .solo-choices{display:flex;flex-direction:column;gap:.7rem;margin-bottom:1.1rem}
 .solo-btn{width:100%;padding:.95rem .7rem;border-radius:14px;cursor:pointer;
   border:2px solid rgba(120,100,80,.28);background:rgba(255,252,248,.95);
@@ -668,7 +677,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v61-20260910</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v63-20260913</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -722,7 +731,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v61-20260910</div>
+    <div class="ver-tag">v63-20260913</div>
   </div>
 </div>
 
@@ -1243,7 +1252,8 @@ body.show-config .config-bar{display:flex}
     <div class="table-chip" id="top-table-chip"></div>
     <!-- 🧹 入力内容のクリア（2026-09-10 新設）。誤操作防止に確認画面を挑む。 -->
     <button class="clear-btn" id="clear-btn" onclick="openClearModal()"
-            title="Wyczyść / 入力を消す">🧹</button>
+            title="Wyczyść / Clear / 入力を消す">🧹
+      <span class="clear-lbl">Wyczyść<small>Clear ・ 消す</small></span></button>
     <button class="cart-btn" id="cart-btn" onclick="openConfirm()">
       🛒 Koszyk / Cart
       <span class="cart-badge" id="cart-badge"></span>
@@ -2533,7 +2543,11 @@ function extrasHtml(item) {
   const body = Object.keys(tiers).map(Number).sort((a, b) => a - b).map(price => {
     const chips = tiers[price].map(t => {
       const nn = cur[t.id] || 0;
-      const jp = t.nameJP ? `<span style="opacity:.75">${t.nameJP}</span>` : '';
+      // ポーランド語を主、英語と日本語を併記する（2026-09-13）。
+      // 旧版は英語が抜けており、英語圏の客に伝わらなかった。
+      const sub = [t.nameEN && t.nameEN !== t.namePL ? t.nameEN : '', t.nameJP || '']
+        .filter(Boolean).join(' / ');
+      const jp = sub ? `<span style="opacity:.72;font-size:.86em">${sub}</span>` : '';
       return `<span class="ex-chip${nn ? ' on' : ''}" id="ex-${item.id}-${t.id}"
         onclick="setExtra('${item.id}','${t.id}',1,event)">
         <span class="ex-minus" onclick="setExtra('${item.id}','${t.id}',-1,event)">−</span>
@@ -2545,15 +2559,16 @@ function extrasHtml(item) {
   }).join('');
   return `<div class="extras-area">
     <div class="remove-title" style="color:#2d7a3a">
-      ➕ Dodatki do tej miski / この丼にトッピングを追加
+      ➕ Dodatki do tej miski / Add toppings / この丼にトッピングを追加
     </div>
     <div class="extras-note">
       Dotknij, aby dodać. Dotknij ponownie = 2 szt. Czerwone „−” usuwa.<br>
+      Tap to add. Tap again = 2 pcs. Red “−” removes.<br>
       タップで追加。もう一度タップで2個。赤い「−」で減らせます。
     </div>
     ${body}
     <div class="ex-sum" id="exsum-${item.id}">${
-      extrasTotal(cart[item.id]) ? '➕ Dodatki razem / トッピング合計: +' + extrasTotal(cart[item.id]) + ' zł' : ''
+      extrasTotal(cart[item.id]) ? '➕ Dodatki razem / Total / トッピング合計: +' + extrasTotal(cart[item.id]) + ' zł' : ''
     }</div>
   </div>`;
 }
@@ -2905,7 +2920,7 @@ function renderLines(itemId) {
       ＋ ${keys.length ? 'Jeszcze jedna' : 'Dodaj'}<small>${keys.length ? 'One more / もう1杯' : 'Add / 追加する'}</small></span>`;
   if (keys.length) {
     html += `<span class="line-tab line-del" onclick="removeLine('${itemId}')"
-      title="Usuń / Remove / 削除">🗑<small>Usuń</small></span>`;
+      title="Usuń / Remove / 削除">🗑<small>Usuń / 減らす</small></span>`;
     html += `<div class="line-hint">Każda miska osobno — możesz zmienić dodatki dla każdej.<br>
       Each bowl is separate — switch tabs to set toppings for each one.<br>
       1杯ごとに別々です。タブを切り替えて、それぞれのトッピングを設定できます。</div>`;
@@ -2960,7 +2975,7 @@ function syncCard(itemId) {
     if (nEl && top) nEl.textContent = nn > 0 ? '×' + nn : '+' + top.price;
   });
   const sm = document.getElementById('exsum-' + b);
-  if (sm) sm.textContent = (o && extrasTotal(o)) ? ('➕ Dodatki razem / トッピング合計: +' + extrasTotal(o) + ' zł') : '';
+  if (sm) sm.textContent = (o && extrasTotal(o)) ? ('➕ Dodatki razem / Total / トッピング合計: +' + extrasTotal(o) + ' zł') : '';
   // 💰 金額は refreshPrice に一本化（プルダウン・具材・トッピング・
   //    杯の切り替えのどれでも同じ描画になるようにするため）
   refreshPrice(line || b);
@@ -3197,9 +3212,12 @@ function extrasTotal(o) {
 function extrasText(o) {
   const l = extrasList(o);
   if (!l.length) return '';
-  return '➕ Dodatki / トッピング追加: ' +
-    l.map(x => x.item.namePL + (x.n > 1 ? ' ×' + x.n : '') +
-               (x.item.nameJP ? '（' + x.item.nameJP + '）' : '')).join(', ') +
+  return '➕ Dodatki / Toppings / トッピング追加: ' +
+    l.map(x => {
+      const sub = [x.item.nameEN && x.item.nameEN !== x.item.namePL ? x.item.nameEN : '',
+                   x.item.nameJP || ''].filter(Boolean).join(' / ');
+      return x.item.namePL + (x.n > 1 ? ' ×' + x.n : '') + (sub ? '（' + sub + '）' : '');
+    }).join(', ') +
     ' (+' + extrasTotal(o) + ' zł)';
 }
 // 1行ぶんの請求額（本体＋交換差額）×数量 ＋ トッピング ＋ 容器代
@@ -3245,7 +3263,7 @@ function refreshExtraSum(lineKey) {
   const el = document.getElementById('exsum-' + baseId(lineKey));
   if (!el) return;
   const t = extrasTotal(cart[lineKey]);
-  el.textContent = t ? ('➕ Dodatki razem / トッピング合計: +' + t + ' zł') : '';
+  el.textContent = t ? ('➕ Dodatki razem / Total / トッピング合計: +' + t + ' zł') : '';
 }
 
 // ── 交換ルール：外し単価を「追加額を上限」に減額（ベース価格未満なし） ──
@@ -4215,6 +4233,15 @@ function buildMods(lineKey) {
 }
 
 async function placeOrder() {
+  // 🛡 2026-09-13 追加：卓番・人数が空のまま送信されないようにする。
+  //    クリア後にメニュー画面が残る不具合で、「Stolik」「os.」だけの
+  //    行が注文シートに記録された。画面側は直したが、
+  //    同じことが再び起きても**台帳は壊さない**よう手前で止める。
+  if (!tableNum || !guestNum) {
+    showToast("⚠️ Wybierz stolik i liczbę osób / 卓番と人数を選んでください");
+    resetApp();
+    return;
+  }
   const gasUrl  = getGasUrl();
   let uwagi   = document.getElementById('uwagi-ta').value.trim();
   if (splitBill && (parseInt(guestNum,10)||1) >= 2) {
@@ -5213,7 +5240,18 @@ function resetApp() {
   const gpb = document.getElementById('group-progress-bar');
   if (gpb) { gpb.style.display = 'none'; gpb.innerHTML = ''; }
   { const grs = document.getElementById('group-review-screen'); if (grs) grs.style.display = 'none'; }
-  { const ms = document.getElementById('menu-screen'); if (ms) ms.style.paddingTop = ''; }
+  // ⚠️ 2026-09-13 修正：注文途中の画面を閉じていなかった。
+  //    resetApp() は元々「注文完了後のリセット」専用で、完了画面からしか
+  //    呼ばれなかったため、メニュー画面を隠す必要がなかった。
+  //    v57 で🧹クリアボタンからも呼べるようにした結果、
+  //    クリア後もメニュー画面が残り、**卓番・人数が空のまま注文できてしまった**。
+  //    （実際に「Stolik」「os.」だけの行が注文シートに記録された）
+  { const ms = document.getElementById('menu-screen');
+    if (ms) { ms.style.display = 'none'; ms.style.paddingTop = ''; } }
+  { const so = document.getElementById('solo-mode-screen'); if (so) so.style.display = 'none'; }
+  { const om = document.getElementById('order-mode-screen'); if (om) om.style.display = 'none'; }
+  { const gs = document.getElementById('group-setup-screen'); if (gs) gs.style.display = 'none'; }
+  { const cm = document.getElementById('clear-modal'); if (cm) cm.classList.remove('open'); }
   window._ricePromoShown = false;
   const bar = document.getElementById('order-bar');
   if (bar) { bar.style.display = 'none'; bar.innerHTML = ''; }
@@ -5228,6 +5266,8 @@ function resetApp() {
   document.getElementById('register-prompt-screen').style.display = 'none';
   document.getElementById('welcome-screen').style.display = 'flex';
   document.getElementById('sel-guests').value = '';
+  { const st = document.getElementById('sel-table');
+    if (st && !urlTable) st.value = ''; }   // QR経由の卓番は残す
   document.getElementById('btn-order').disabled = false;
   document.getElementById('uwagi-ta').value = '';
 }
