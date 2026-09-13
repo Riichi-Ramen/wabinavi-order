@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v72-20260913</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v74-20260913</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v72-20260913</div>
+    <div class="ver-tag">v74-20260913</div>
   </div>
 </div>
 
@@ -3992,6 +3992,11 @@ function applyCouponToTotal() {
     ? `<span style="text-decoration:line-through;opacity:.5;font-size:.8em">${base} zł</span> ${base - allDisc} zł`
     : base + ' zł';
   renderRankPerkBox();
+  // 🎫 クーポン欄（2026-09-13 修正）。
+  //    旧版は renderCouponBox() を**どこからも呼んでいなかった**ため、
+  //    未使用のクーポンがあっても確認画面に一切出なかった。
+  //    renderRankPerkBox() は呼ばれていたので、特典だけが動いていた。
+  renderCouponBox();
   loadBonusInfo().then(renderBonusBox);   // 💰 金額ボーナスの案内
   renderSplitSummary();
 }
@@ -4014,20 +4019,50 @@ function renderCouponBox() {
   box.innerHTML = `
     <div style="font-weight:700;color:#8e6b00;margin-bottom:.4rem">
       🎉 Masz kupon! / クーポンをお持ちです！</div>
+    <!-- ⚠️ この注意は**選ぶ前に**目に入る位置に置く（2026-09-13）。
+         旧版は小さな注記の3行目にあり、読み飛ばされていた。
+         クーポンを使うとその日のポイントが付かないので、
+         金額によっては**使わないほうが得**な場合がある。 -->
+    <div style="background:rgba(255,255,255,.7);border-radius:8px;padding:.5rem .6rem;
+      margin-bottom:.5rem;font-size:.76rem;line-height:1.6;color:#8e2418">
+      ⚠️ <b>Kupon = brak pieczątki dziś</b><br>
+      <span style="color:#7a6858">Using a coupon means no stamp today.<br>
+      クーポンを使うと、<b>本日のポイントは付きません</b>。</span>
+    </div>
     <label style="display:block;padding:.2rem 0;cursor:pointer">
-      <input type="radio" name="coupon-sel" value="" checked onchange="selectedCoupon=null;applyCouponToTotal()">
+      <input type="radio" name="coupon-sel" value="" checked onchange="selectedCoupon=null;applyCouponToTotal();showCouponWarn(false)">
       Nie używam teraz / 今回は使わない</label>
     ${coupons.map(c => `
     <label style="display:block;padding:.2rem 0;cursor:pointer">
-      <input type="radio" name="coupon-sel" value="${c.t}" onchange="selectedCoupon='${c.t}';applyCouponToTotal()">
+      <input type="radio" name="coupon-sel" value="${c.t}" onchange="selectedCoupon='${c.t}';applyCouponToTotal();showCouponWarn(true)">
       ${label(c)}</label>`).join('')}
     <div style="font-size:.68rem;color:#8e6b00;margin-top:.4rem">
       ※ Dotyczy 1 miski ramenu — cena podstawowa (dodatki, kaedama płatne osobno)<br>
       ※ ラーメン1杯の基本価格に適用（複数注文時は最も高い1杯に自動適用・追加トッピング/替え玉は別料金）<br>
-      ※ Przy użyciu kuponu pieczątka za tę wizytę nie przysługuje / クーポン使用の来店はスタンプ（ポイント）対象外です<br>
+
       ※ Nie łączy się ze zniżką stud./senior. / 学割・シニア割と併用不可</div>`;
   box.style.display = 'block';
   selectedCoupon = null;
+  showCouponWarn(false);
+}
+
+// クーポンを選んだときだけ出す警告（2026-09-13）。
+//   ポイントが付かないことを、選んだ瞬間に気づけるようにする。
+function showCouponWarn(on) {
+  let el = document.getElementById('coupon-warn');
+  const box = document.getElementById('coupon-area');
+  if (!box) return;
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'coupon-warn';
+    el.style.cssText = 'margin-top:.5rem;padding:.55rem .7rem;border-radius:8px;' +
+      'background:#8e2418;color:#fff;font-size:.78rem;line-height:1.6;text-align:center';
+    box.appendChild(el);
+  }
+  if (!on) { el.style.display = 'none'; return; }
+  el.innerHTML = '⚠️ Dziś <b>bez pieczątki</b> / No stamp today / '
+               + '本日は<b>ポイントが付きません</b>';
+  el.style.display = 'block';
 }
 
 // ══════════════════════════════════════════════════════════════
