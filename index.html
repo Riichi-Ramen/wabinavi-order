@@ -123,9 +123,14 @@ body{
   border-radius:10px;padding:.7rem .75rem;margin:.15rem 0 .8rem}
 .rice-inline-t{font-weight:700;font-size:.85rem;color:#2d7a3a;margin-bottom:.3rem}
 .rice-inline-d{font-size:.74rem;line-height:1.6;color:var(--text);opacity:.9;margin-bottom:.6rem}
-.rice-inline-btn{width:100%;background:#2d7a3a;color:#fff;border:none;border-radius:9px;
-  padding:.6rem;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;line-height:1.4}
-.rice-inline-btn small{display:block;font-weight:400;font-size:.68rem;opacity:.9}
+.rice-inline-btns{display:flex;gap:.5rem}
+.rice-inline-btn{flex:1;border-radius:9px;padding:.6rem .4rem;font-family:inherit;
+  font-size:.86rem;font-weight:700;cursor:pointer;line-height:1.4}
+.rice-inline-btn small{display:block;font-weight:400;font-size:.66rem;opacity:.9}
+.rice-inline-btn.rice-yes{background:#2d7a3a;color:#fff;border:none}
+.rice-inline-btn.rice-no{background:transparent;color:#7a6858;
+  border:1.5px solid rgba(120,100,80,.4)}
+.rice-inline-btn.rice-no:hover{background:rgba(120,100,80,.08)}
 .ver-tag{text-align:center;font-size:10px;color:rgba(120,90,70,.5);margin-top:.9rem;letter-spacing:.04em}
 .member-id-box{display:none;border-top:1px solid rgba(192,57,43,0.2);padding-top:1.2rem;margin-top:.2rem}
 .consent-box{display:flex;gap:.6rem;align-items:flex-start;background:rgba(192,57,43,.06);
@@ -677,7 +682,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v68-20260913</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v69-20260913</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -731,7 +736,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v68-20260913</div>
+    <div class="ver-tag">v69-20260913</div>
   </div>
 </div>
 
@@ -2593,9 +2598,19 @@ function riceSetInlineHtml() {
         A bowl of rice at half price — just <strong>+6 zł</strong> (instead of 12 zł).<br>
         ライスが半額の <strong>+6 zł</strong>（通常12 zł）。
       </div>
-      <button class="rice-inline-btn" onclick="addRiceSet();this.closest('.rice-inline').remove()">
-        ✅ Tak, poproszę! <small>Yes please ／ お願いします</small>
-      </button>
+      <!-- ⚠️ 2択にする（2026-09-13）。
+           旧版は緑の大きなボタンに ✅ が描かれているだけだったが、
+           「すでに選択済み」に見え、断る手段も無かった。 -->
+      <div class="rice-inline-btns">
+        <button class="rice-inline-btn rice-no"
+          onclick="this.closest('.rice-inline').remove()">
+          Nie dziękuję <small>No thanks ／ 結構です</small>
+        </button>
+        <button class="rice-inline-btn rice-yes"
+          onclick="addRiceSet();this.closest('.rice-inline').remove()">
+          🍚 Tak, poprosę! <small>Yes please ／ お願いします</small>
+        </button>
+      </div>
     </div>`;
 }
 
