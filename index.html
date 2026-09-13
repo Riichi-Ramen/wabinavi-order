@@ -677,7 +677,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v66-20260913</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v67-20260913</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -731,7 +731,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v66-20260913</div>
+    <div class="ver-tag">v67-20260913</div>
   </div>
 </div>
 
@@ -1382,9 +1382,12 @@ body.show-config .config-bar{display:flex}
     onclick="backToMenuKeepSession()">➕ Zamów więcej / Order more / 追加注文する</button>
   <button class="new-btn" style="background:linear-gradient(135deg,#5b3b8e,#7a52b8);margin-top:.5rem"
     onclick="openCheckout()">🧾 Rachunek / The bill / お会計</button>
-  <button style="background:none;border:none;color:var(--muted);font-size:.75rem;
-    margin-top:.7rem;cursor:pointer;text-decoration:underline"
-    onclick="resetApp()">🔄 Nowy stolik / 次のお客様（リセット）</button>
+  <!-- 🔄 卓のリセットは**従業員専用**（2026-09-13）。
+       客のスマホ（テーブルQR経由）には出さない。
+       客が押す理由がない上、押すと卓番・人数・注文履歴が全部消えるため。 -->
+  <button id="reset-link-success" style="background:none;border:none;color:var(--muted);font-size:.75rem;
+    margin-top:.7rem;cursor:pointer;text-decoration:underline;display:none"
+    onclick="resetApp()">🔄 Nowy stolik / 次のお客様（係員用）</button>
   <div class="member-divider" id="member-divider-block">
     <div class="member-teaser">
       🎁 <strong>Zostań członkiem Wabi Navi Club!</strong><br>
@@ -1593,6 +1596,15 @@ let coseatMembers = []; // 同席会員リスト
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   urlTable = params.get('table') || '';
+  // 🔄 卓のリセットボタンは従業員端末だけに出す。
+  //    ?table= が付いていればテーブルQR経由＝客のスマホ。
+  try {
+    const showReset = !urlTable ? 'block' : 'none';
+    ['reset-link-success', 'reset-btn-done'].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = showReset;
+    });
+  } catch (e) {}
 
   // ── QR必須チェック：tableパラメータがない/不正な場合はゲート画面を表示 ──
   if (!urlTable || +urlTable < 1 || +urlTable > 14) {
@@ -4765,8 +4777,11 @@ function openCheckout() {
   const bar = document.getElementById('order-bar');
   if (bar) bar.style.display = 'none';
   const sum = sessionOrders.reduce((a, o) => a + (o.total || 0), 0);
+  // 卓番が空のときは URL の ?table= を使う（表示が「Stolik ・」と
+  // なる不具合への保険。2026-09-13）
+  const _tbl = tableNum || urlTable || '?';
   document.getElementById('co-sum').textContent =
-    `Stolik ${tableNum} ・ ${sessionOrders.length} zamówień / 件 ・ Razem ${sum} zł`;
+    `Stolik ${_tbl} ・ ${sessionOrders.length} zamówień / 件 ・ Razem ${sum} zł`;
   document.getElementById('co-guests').innerHTML = buildCheckoutBreakdown();
   // 🧾 v58: 2名以上ならまず「会計を分けるか」を尋ねる。
   //    1名なら従来どおり領収書の種類から。
@@ -5646,8 +5661,10 @@ window.addEventListener('load', () => { setTimeout(tryRestoreState, 150); });
         Dziękujemy serdecznie za wizytę! Zapraszamy ponownie!<br>
         Thank you very much for dining with us.<br>We look forward to your next visit!<br>
         ご来店誠にありがとうございました。<br>またのお越しをお待ちしております。🍜</div>
-      <button class="co-btn" style="background:#c0392b;color:#fff" onclick="resetApp()">
-        🔄 Nowy stolik / New table / 次のお客様へ</button>
+      <!-- 客のスマホには出さない（2026-09-13）。上のコメント参照。 -->
+      <button id="reset-btn-done" class="co-btn" style="background:#c0392b;color:#fff;display:none"
+        onclick="resetApp()">
+        🔄 Nowy stolik / New table / 次のお客様へ（係員用）</button>
     </div>
   </div>
 </div>
