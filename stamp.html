@@ -755,11 +755,41 @@ function renderStampResult(res) {
     msg.textContent   = '';
     document.getElementById('card-area').innerHTML = notRegisteredHtml();
 
+  } else if (res.status === 'notFound') {
+    // ⚠️ 2026-09-13 追加。GAS は10種類の status を返すが、
+    //    この画面は5種類しか扱えず、残りはすべて「通信エラー」になっていた。
+    //    実際は通信は成功しており、客は何を直せばいいのか分からなかった。
+    icon.textContent  = '🔍';
+    title.textContent = 'Nie znaleziono / Not found / 見つかりません';
+    msg.textContent   = '';
+    document.getElementById('card-area').innerHTML = `
+      <div style="text-align:center;padding:.5rem;color:var(--accent);font-size:.82rem;line-height:1.8">
+        入力された番号（またはメール）の会員が見つかりません。<br>
+        <small style="color:var(--muted)">
+        Nie znaleziono członka o podanym numerze / e-mailu.<br>
+        No member found with that phone / email.</small><br><br>
+        <small style="color:var(--muted)">登録時と同じ形式でご入力ください。<br>
+        ご不明な場合は係員にお尋ねください。</small>
+      </div>` + notRegisteredHtml();
+
+  } else if (res.status === 'expired') {
+    icon.textContent  = '⏳';
+    title.textContent = 'Wygasło / Expired / 期限切れ';
+    msg.textContent   = res.message || '';
+    document.getElementById('card-area').innerHTML = `
+      <div style="text-align:center;padding:.5rem;color:var(--muted);font-size:.82rem;line-height:1.8">
+        お手数ですが係員にお声がけください。<br>
+        <small>Prosimy o kontakt z obsługą / Please ask our staff.</small>
+      </div>`;
+
   } else {
     icon.textContent  = '❌';
     title.textContent = 'エラー / Błąd / Error';
-    msg.textContent   = '';
-    document.getElementById('card-area').innerHTML = connectionErrorHtml();
+    // サーバーが理由を返しているなら、それを見せる（黙って潰さない）
+    msg.textContent   = res.message || '';
+    document.getElementById('card-area').innerHTML = connectionErrorHtml()
+      + (res.status ? `<div style="text-align:center;font-size:.68rem;color:var(--muted);
+          margin-top:.4rem">[${res.status}]</div>` : '');
   }
 }
 
