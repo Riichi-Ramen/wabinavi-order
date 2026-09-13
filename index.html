@@ -123,6 +123,14 @@ body{
   border-radius:10px;padding:.7rem .75rem;margin:.15rem 0 .8rem}
 .rice-inline-t{font-weight:700;font-size:.85rem;color:#2d7a3a;margin-bottom:.3rem}
 .rice-inline-d{font-size:.74rem;line-height:1.6;color:var(--text);opacity:.9;margin-bottom:.6rem}
+/* 💰 金額ボーナスの案内（2026-09-13） */
+.bonus-box{margin:.6rem 0;padding:.65rem .8rem;border-radius:10px;
+  background:linear-gradient(135deg,#fff8e8,#ffefd0);
+  border:1.5px solid rgba(200,150,40,.45);
+  font-size:.86rem;line-height:1.55;color:#7a5a1e;text-align:center}
+.bonus-box small{display:block;font-size:.7rem;opacity:.85;font-weight:400}
+.bonus-box.bonus-on{background:linear-gradient(135deg,#eef8ed,#dff0dc);
+  border-color:rgba(45,122,58,.5);color:#1f5429}
 .rice-inline-btns{display:flex;gap:.5rem}
 .rice-inline-btn{flex:1;border-radius:9px;padding:.6rem .4rem;font-family:inherit;
   font-size:.86rem;font-weight:700;cursor:pointer;line-height:1.4}
@@ -682,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v69-20260913</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v71-20260913</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -736,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v69-20260913</div>
+    <div class="ver-tag">v71-20260913</div>
   </div>
 </div>
 
@@ -1290,6 +1298,8 @@ body.show-config .config-bar{display:flex}
         <span>RAZEM / TOTAL</span>
         <span class="total-val" id="conf-total"></span>
       </div>
+      <!-- 💰 金額ボーナスの案内（2026-09-13）。会員でなければ出ない。 -->
+      <div id="bonus-area" class="bonus-box" style="display:none"></div>
       <div class="uwagi-box">
         <label>UWAGI / SPECIAL REQUESTS</label>
         <div class="uwagi-sub">Alergie, życzenia specjalne / Allergies, special requests</div>
@@ -1827,7 +1837,7 @@ async function verifyMemberAndOrder() {
         memberType: m.memberType || 'G',
         language:   m.language   || '',
         points:     m.points     || 0,
-        rank:       m.rank       || 'Sakura',
+        rank:       (m.rank || 'Sakura').replace(/[^A-Za-z]/g, ''),  // 絵文字を落とす
         memberId:   m.memberId   || '',
         coupons:    m.coupons    || []
       };
@@ -1929,7 +1939,8 @@ function confirmMemberId() {
                     birthDay:   document.getElementById('mid-birthday')?.value    || '',
                     gender:     document.getElementById('mid-gender')?.value      || '',
                     memberType: document.getElementById('mid-membertype')?.value  || 'G',
-                    language:   document.getElementById('mid-language').value };
+                    language:   document.getElementById('mid-language').value,
+                    points: 0, rank: 'Sakura', memberId: '', coupons: [] };
   saveReturningMember(); // ← ブラウザに記憶（次回から自動ログイン用）
   document.getElementById('member-check-screen').style.display = 'none';
   launchMenu();
@@ -1972,7 +1983,7 @@ function showReturningMemberBox() {
 }
 
 // 「⭐ ◯◯様としてログイン」ボタン → ワンタップで会員確定しメニューへ
-function quickLoginReturningMember() {
+async function quickLoginReturningMember() {
   const m = getReturningMember();
   if (!m) return;
   isMember = true;
@@ -1980,9 +1991,31 @@ function quickLoginReturningMember() {
   memberName    = `${m.firstName} ${m.lastName}`;
   memberInfo    = { firstName: m.firstName, lastName: m.lastName,
                      contact: m.contact, contactType: m.contactType,
-                     birthMonth: m.birthMonth, language: m.language };
+                     birthMonth: m.birthMonth, language: m.language,
+                     points: 0, rank: 'Sakura', memberId: '', coupons: [] };
   document.getElementById('member-check-screen').style.display = 'none';
   launchMenu();
+
+  // ⚠️ 2026-09-13 修正：この経路だけ rank / points を入れていなかったため、
+  //    computeRankPerk() の RANK_TOPPING_PERK[undefined] が引けず、
+  //    **ランク特典が一切表示されなかった**。
+  //    記憶した古い情報ではなく、サーバーから最新のポイントを取り直す。
+  //    メニューは先に開いておき、取得が終わったら反映させる（客を待たせない）。
+  try {
+    const res = await fetch(getGasUrl(), {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getCard', email: m.contact })
+    });
+    const d = await res.json();
+    if (d && d.status === 'ok' && d.member) {
+      const mm = d.member;
+      memberInfo.points   = mm.points   || 0;
+      memberInfo.rank     = (mm.rank || 'Sakura').replace(/[^A-Za-z]/g, '');
+      memberInfo.memberId = mm.memberId || '';
+      memberInfo.coupons  = mm.coupons  || [];
+      if (typeof renderCouponBox === 'function') { try { renderCouponBox(); } catch (e) {} }
+    }
+  } catch (e) { /* 取れなくても注文は続けられる */ }
 }
 
 // 「私ではありません」→ 記憶を消去してフォームを再表示
@@ -3824,6 +3857,46 @@ function computeRankPerk() {
 }
 
 // 確認画面のランク特典ボックス（案内＋トッピング追加への誘導）
+// ══ 💰 金額ボーナスの案内（2026-09-13 新設）═══════════════════
+//  当日の注文合計がしきい値を超えるとボーナスポイントが付く。
+//  「あと◎zeł」を見せれば追加注文の動機になる。
+//  ※ 実際の判定は**サーバー側**（当日の全注文の合計・割引後）。
+//    ここは目安の表示なので、既に送信済みの注文も足して概算する。
+let bonusCfg = null;   // { threshold, points }
+
+async function loadBonusInfo() {
+  if (bonusCfg) return bonusCfg;
+  try {
+    const r = await fetch(getGasUrl() + '?action=getBonusInfo');
+    const d = await r.json();
+    if (d && d.status === 'ok' && d.threshold > 0) bonusCfg = d;
+  } catch (e) { /* 取れなければ案内を出さないだけ */ }
+  return bonusCfg;
+}
+
+function renderBonusBox() {
+  const box = document.getElementById('bonus-area');
+  if (!box) return;
+  if (!isMember || !bonusCfg || !bonusCfg.threshold) { box.style.display = 'none'; return; }
+
+  // 送信済み＋今回の合計
+  const sent = (sessionOrders || []).reduce((a, o) => a + (Number(o.total) || 0), 0);
+  const now  = Number(document.getElementById('conf-total')?.dataset.base || 0);
+  const total = sent + now;
+  const left = Math.max(0, bonusCfg.threshold - total);
+
+  if (left <= 0) {
+    box.innerHTML = `<b>🎉 Bonus ${bonusCfg.points} pkt!</b> / +${bonusCfg.points}pt 獲得！<br>
+      <small>Zamówienie ponad ${bonusCfg.threshold} zł / 当日の合計が ${bonusCfg.threshold} zł を超えました</small>`;
+    box.className = 'bonus-box bonus-on';
+  } else {
+    box.innerHTML = `<b>💰 Jeszcze ${left} zł do +${bonusCfg.points} pkt</b><br>
+      <small>${left} zł more for +${bonusCfg.points} points / あと ${left} zł で +${bonusCfg.points}pt</small>`;
+    box.className = 'bonus-box';
+  }
+  box.style.display = 'block';
+}
+
 function renderRankPerkBox() {
   const ta = document.getElementById('uwagi-ta');
   let box = document.getElementById('rankperk-area');
@@ -3917,6 +3990,7 @@ function applyCouponToTotal() {
     ? `<span style="text-decoration:line-through;opacity:.5;font-size:.8em">${base} zł</span> ${base - allDisc} zł`
     : base + ' zł';
   renderRankPerkBox();
+  loadBonusInfo().then(renderBonusBox);   // 💰 金額ボーナスの案内
   renderSplitSummary();
 }
 
