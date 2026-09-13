@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.6 · Toruń</div>
+  <div class="ver">System v8.8 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -545,6 +545,97 @@ async function sha256(t) {
     同席者への自動付与は廃止しました。</span></div>
 </section>
 
+<!-- 注文アプリ：会計を分ける -->
+<section>
+  <h2>🧾 Podział rachunku <span class="pl">お会計を分ける</span></h2>
+  <span class="path">Aplikacja → 🧾 Rachunek / お会計</span>
+
+  <p style="font-size:.86rem;margin-top:.3rem">
+    Po naciśnięciu „🧾 Rachunek" przy 2+ osobach aplikacja najpierw pyta,
+    jak podzielić rachunek. /
+    <span class="jp">2名以上のとき、「お会計」を押すと最初に分け方を尋ねます。</span></p>
+
+  <table>
+    <tr><th>Przycisk <span class="jp">/ ボタン</span></th><th>Kiedy <span class="jp">/ こんなとき</span></th></tr>
+    <tr><td><b>👤 Każdy swoje</b><br><span class="pl">自分の分だけ</span></td>
+        <td>Standard. Dotknij 👤1 👤2… przy każdej pozycji.<br>
+        <span class="jp">通常はこれ。商品ごとに👤1 👤2…を押して割り当てます。</span></td></tr>
+    <tr><td><b>÷2 ÷3 ÷4</b><br><span class="pl">等分</span></td>
+        <td>„Po połowie", „na trzy" — dzieli całą kwotę.<br>
+        <span class="jp">「半分ずつ」「3つに割って」。合計を等分します。</span></td></tr>
+  </table>
+
+  <div class="note"><b>👥 Wspólne / みんなで</b><br>
+    Pozycje bez przypisania (np. gyoza dla wszystkich) dzielą się po równo. /
+    <span class="jp">誰にも割り当てなかった品（みんなで分けた餃子など）は、自動で頭割りになります。
+    「👥 wsp.」のままにしておいてください。</span></div>
+
+  <div class="note"><b>💳 Do kasy / レジへ</b><br>
+    Aplikacja tylko <b>informuje kasę, ile pobrać</b>. Rachunek i paragon
+    wystawia POS jak zwykle. /
+    <span class="jp">このアプリは<b>「レジでいくら請求すればよいか」を伝えるだけ</b>です。
+    実際の会計とレシート発行は、これまでどおりPOSで行ってください。</span></div>
+</section>
+
+<!-- 注文アプリ：持ち帰りとクリア -->
+<section>
+  <h2>🥡 Na wynos i czyszczenie <span class="pl">持ち帰り・入力のやり直し</span></h2>
+  <span class="path">Aplikacja → ekran startowy / 🧹 na górze</span>
+
+  <div class="note"><b>🍱 1 osoba — na miejscu czy na wynos / 1名のとき</b><br>
+    Przy 1 osobie aplikacja pyta: <b>Na miejscu</b> (domyślnie) albo <b>Na wynos</b>.
+    Przy „na wynos" doliczają się opakowania. /
+    <span class="jp">1名の注文では「店内」か「持ち帰り」を尋ねます。
+    <b>最初から「店内」が選ばれている</b>ので、店内ならそのまま「始める」を押すだけ。
+    持ち帰りのときだけ「🥡 Na wynos」を押してください。容器代が自動で加算されます。</span></div>
+
+  <div class="note warn"><b>🧹 Wyczyść / 入力を消す</b><br>
+    Przycisk 🧹 na górnym pasku kasuje całe zamówienie (stolik, osoby, koszyk).
+    Pokaże się pytanie „Na pewno?" — zamówienia już wysłane do kuchni <b>zostają</b>. /
+    <span class="jp">上部の🧹を押すと、卓番・人数・カートの<b>すべてが消えます</b>。
+    確認画面が出るので、誤操作の心配はありません。<br>
+    <b>すでに厨房へ送信した注文は消えません。</b>取り消しはレジまたは厨房でご対応ください。</span></div>
+</section>
+
+<!-- 会員カードの告知文 -->
+<section>
+  <h2>📣 Ogłoszenie na karcie <span class="pl">会員カードの告知文（店主のみ）</span></h2>
+  <span class="path">Arkusz → 「📣 カード告知 / Ogłoszenie」</span>
+
+  <div class="note warn"><b>⚠️ Tylko właściciel / 店主専用。</b>
+    Personel nie zmienia. / <span class="jp">従業員は触らない。</span></div>
+
+  <p style="font-size:.86rem;margin-top:.3rem">
+    Na karcie członkowskiej można wyświetlić własny tekst — np. „W październiku
+    nowy ramen z ostrygami!”. /
+    <span class="jp">会員カードに、店主が自由に書いた宣伝文を出せます。
+    「10月は牡蠣ラーメンが登場します」のように、次回来店のきっかけになる一言を。</span></p>
+
+  <ol>
+    <li>Otwórz arkusz <b>„📣 カード告知 / Ogłoszenie”</b>.
+      <span class="pl">スプレッドシートの「📣 カード告知 / Ogłoszenie」タブを開く。</span></li>
+    <li>Wpisz tekst w <b>kolumnie B</b>. Osobno nagłówek i treść, w 3 językach.
+      <span class="pl"><b>B列</b>に書く。見出しと本文、3言語ぶんの欄があります。</span></li>
+    <li>Gotowe — pojawi się na kartach w ciągu minuty. <b>Bez wdrażania.</b>
+      <span class="pl">それだけ。1分以内に会員のカードに出ます。<b>デプロイ不要。</b></span></li>
+  </ol>
+
+  <div class="note"><b>📝 Wskazówki / 書き方のこつ</b><br>
+    Pusta komórka = nic się nie pokazuje. Pusty język = nie pokazuje się w tym języku. /
+    <span class="jp">空欄にすれば何も出ません。ある言語だけ空欄にすれば、その言語では出ません。
+    忙しいときはポーランド語だけでも構いません。<br>
+    <b>長くしないこと。</b>カードは縦に長いので、2行までが読まれます。<br>
+    <b>次に来る理由を書くこと。</b>「ありがとうございました」より
+    「10月は新作が出ます」のほうが足が向きます。<br>
+    <b>不要になったら空欄に戻す。</b>古い告知が残り続けないように。</span></div>
+
+  <div class="note"><b>ℹ️ Co jeszcze pokazuje karta / カードに出るもの</b><br>
+    „Do następnej nagrody: X misek” i „Do rangi: X pkt” liczą się automatycznie. /
+    <span class="jp">「次の特典まであと◯杯」「次のランクまであと◯pt」は自動計算です。設定は要りません。<br>
+    ※ 来店履歴（日付の一覧）は2026-09-13に**非表示にしました**。
+    データは従来どおり会員台帳に残っており、店主はシートで確認できます。</span></div>
+</section>
+
 <!-- 6a-2. ポイント操作 -->
 <section>
   <h2>🎫 Punkty gości <span class="pl">お客様のポイント操作</span></h2>
@@ -816,7 +907,7 @@ async function sha256(t) {
 
 <div class="foot">
   📍 Wabi Navi — ul. Małe Garbary 5A, 87-100 Toruń<br>
-  和美なび · System v8.6 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
+  和美なび · System v8.8 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
 </div>
 </div>
 
