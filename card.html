@@ -215,16 +215,18 @@ body{
   <!-- ── ログインフォーム ── -->
   <div class="login-card" id="login-form">
     <label class="form-label">🪪 会員ID / ID członka / Member ID</label>
+    <!-- 📱 既定は電話番号（2026-09-13）。スマホではメールを打つより早く、
+       客も自分の番号のほうを覚えているため。 -->
     <div class="id-tabs">
-      <button class="id-tab active" id="tab-email-card"
-        onclick="switchCardIdTab('email')">📧 E-mail</button>
-      <button class="id-tab" id="tab-phone-card"
+      <button class="id-tab active" id="tab-phone-card"
         onclick="switchCardIdTab('phone')">📱 Telefon</button>
+      <button class="id-tab" id="tab-email-card"
+        onclick="switchCardIdTab('email')">📧 E-mail</button>
     </div>
-    <input class="form-input" type="email" id="card-email"
-      placeholder="jan@email.com" autocomplete="email">
     <input class="form-input" type="tel" id="card-phone"
-      placeholder="+48 123 456 789" autocomplete="tel"
+      placeholder="+48 123 456 789" autocomplete="tel">
+    <input class="form-input" type="email" id="card-email"
+      placeholder="jan@email.com" autocomplete="email"
       style="display:none">
     <button class="btn btn-primary" onclick="loadCard()">
       👤 カードを表示 / Pokaż kartę / Show card
@@ -242,7 +244,7 @@ body{
 <script>
 const GAS_URL = localStorage.getItem('wabi_gas_url') ||
   'https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec';
-let cardIdTab = 'email';
+let cardIdTab = 'phone';   // 📱 既定は電話番号（2026-09-13）
 
 function switchCardIdTab(tab) {
   cardIdTab = tab;
