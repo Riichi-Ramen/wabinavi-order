@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v71-20260913</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v72-20260913</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v71-20260913</div>
+    <div class="ver-tag">v72-20260913</div>
   </div>
 </div>
 
@@ -2584,12 +2584,8 @@ function renderToppingRows(item) {
     // ⚠️ ti は cart の toppingDeltas / toppingIdx の添字と対応しているため、
     //    配列から除外せず、描画だけを飛ばします。
     if (takeaway && isDineInOnlyOption(t.name)) return '';
-    // 🍚 替え玉の直後にライスセットの案内を挟む（分割より前）
     // ⚠️ 2杯目以降の行キーは "r6#2" の形になるため、
-    //    旧版の /^r\d+$/ だと **1杯目にしか案内が出なかった**。
-    //    baseId() で接尾辞を落としてから判定する（2026-09-13）。
-    const riceAfter = (/kaedama/i.test(t.name || '') && /^r\d+$/.test(baseId(item.id)))
-      ? riceSetInlineHtml() : '';
+    //    旧版の /^r\d+$/ だと 1杯目にしか案内が出なかった（2026-09-13 修正）。
     if (isOnigiri) {
       const saved = cart[item.id]?.toppingLabels?.[ti] || null;
       let selIdx = saved ? t.options.indexOf(saved) : 0;
@@ -2614,8 +2610,14 @@ function renderToppingRows(item) {
             ${t.options.map((o, oi) => `<option value="${oi}">${o}</option>`).join('')}
           </select>
           <span class="top-delta" id="td-${item.id}-${ti}"></span>
-        </div>${riceAfter}`;
-  }).join('');
+        </div>`;
+  }).join('')
+  // 🍚 ライスセットの案内は**トッピング欄の最後に固定**する（2026-09-13）。
+  //   旧版は「替え玉の直後」に入れていたが、うどん・そばは先頭に
+  //   「Makaron / Noodles」の欄があるため替え玉が1段下にずれ、
+  //   **商品によって案内の位置が変わる**状態だった。
+  //   麺類（ramenカテゴリ）なら常に最後に1つだけ出す。
+  + (/^r\d+$/.test(baseId(item.id)) ? riceSetInlineHtml() : '');
 }
 
 // 🍚 ライスセットの案内（替え玉の直後に差し込む）
