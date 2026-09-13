@@ -677,7 +677,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v64-20260913</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v66-20260913</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -731,7 +731,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v64-20260913</div>
+    <div class="ver-tag">v66-20260913</div>
   </div>
 </div>
 
@@ -766,15 +766,24 @@ body.show-config .config-bar{display:flex}
       <div class="mid-field">
         <div class="mid-field-label">🪪 会員照合 / Weryfikacja członka / Member verification</div>
         <div style="font-size:.72rem;color:var(--muted);margin-bottom:.6rem;line-height:1.6">
-          登録済みのメールアドレスまたは電話番号を入力してください。<br>
-          Podaj zarejestrowany e-mail lub telefon. / Enter your registered email or phone.
+          登録済みの電話番号またはメールアドレスを入力してください。<br>
+          Podaj zarejestrowany telefon lub e-mail. / Enter your registered phone or email.
         </div>
+        <!-- 📱 電話番号を既定にする（2026-09-13）。
+             スマホではメールを打つより番号のほうが早く、
+             客も自分の番号のほうを覚えているため。 -->
         <div class="mid-tabs">
-          <button class="mid-tab active" id="vtab-email" onclick="switchVerifyTab('email')">📧 E-mail</button>
-          <button class="mid-tab" id="vtab-phone" onclick="switchVerifyTab('phone')">📱 Telefon</button>
+          <button class="mid-tab active" id="vtab-phone" onclick="switchVerifyTab('phone')">📱 Telefon</button>
+          <button class="mid-tab" id="vtab-email" onclick="switchVerifyTab('email')">📧 E-mail</button>
         </div>
-        <input class="mid-input" type="email" id="verify-email-input" placeholder="np. jan@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')verifyMemberAndOrder()">
-        <input class="mid-input" type="tel" id="verify-phone-input" placeholder="np. +48 123 456 789" autocomplete="tel" style="display:none" onkeydown="if(event.key==='Enter')verifyMemberAndOrder()">
+        <input class="mid-input" type="tel" id="verify-phone-input" placeholder="np. +48 123 456 789" autocomplete="tel" onkeydown="if(event.key==='Enter')verifyMemberAndOrder()">
+        <input class="mid-input" type="email" id="verify-email-input" placeholder="np. jan@email.com" autocomplete="email" style="display:none" onkeydown="if(event.key==='Enter')verifyMemberAndOrder()">
+        <div id="verify-saved-hint" style="display:none;font-size:.72rem;color:#7a6858;
+          line-height:1.6;margin-top:.45rem;text-align:center">
+          ✔️ Zapamiętany z poprzedniej wizyty / Saved from your last visit / 前回の入力を表示しています<br>
+          <a href="javascript:void(0)" onclick="useAnotherContact()"
+             style="color:#c0392b;font-weight:700">🔄 Użyj innego / Use another / 別の番号を使う</a>
+        </div>
       </div>
       <div id="verify-error" style="display:none;background:#fee;border:1px solid #f5c6c6;
         border-radius:8px;padding:.6rem;font-size:.76rem;color:#a00;
@@ -1655,6 +1664,8 @@ function selectMember(yes) {
     // 会員 → 照合ボックスのみ表示（登録フォームは非表示）
     regBox.classList.remove('open');
     verifyBox.classList.add('open');
+    // 📱 前回の連絡先があれば入れておく（客のスマホのときだけ・90日以内）
+    try { prefillLastContact(); } catch (e) {}
     document.getElementById(verifyTab === 'phone' ? 'verify-phone-input' : 'verify-email-input').focus();
   } else {
     verifyBox.classList.remove('open');
@@ -1668,7 +1679,71 @@ function selectMember(yes) {
 }
 
 // ── 会員照合：メール/電話タブ切替 ─────────────────────────────────
-let verifyTab = 'email';
+let verifyTab = 'phone';   // 📱 既定は電話番号（2026-09-13）
+// ══ 📱 前回の連絡先を覚えておく（2026-09-13）══════════════════
+//
+//  【目的】常連の方が毎回電話番号を打つ手間を省く。
+//
+//  【⚠️ 保存するのは客のスマホだけ】
+//   テーブルQR経由（URLに ?table= が付いている）のときだけ保存する。
+//   店のタブレットで従業員が代理入力する場合に保存してしまうと、
+//   **前の客の電話番号が次の客の画面に出る**。個人情報の漏洩になる。
+//
+//  【自動で照合はしない】
+//   番号を入れた状態にするだけで、確認ボタンは客が押す。
+//   家族で端末を共有しているときに、別人としてポイントが付くのを防ぐ。
+//
+//  保存期間：90日。機種変更や端末の貸し借りで古い番号が
+//  残り続けないようにするため。
+const LASTID_KEY  = 'wabi_last_contact';
+const LASTID_DAYS = 90;
+
+function saveLastContact(value, type) {
+  if (!urlTable) return;            // QR経由以外は保存しない
+  if (!value) return;
+  try {
+    localStorage.setItem(LASTID_KEY, JSON.stringify({
+      v: value, t: type, at: Date.now()
+    }));
+  } catch (e) {}
+}
+
+function loadLastContact() {
+  if (!urlTable) return null;
+  try {
+    const raw = localStorage.getItem(LASTID_KEY);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    const age = (Date.now() - (o.at || 0)) / 86400000;
+    if (!o.v || age > LASTID_DAYS) { forgetLastContact(); return null; }
+    return o;
+  } catch (e) { return null; }
+}
+
+function forgetLastContact() {
+  try { localStorage.removeItem(LASTID_KEY); } catch (e) {}
+}
+
+// 「別の番号を使う」を押したとき
+function useAnotherContact() {
+  forgetLastContact();
+  document.getElementById('verify-phone-input').value = '';
+  document.getElementById('verify-email-input').value = '';
+  const hint = document.getElementById('verify-saved-hint');
+  if (hint) hint.style.display = 'none';
+  document.getElementById(verifyTab === 'email' ? 'verify-email-input' : 'verify-phone-input').focus();
+}
+
+// 照合画面を開いたときに前回の連絡先を入れておく
+function prefillLastContact() {
+  const o = loadLastContact();
+  const hint = document.getElementById('verify-saved-hint');
+  if (!o) { if (hint) hint.style.display = 'none'; return; }
+  switchVerifyTab(o.t === 'email' ? 'email' : 'phone');
+  document.getElementById(o.t === 'email' ? 'verify-email-input' : 'verify-phone-input').value = o.v;
+  if (hint) hint.style.display = 'block';
+}
+
 function switchVerifyTab(tab) {
   verifyTab = tab;
   document.getElementById('vtab-email').classList.toggle('active', tab==='email');
@@ -1721,6 +1796,8 @@ async function verifyMemberAndOrder() {
       const nameParts = (m.name || '').split(' ');
       isMember      = true;
       memberContact = m.email || id;
+      // 📱 次回のために覚えておく（客のスマホのときだけ）
+      saveLastContact(id, verifyTab);
       memberName    = m.name || '';
       memberInfo    = {
         firstName:  nameParts[0] || '',
