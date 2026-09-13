@@ -84,12 +84,13 @@ body{
 .benefit-section{background:rgba(255,252,245,0.95);border:1px solid rgba(192,57,43,0.2);
   border-radius:14px;padding:1.2rem;margin-bottom:1rem;
   box-shadow:0 4px 16px rgba(120,60,40,0.08)}
-.benefit-title{font-size:.8rem;color:var(--accent);font-weight:700;
+.benefit-title{font-size:.95rem;color:var(--accent);font-weight:700;
   margin-bottom:.8rem;display:flex;align-items:center;gap:.4rem}
+/* ⤴️ 特典の文字を大きくして読みやすく（2026-09-13） */
 .benefit-item{display:flex;align-items:flex-start;gap:.5rem;
-  padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.82rem;color:var(--text);line-height:1.5}
+  padding:.65rem 0;border-bottom:1px solid var(--border);font-size:.95rem;color:var(--text);line-height:1.65}
 .benefit-item:last-child{border:none}
-.benefit-icon{flex-shrink:0;font-size:.9rem}
+.benefit-icon{flex-shrink:0;font-size:1.1rem}
 
 /* ── スタンプビジュアル ── */
 .stamp-section{background:rgba(255,252,245,0.95);border:1px solid rgba(192,57,43,0.2);
@@ -108,6 +109,31 @@ body{
 .stamp-dot{width:12px;height:12px;border-radius:50%}
 
 /* ── 来店履歴 ── */
+/* 🎯 次回来店の動機づけ（2026-09-13） */
+.goal-section{display:flex;gap:.6rem;margin-bottom:1rem}
+.goal-card{flex:1;background:linear-gradient(135deg,#fff8f0,#ffeee4);
+  border:2px solid rgba(192,57,43,.3);border-radius:14px;padding:.9rem .7rem;text-align:center}
+.goal-card.goal-rank{background:linear-gradient(135deg,#f3f8f4,#e6f1ea);
+  border-color:rgba(45,122,58,.3)}
+.goal-lead{font-size:.66rem;color:var(--muted);line-height:1.5;margin-bottom:.3rem}
+.goal-big{font-size:2.4rem;font-weight:800;color:#c0392b;line-height:1.1;letter-spacing:-.02em}
+.goal-rank .goal-big{color:#2d7a3a}
+.goal-unit{font-size:.8rem;font-weight:600;opacity:.75;letter-spacing:0}
+.goal-what{font-size:.76rem;color:#2c1810;line-height:1.5;margin-top:.35rem}
+@media(max-width:400px){.goal-section{flex-direction:column}.goal-big{font-size:2rem}}
+
+/* 📣 店主からの告知 */
+.promo-box{display:flex;gap:.7rem;align-items:flex-start;
+  background:linear-gradient(135deg,#fffdf5,#fff6e0);
+  border:2px dashed rgba(200,169,110,.7);border-radius:14px;
+  padding:.9rem 1rem;margin-bottom:1rem}
+.promo-icon{font-size:1.4rem;line-height:1.2}
+.promo-body{flex:1;text-align:left}
+.promo-line{margin-bottom:.45rem;line-height:1.6}
+.promo-line:last-child{margin-bottom:0}
+.promo-line b{display:block;font-size:.92rem;color:#8e2418}
+.promo-line span{display:block;font-size:.8rem;color:#5a4632}
+
 .history-section{background:rgba(255,252,245,0.95);border:1px solid rgba(192,57,43,0.2);
   border-radius:14px;padding:1.2rem;margin-bottom:1rem;
   box-shadow:0 4px 16px rgba(120,60,40,0.08)}
@@ -335,6 +361,8 @@ async function loadCard() {
     });
     const data = await res.json();
     if (data.status === 'ok') {
+      // 📣 店主がシートに書いた告知（2026-09-13）
+      window._cardPromo = data.promo || null;
       renderFullCard(data.member);
       document.getElementById('login-form').style.display = 'none';
       showRefreshBar();
@@ -359,12 +387,57 @@ async function loadCard() {
   }
 }
 
+// ══ 🎯 次回来店の動機づけ（2026-09-13 新設）═══════════════════
+//  旧版は「来店履歴（日付の羅列）」を出していたが、
+//  客にとって読む価値がなく、監視されている印象を与える。
+//  代わりに「あと何杯で何がもらえるか」を大きく出す。
+//  ※ 来店履歴の**データは従来どおり保存**されている（店主はシートで確認可）。
+//    消したのは客の画面の表示だけ。
+
+// 次のクーポンまで何杯か（1杯＝10pt）
+function nextCouponInfo(pt) {
+  const next = getNextMilestone(pt);          // 次の50の倍数
+  const bowls = Math.max(1, Math.ceil((next - pt) / 10));
+  const isFree = (next % 100 === 0);          // 100の倍数＝無料
+  return { next, bowls, isFree };
+}
+
+// 次のランクまで何ptか
+function nextRankInfo(pt) {
+  const i = RANKS.findIndex(r => pt >= r.minPt && pt <= r.maxPt);
+  if (i < 0 || i >= RANKS.length - 1) return null;   // Fuji は最上位
+  const nr = RANKS[i + 1];
+  return { rank: nr, need: nr.minPt - pt };
+}
+
+// 📣 店主がシートに書いた告知（空なら何も出さない）
+function promoHtml(promo) {
+  if (!promo) return '';
+  const blocks = ['pl', 'en', 'jp'].map(k => {
+    const o = promo[k] || {};
+    if (!o.title && !o.text) return '';
+    return `<div class="promo-line">
+      ${o.title ? `<b>${escHtml(o.title)}</b>` : ''}
+      ${o.text ? `<span>${escHtml(o.text)}</span>` : ''}</div>`;
+  }).filter(Boolean).join('');
+  if (!blocks) return '';
+  return `<div class="promo-box"><div class="promo-icon">📣</div>
+    <div class="promo-body">${blocks}</div></div>`;
+}
+
+function escHtml(t) {
+  return String(t == null ? '' : t)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function renderFullCard(m) {
   const pt      = m.points || 0;
   const visits  = (m.history||[]).length;
   const rank    = getRank(pt);
   const nextMs  = getNextMilestone(pt);
   const prevMs  = Math.floor(pt / 50) * 50;   // 直前のクーポン到達点
+  const cpn     = nextCouponInfo(pt);         // 🎯 次のクーポンまで
+  const nr      = nextRankInfo(pt);           // 🎯 次のランクまで
   const pct     = Math.min(100, Math.round(((pt - prevMs) / (nextMs - prevMs)) * 100));
 
   // スタンプグリッド（最大20個まで表示）
@@ -379,11 +452,6 @@ function renderFullCard(m) {
     if (i===12 && visits>=12) { cls='free'; emoji='🎉'; }
     stampHtml += `<div class="stamp-bowl ${cls}">${i<=visits?emoji:i}</div>`;
   }
-
-  // 来店履歴（最新10件）
-  const historyHtml = (m.history||[]).slice(-10).reverse()
-    .map(fmtVisitDate).filter(Boolean)
-    .map(d=>`<span class="history-chip">${d}</span>`).join('');
 
   // 特典一覧
   const benefitsHtml = rank.benefits.map(b =>
@@ -437,6 +505,30 @@ function renderFullCard(m) {
         <span class="card-since">Od / Since: ${m.registeredAt||''}</span>
       </div>
     </div>
+
+    <!-- 🎯 次回来店の動機づけ（2026-09-13 新設）
+         「あと何杯で何がもらえるか」を一番見やすい位置に大きく出す。 -->
+    <div class="goal-section">
+      <div class="goal-card">
+        <div class="goal-lead">🍜 Do następnej nagrody / Next reward / 次の特典まで</div>
+        <div class="goal-big">${cpn.bowls}<span class="goal-unit"> misek / bowls / 杯</span></div>
+        <div class="goal-what">${cpn.isFree
+          ? '🎉 Ramen <b>GRATIS</b> / Free ramen / ラーメン<b>1杯無料</b>'
+          : '⭐ Ramen <b>−50%</b> / Half price / ラーメン<b>半額</b>'}</div>
+      </div>
+      ${nr ? `<div class="goal-card goal-rank">
+        <div class="goal-lead">🏅 Do rangi / To rank / 次のランクまで</div>
+        <div class="goal-big">${nr.need}<span class="goal-unit"> pt</span></div>
+        <div class="goal-what">${nr.rank.icon} <b>${nr.rank.name}</b></div>
+      </div>` : `<div class="goal-card goal-rank">
+        <div class="goal-lead">🎖️ Najwyższa ranga / Top rank</div>
+        <div class="goal-big">👑<span class="goal-unit"> Fuji</span></div>
+        <div class="goal-what">Dziękujemy! / 最上位に到達しています</div>
+      </div>`}
+    </div>
+
+    <!-- 📣 店主がシートに書いた告知（空なら出ない） -->
+    ${promoHtml(window._cardPromo)}
 
     <!-- 会員QR（レジでのポイント付与用） -->
     ${m.memberId ? `<div class="benefit-section" style="text-align:center">
@@ -500,12 +592,6 @@ function renderFullCard(m) {
         <div class="stamp-legend-item"><div class="stamp-dot" style="background:#2d7a3a"></div>無料</div>
       </div>
     </div>
-
-    <!-- 来店履歴 -->
-    ${historyHtml ? `<div class="history-section">
-      <div class="history-title">📅 来店履歴（最新10回）/ Historia wizyt</div>
-      <div class="history-list">${historyHtml}</div>
-    </div>` : ''}
 
     <!-- ランクロードマップ -->
     <div class="roadmap-section">
@@ -574,6 +660,8 @@ async function refreshCard() {
     });
     const data = await res.json();
     if (data.status === 'ok') {
+      // 📣 店主がシートに書いた告知（2026-09-13）
+      window._cardPromo = data.promo || null;
       renderFullCard(data.member);
       updateRefreshTime();
       // 更新成功フラッシュ
