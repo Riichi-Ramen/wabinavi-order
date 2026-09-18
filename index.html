@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v76-20260918</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v77-20260918</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v76-20260918</div>
+    <div class="ver-tag">v77-20260918</div>
   </div>
 </div>
 
@@ -2715,14 +2715,35 @@ function extrasHtml(item) {
   </div>`;
 }
 
+// 📸 404だった商品を覚えておき、次回以降は取りに行かない（2026-09-18）。
+//   シートのR列が未更新でも、一度失敗すれば以後は速くなる。
+const NOPHOTO_KEY = 'wabi_nophoto';
+let noPhotoSet = (function () {
+  try { return new Set(JSON.parse(localStorage.getItem(NOPHOTO_KEY) || '[]')); }
+  catch (e) { return new Set(); }
+})();
+
+function markNoPhoto(id) {
+  if (!id || noPhotoSet.has(id)) return;
+  noPhotoSet.add(id);
+  try { localStorage.setItem(NOPHOTO_KEY, JSON.stringify([...noPhotoSet])); } catch (e) {}
+}
+
 function renderCard(item) {
   const isVege = /wege|vege|vegan|wegań/i.test(
     (item.namePL||'') + ' ' + (item.nameEN||'') + ' ' + (item.descPL||''));
+  // ⚠️ 2026-09-18：写真の無い商品は**取りに行かない**。
+  //    旧版は全商品に <img> を出し、404が返ってから onerror で隠していた。
+  //    つまり「取りに行って失敗してから消す」動き。実測で**404が93件**発生し、
+  //    1件ずつ応答を待つためメニュー表示に30〜40秒かかっていた。
+  //    メニューシートのR列（写真 / Photo）を hasPhoto として受け取り、
+  //    "uploaded" のときだけ <img> を出す。
+  //    ※ hasPhoto が届かない古いGASのときは従来どおり出す（undefined の場合）。
   const imgPath = `images/${item.imgKey || item.id}.jpg`;
   const phHtml  = `<div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div>`;
-  const imgHtml = `<div class="img-wrap" data-ph="${item.id}">
+  const imgHtml = (item.hasPhoto === false || noPhotoSet.has(item.id)) ? '' : `<div class="img-wrap" data-ph="${item.id}">
       <img class="card-img" src="${imgPath}" alt="${item.nameEN}" loading="lazy"
-           onerror="this.closest('.img-wrap').style.display='none'">
+           onerror="this.closest('.img-wrap').style.display='none';markNoPhoto('${item.id}')">
     </div>`;
 
   const allergensHtml = item.allergens?.length
