@@ -686,7 +686,11 @@ async function doStamp() {
     }
     renderStampResult(res);
   } catch(e) {
-    renderStampResult({status:'error', message:''});
+    // 時間切れは別扱いにする（2026-09-18）。
+    //    サーバー側は成功している可能性が高いので、
+    //    「失敗」と断定せず、台帳を確かめるよう伝える。
+    renderStampResult({ status: (e && e.name === 'AbortError') ? 'timeout' : 'error',
+                        message: '' });
   }
 }
 
@@ -754,6 +758,32 @@ function renderStampResult(res) {
     title.textContent = '未登録 / Niezarejestrowany / Not registered';
     msg.textContent   = '';
     document.getElementById('card-area').innerHTML = notRegisteredHtml();
+
+  } else if (res.status === 'timeout') {
+    icon.textContent  = '⏳';
+    title.textContent = 'Brak odpowiedzi / No response / 応答がありません';
+    msg.textContent   = '';
+    // 全行を3言語で揃える（2026-09-18）。
+    //    「どうすればよいか」の行が日本語だけだったため、
+    //    ポーランド人の客に何も伝わらなかった。
+    document.getElementById('card-area').innerHTML = `
+      <div style="text-align:center;padding:.5rem;font-size:.84rem;line-height:1.85;color:var(--accent)">
+        <b>Pieczątka mogła zostać dodana.</b><br>
+        <b>The stamp may have been added.</b><br>
+        <b>ポイントは付いている可能性があります。</b>
+      </div>
+      <div style="padding:.6rem .7rem;margin-top:.5rem;background:rgba(255,252,245,.9);
+        border-radius:9px;font-size:.78rem;line-height:1.75;color:var(--muted);text-align:left">
+        🇵🇱 Sprawdź punkty na swojej karcie członkowskiej.
+        Jeśli się nie zmieniły — spróbuj ponownie albo poproś obsługę.
+        <b>Pieczątka nie może zostać dodana dwa razy tego samego dnia.</b><br><br>
+        🇬🇧 Check the points on your member card.
+        If they haven't changed — try again or ask our staff.
+        <b>A stamp cannot be added twice on the same day.</b><br><br>
+        🇯🇵 会員カードでポイントをご確認ください。
+        増えていなければ、もう一度お試しいただくか、係員にお尋ねください。
+        <b>同じ日に2回付くことはありません。</b>
+      </div>`;
 
   } else if (res.status === 'notFound') {
     // ⚠️ 2026-09-13 追加。GAS は10種類の status を返すが、
@@ -1195,14 +1225,28 @@ function generateMemberQr(elId, memberId) {
 }
 
 // ── GAS通信 ──────────────────────────────────────────────────────
+// ⚠️ 2026-09-18：時間制限を設けた。
+//    旧版は応答が届かないと**「処理中」のまま永久に回り続けていた**。
+//    サーバーは 6.5秒 で完了しているのに応答が届かない事例があり、
+//    客は何が起きたか分からないまま放置される。
+//    20秒で打ち切り、「届いている可能性がある」と伝える。
+const GAS_TIMEOUT_MS = 20000;
+
 async function postGAS(data) {
   if (!GAS_URL) throw new Error('GAS URL未設定 / GAS URL not set');
-  const res = await fetch(GAS_URL, {
-    method:'POST', mode:'cors',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body: JSON.stringify(data)
-  });
-  return await res.json();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), GAS_TIMEOUT_MS);
+  try {
+    const res = await fetch(GAS_URL, {
+      method:'POST', mode:'cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(data),
+      signal: ctrl.signal
+    });
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ── メール記憶 ────────────────────────────────────────────────────
