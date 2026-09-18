@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v74-20260913</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v76-20260918</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v74-20260913</div>
+    <div class="ver-tag">v76-20260918</div>
   </div>
 </div>
 
@@ -4572,10 +4572,23 @@ async function placeOrder() {
     document.getElementById('sending-screen').classList.remove('open');
 
     // 送信失敗 → お礼画面を出さず、確認画面に戻して再試行を促す
+    //
+    // ⚠️ 2026-09-18：ここの文言を改めた。
+    //    実際には**サーバー側は成功しているのに応答が届かない**ことがあり、
+    //    「失敗しました」とだけ出すと客は当然再送信し、厨房に同じ注文が
+    //    2回流れる。（実際に起きた）
+    //    GAS側に orderId による二重防止を入れたので再送信しても安全だが、
+    //    客が不安にならないよう「届いている可能性もある」と伝える。
     if (sendFailed || !res) {
       document.getElementById('btn-order').disabled = false;
       document.getElementById('confirm-modal').classList.add('open');
-      showToast('⚠️ Nie udało się wysłać zamówienia — spróbuj ponownie / 送信に失敗しました。もう一度お試しください', true);
+      // 他の画面と同じく3言語で揃える（ポーランド語 / 英語 / 日本語）
+      showToast('⚠️ Brak odpowiedzi — zamówienie mogło dotrzeć. '
+        + 'Naciśnij ponownie (nie zdublujemy) lub zapytaj obsługę / '
+        + 'No response — your order may have arrived. '
+        + 'Tap again (no duplicate) or ask our staff / '
+        + '応答がありません。注文は届いている可能性があります。'
+        + 'もう一度押しても二重にはなりません。係員にお尋ねください', true);
       return;
     }
   }
