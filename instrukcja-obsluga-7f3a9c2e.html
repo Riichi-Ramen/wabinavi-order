@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.10 · Toruń</div>
+  <div class="ver">System v8.11 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -263,6 +263,38 @@ async function sha256(t) {
     Temat / 件名： <code>foto:r4</code> &nbsp;lub / または&nbsp; <code>foto:promo_lato</code><br>
     Treść / 本文： — (puste / 空でOK)<br>
     Załącznik / 添付： 1 zdjęcie / 写真1枚</div>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">
+    ⚡ Jeśli menu ładuje się wolno
+    <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ メニューの表示が遅いとき（店主のみ）</span></h3>
+
+  <div class="note warn"><b>⚠️ Tylko właściciel / 店主専用。</b>
+    Personel nie uruchamia. / <span class="jp">従業員は実行しない。</span></div>
+
+  <p style="font-size:.86rem;margin-top:.3rem">
+    Aplikacja pobiera zdjęcia tylko tych dań, które mają <code>uploaded</code>
+    w kolumnie <b>R</b> arkusza menu. Jeśli ta kolumna jest nieaktualna,
+    aplikacja próbuje pobrać nieistniejące zdjęcia i <b>menu ładuje się bardzo wolno</b>. /
+    <span class="jp">注文アプリは、メニューシートの<b>R列「写真 / Photo」</b>が
+    <code>uploaded</code> の商品だけ写真を読み込みます。<br>
+    この列が古いままだと、<b>存在しない写真を何十枚も取りに行き、
+    メニューの表示に30〜40秒かかります</b>（2026-09-18に実際に発生）。</span></p>
+
+  <ol>
+    <li>Apps Script → wybierz funkcję <code>syncPhotoStatus</code> → <b>Uruchom</b>.
+      <span class="pl">Apps Script の関数一覧から <code>syncPhotoStatus</code> を選んで<b>実行</b>。</span></li>
+    <li>System sprawdza, które zdjęcia naprawdę istnieją, i aktualizuje kolumnę R.
+      <span class="pl">実際にどの写真が存在するか調べて、R列を更新します。</span></li>
+    <li>Gotowe. <b>Bez wdrażania.</b> Menu ładuje się od razu szybciej.
+      <span class="pl">それだけ。<b>デプロイ不要</b>。すぐに速くなります。</span></li>
+  </ol>
+
+  <div class="note"><b>📝 Kiedy uruchamiać / いつ実行するか</b><br>
+    <span class="jp">・写真をメールで何枚か追加したあと<br>
+    ・メニューの表示が遅く感じるとき<br>
+    ・商品をまとめて追加したあと<br><br>
+    毎回でなくて構いません。<b>月に一度</b>くらいで十分です。
+    写真を1枚足しただけなら、実行しなくても表示が少し遅くなるだけで支障はありません。</span></div>
 </section>
 
 <!-- 4b. SNS投稿パッケージ -->
@@ -948,7 +980,7 @@ async function sha256(t) {
 
 <div class="foot">
   📍 Wabi Navi — ul. Małe Garbary 5A, 87-100 Toruń<br>
-  和美なび · System v8.10 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
+  和美なび · System v8.11 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
 </div>
 </div>
 
