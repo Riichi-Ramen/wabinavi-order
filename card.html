@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
+<meta name="wabi-version" content="card-20260920">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび — 会員カード / Karta Członkowska</title>
 <style>
@@ -257,8 +258,27 @@ function switchCardIdTab(tab) {
 
 function getCardMemberId() {
   return cardIdTab === 'email'
-    ? document.getElementById('card-email').value.trim()
-    : document.getElementById('card-phone').value.trim();
+    ? document.getElementById('card-email').value.normalize('NFKC').trim()
+    : document.getElementById('card-phone').value.normalize('NFKC').trim();
+}
+
+// 2026-09-20：照合で送った値を見せ、桁の入力ミスをその場で確認できるようにする。
+function formatSentContact(v) {
+  const raw = String(v == null ? '' : v).normalize('NFKC');
+  const escapeHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  if (raw.includes('@')) return escapeHtml(raw);
+  const digits = raw.replace(/\D/g, '');
+  // 数字を含まない入力は、打った文字をそのまま見せる（「0桁」では何を打ったか分からない）
+  if (!digits) return '«' + escapeHtml(raw.trim()) + '»';
+  // +48 付きは国番号を分けて見せる（頭から3桁ずつだと「486 697…」と崩れて見えるため）
+  const grouped = (digits.length === 11 && digits.startsWith('48'))
+    ? '+48 ' + digits.slice(2).replace(/(.{3})/g, '$1 ').trim()
+    : digits.replace(/(.{3})/g, '$1 ').trim();
+  const count = digits.length;
+  const warning = count === 9 || (count === 11 && digits.startsWith('48')) ? '' :
+    '<br><strong>⚠️ Polski numer ma 9 cyfr. / Polish numbers have 9 digits. / ポーランドの番号は9桁です。</strong>';
+  return escapeHtml(grouped) + `（${count}桁 / ${count} cyfr / ${count} digits）` + warning;
 }
 
 const RANKS = [
@@ -343,8 +363,6 @@ async function loadCard() {
       '<div class="not-found">Wpisz poprawny adres e-mail / Enter a valid e-mail<br><small>正しいメールアドレスを入力してください</small></div>';
     return;
   }
-  localStorage.setItem('wabi_stamp_id', email);
-  localStorage.setItem('wabi_stamp_id_type', cardIdTab);
   if (!GAS_URL) {
     document.getElementById('card-area').innerHTML =
       `<div class="not-found" style="line-height:1.8">⚙️ システム準備中です。<br>お手数ですが係員にお声がけください。<br>
@@ -363,13 +381,16 @@ async function loadCard() {
     });
     const data = await res.json();
     if (data.status === 'ok') {
+      // 2026-09-20：照合が通ってから記憶する（打ち間違えた番号が stamp.html にも残るのを防ぐ）
+      try { localStorage.setItem('wabi_stamp_id', email);
+            localStorage.setItem('wabi_stamp_id_type', cardIdTab); } catch (e) {}
       // 📣 店主がシートに書いた告知（2026-09-13）
       window._cardPromo = data.promo || null;
       renderFullCard(data.member);
       document.getElementById('login-form').style.display = 'none';
       showRefreshBar();
       startAutoRefresh();
-    } else {
+    } else if (data.status === 'notFound') {
       document.getElementById('card-area').innerHTML = `
         <div class="not-found">
           Ten kontakt nie jest zarejestrowany.<br>
@@ -380,7 +401,21 @@ async function loadCard() {
             Try the contact you used when registering.<br>
             ご登録時の連絡先をお試しください。
           </small><br><br>
+          入力: ${formatSentContact(email)}<br><br>
           <a href="stamp.html" style="color:var(--accent);font-weight:700">🌸 新規登録はこちら / Zarejestruj się</a>
+        </div>`;
+    } else {
+      // 2026-09-20：サーバー障害を「未登録」と誤解させず、係員が診断できる情報を残す。
+      const status = String(data.status || '').slice(0, 120);
+      const message = String(data.message || '').slice(0, 120);
+      const escapeDiagnostic = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      document.getElementById('card-area').innerHTML = `
+        <div class="not-found" style="line-height:1.8">
+          ⚠️ Chwilowy problem z systemem. Prosimy zgłosić obsłudze.<br>
+          A temporary system problem occurred. Please tell our staff.<br>
+          システムで問題が発生しました。お手数ですが係員にお声がけください。<br>
+          <small>status: ${escapeDiagnostic(status)}<br>message: ${escapeDiagnostic(message)}</small>
         </div>`;
     }
   } catch(e) {

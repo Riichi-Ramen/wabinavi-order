@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
+<meta name="wabi-version" content="stamp-20260920">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — Stamp / スタンプ</title>
 <style>
@@ -565,13 +566,32 @@ function switchCardTab(tab) {
 // 入力値を取得（メールまたは電話番号）
 function getStampId() {
   return stampTab === 'email'
-    ? document.getElementById('email-input').value.trim()
-    : document.getElementById('phone-input').value.trim();
+    ? document.getElementById('email-input').value.normalize('NFKC').trim()
+    : document.getElementById('phone-input').value.normalize('NFKC').trim();
 }
 function getCardId() {
   return cardTab === 'email'
-    ? document.getElementById('card-email-input').value.trim()
-    : document.getElementById('card-phone-input').value.trim();
+    ? document.getElementById('card-email-input').value.normalize('NFKC').trim()
+    : document.getElementById('card-phone-input').value.normalize('NFKC').trim();
+}
+
+// 2026-09-20：照合で送った値を見せ、桁の入力ミスをその場で確認できるようにする。
+function formatSentContact(v) {
+  const raw = String(v == null ? '' : v).normalize('NFKC');
+  const escapeHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  if (raw.includes('@')) return escapeHtml(raw);
+  const digits = raw.replace(/\D/g, '');
+  // 数字を含まない入力は、打った文字をそのまま見せる（「0桁」では何を打ったか分からない）
+  if (!digits) return '«' + escapeHtml(raw.trim()) + '»';
+  // +48 付きは国番号を分けて見せる（頭から3桁ずつだと「486 697…」と崩れて見えるため）
+  const grouped = (digits.length === 11 && digits.startsWith('48'))
+    ? '+48 ' + digits.slice(2).replace(/(.{3})/g, '$1 ').trim()
+    : digits.replace(/(.{3})/g, '$1 ').trim();
+  const count = digits.length;
+  const warning = count === 9 || (count === 11 && digits.startsWith('48')) ? '' :
+    '<br><strong>⚠️ Polski numer ma 9 cyfr. / Polish numbers have 9 digits. / ポーランドの番号は9桁です。</strong>';
+  return escapeHtml(grouped) + `（${count}桁 / ${count} cyfr / ${count} digits）` + warning;
 }
 
 // ── GAS URLが未設定の場合の案内 ──
@@ -696,7 +716,9 @@ async function doStamp() {
 
 function renderStampResult(res) {
   // 照合が通った連絡先だけを端末に記憶する
-  if (res && res.status !== 'notMember' && res.status !== 'error') {
+  // 2026-09-20：会員を確認できた結果のときだけ記憶する。
+  //   badCode（コード違い）と timeout は会員を確認する前に止まっているので記憶しない。
+  if (res && ['ok','alreadyStamped','noRamen','expired'].indexOf(res.status) >= 0) {
     try { saveEmail(getStampId()); } catch (e) {}
   }
   document.getElementById('card-area').innerHTML = '';
@@ -757,7 +779,9 @@ function renderStampResult(res) {
     icon.textContent  = '🌸';
     title.textContent = '未登録 / Niezarejestrowany / Not registered';
     msg.textContent   = '';
-    document.getElementById('card-area').innerHTML = notRegisteredHtml();
+    document.getElementById('card-area').innerHTML =
+      '<div style="text-align:center">入力: ' + formatSentContact(getStampId()) + '</div>' +
+      notRegisteredHtml();
 
   } else if (res.status === 'timeout') {
     icon.textContent  = '⏳';
@@ -766,7 +790,8 @@ function renderStampResult(res) {
     // 全行を3言語で揃える（2026-09-18）。
     //    「どうすればよいか」の行が日本語だけだったため、
     //    ポーランド人の客に何も伝わらなかった。
-    document.getElementById('card-area').innerHTML = `
+    document.getElementById('card-area').innerHTML =
+      '<div style="text-align:center">入力: ' + formatSentContact(getStampId()) + '</div>' + `
       <div style="text-align:center;padding:.5rem;font-size:.84rem;line-height:1.85;color:var(--accent)">
         <b>Pieczątka mogła zostać dodana.</b><br>
         <b>The stamp may have been added.</b><br>
@@ -834,7 +859,6 @@ async function doGetCard() {
     showError('card-error','正しいメールアドレスを入力してください / Enter valid email');
     return;
   }
-  saveEmail(email);
   if (!GAS_URL) {
     document.getElementById('card-display').innerHTML = connectionErrorHtml();
     return;
@@ -844,9 +868,25 @@ async function doGetCard() {
   try {
     const res = await postGAS({action:'getCard', email});
     if (res.status === 'ok') {
+      saveEmail(email);
       document.getElementById('card-display').innerHTML = renderCard(res.member);
+    } else if (res.status === 'notFound' || res.status === 'notMember') {
+      document.getElementById('card-display').innerHTML =
+        '<div style="text-align:center">入力: ' + formatSentContact(email) + '</div>' +
+        notRegisteredHtml();
     } else {
-      document.getElementById('card-display').innerHTML = notRegisteredHtml();
+      // 2026-09-20：サーバー障害を「未登録」と誤解させず、係員が診断できる情報を残す。
+      const status = String(res.status || '').slice(0, 120);
+      const message = String(res.message || '').slice(0, 120);
+      const escapeDiagnostic = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      document.getElementById('card-display').innerHTML = `
+        <div style="text-align:center;line-height:1.8;color:var(--accent)">
+          ⚠️ Chwilowy problem z systemem. Prosimy zgłosić obsłudze.<br>
+          A temporary system problem occurred. Please tell our staff.<br>
+          システムで問題が発生しました。お手数ですが係員にお声がけください。<br>
+          <small>status: ${escapeDiagnostic(status)}<br>message: ${escapeDiagnostic(message)}</small>
+        </div>`;
     }
   } catch(e) {
     document.getElementById('card-display').innerHTML = connectionErrorHtml();

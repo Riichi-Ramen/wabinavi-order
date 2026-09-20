@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v77-20260918</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v79-20260920</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v77-20260918</div>
+    <div class="ver-tag">v79-20260920</div>
   </div>
 </div>
 
@@ -1785,11 +1785,30 @@ function showVerifyError(msg) {
   el.style.display = 'block';
 }
 
+// 2026-09-20：照合で送った値を見せ、桁の入力ミスをその場で確認できるようにする。
+function formatSentContact(v) {
+  const raw = String(v == null ? '' : v).normalize('NFKC');
+  const escapeHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  if (raw.includes('@')) return escapeHtml(raw);
+  const digits = raw.replace(/\D/g, '');
+  // 数字を含まない入力は、打った文字をそのまま見せる（「0桁」では何を打ったか分からない）
+  if (!digits) return '«' + escapeHtml(raw.trim()) + '»';
+  // +48 付きは国番号を分けて見せる（頭から3桁ずつだと「486 697…」と崩れて見えるため）
+  const grouped = (digits.length === 11 && digits.startsWith('48'))
+    ? '+48 ' + digits.slice(2).replace(/(.{3})/g, '$1 ').trim()
+    : digits.replace(/(.{3})/g, '$1 ').trim();
+  const count = digits.length;
+  const warning = count === 9 || (count === 11 && digits.startsWith('48')) ? '' :
+    '<br><strong>⚠️ Polski numer ma 9 cyfr. / Polish numbers have 9 digits. / ポーランドの番号は9桁です。</strong>';
+  return escapeHtml(grouped) + `（${count}桁 / ${count} cyfr / ${count} digits）` + warning;
+}
+
 // ── 会員照合 → 登録済みなら即メニューへ ──────────────────────────
 async function verifyMemberAndOrder() {
   const id = (verifyTab === 'email'
     ? document.getElementById('verify-email-input').value
-    : document.getElementById('verify-phone-input').value).trim();
+    : document.getElementById('verify-phone-input').value).normalize('NFKC').trim();
 
   document.getElementById('verify-error').style.display = 'none';
 
@@ -1848,12 +1867,24 @@ async function verifyMemberAndOrder() {
       window.scrollTo(0, 0);
       launchMenu();
       showToast(`⭐ ${memberName || 'Witamy'}様、いらっしゃいませ！ / Witamy ponownie!`, false);
-    } else {
+    } else if (data.status === 'notFound') {
       // ❌ 未登録
       showVerifyError(
         '登録が見つかりませんでした。<br>' +
         'Nie znaleziono rejestracji. / Registration not found.<br>' +
-        '<small>入力内容をご確認いただくか、下の「新規登録」からご登録ください。</small>');
+        '<small>入力内容をご確認いただくか、下の「新規登録」からご登録ください。</small><br>' +
+        '入力: ' + formatSentContact(id));
+    } else {
+      // 2026-09-20：サーバー障害を「未登録」と誤解させず、係員が診断できる情報を残す。
+      const status = String(data.status || '').slice(0, 120);
+      const message = String(data.message || '').slice(0, 120);
+      const escapeDiagnostic = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      showVerifyError(
+        '⚠️ Chwilowy problem z systemem. Prosimy zgłosić obsłudze.<br>' +
+        'A temporary system problem occurred. Please tell our staff.<br>' +
+        'システムで問題が発生しました。お手数ですが係員にお声がけください。<br>' +
+        '<small>status: ' + escapeDiagnostic(status) + '<br>message: ' + escapeDiagnostic(message) + '</small>');
     }
   } catch(e) {
     showVerifyError('通信エラー / Błąd połączenia / Connection error.<br><small>もう一度お試しください / Spróbuj ponownie</small>');
@@ -4561,8 +4592,16 @@ async function placeOrder() {
   let sendFailed = false;
   if (gasUrl) {
     document.getElementById('sending-screen').classList.add('open');
+    // ⚠️ 2026-09-18：時間制限を設けた。
+    //    旧版は応答が届かないと**「送信中」のまま永久に回り続けていた**。
+    //    客は何が起きたか分からず、タブを閉じるか押し直すしかない。
+    //    30秒で打ち切る。GAS側に orderId による二重防止があるので、
+    //    再送信しても注文が2件になることはない。
+    const _ctrl  = new AbortController();
+    const _timer = setTimeout(() => _ctrl.abort(), 30000);
     try {
       const response = await fetch(gasUrl, {
+        signal: _ctrl.signal,
         method:'POST', mode:'cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({
@@ -4590,6 +4629,7 @@ async function placeOrder() {
       });
       res = await response.json();
     } catch(e) { sendFailed = true; }
+    finally { clearTimeout(_timer); }
     document.getElementById('sending-screen').classList.remove('open');
 
     // 送信失敗 → お礼画面を出さず、確認画面に戻して再試行を促す
