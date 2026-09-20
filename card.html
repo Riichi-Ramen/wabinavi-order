@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="card-20260920">
+<meta name="wabi-version" content="card-20260920b">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび — 会員カード / Karta Członkowska</title>
 <style>
@@ -215,7 +215,7 @@ body{
 
   <!-- ── ログインフォーム ── -->
   <div class="login-card" id="login-form">
-    <label class="form-label">🪪 会員ID / ID członka / Member ID</label>
+    <label class="form-label">📱 電話番号またはメール / Telefon lub e-mail / Phone or e-mail</label>
     <!-- 📱 既定は電話番号（2026-09-13）。スマホではメールを打つより早く、
        客も自分の番号のほうを覚えているため。 -->
     <div class="id-tabs">
@@ -355,7 +355,7 @@ async function loadCard() {
   const email = getCardMemberId();
   if (!email) {
     document.getElementById('card-area').innerHTML =
-      '<div class="not-found">会員IDを入力してください / Enter member ID</div>';
+      '<div class="not-found">電話番号またはメールを入力してください / Wpisz telefon lub e-mail / Enter phone or e-mail</div>';
     return;
   }
   if (cardIdTab === 'email' && !email.includes('@')) {
