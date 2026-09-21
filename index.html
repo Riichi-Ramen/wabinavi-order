@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v80-20260920</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v81-20260920</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v80-20260920</div>
+    <div class="ver-tag">v81-20260920</div>
   </div>
 </div>
 
@@ -3512,8 +3512,13 @@ function refreshPrice(id) {
     const same = lineKeys(b).filter(x => payerKey(cart[x]) === payerKey(o));
     if (same.length > 1) tag = ` #${same.indexOf(key) + 1}`;
   }
+  // 2026-09-20：「この1杯（miska / bowl）」はラーメンと丼物だけ。
+  //   餃子やドリンクにも出ていて意味が通らなかった（店主の指摘）。
+  const label = isLineItem(b)
+    ? `Ta miska${tag} / This bowl / この1杯`
+    : `Ta pozycja / This item / この品`;
   el.innerHTML = base +
-    `<div class="line-now">Ta miska${tag} / This bowl / この1杯：<strong>${now} zł</strong></div>`;
+    `<div class="line-now">${label}：<strong>${now} zł</strong></div>`;
 }
 
 function updateBadge() {
