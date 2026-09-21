@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.12 · Toruń</div>
+  <div class="ver">System v8.13 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -629,6 +629,45 @@ async function sha256(t) {
     <b>すでに厨房へ送信した注文は消えません。</b>取り消しはレジまたは厨房でご対応ください。</span></div>
 </section>
 
+<!-- 注文アプリ：通信が悪いとき・重複の印（v8.13・2026-09-20） -->
+<section>
+  <h2>📶 Słaby internet i duplikaty <span class="pl">通信が悪いとき・重複の印</span></h2>
+  <span class="path">Aplikacja gościa / arkusz zamówień / ekran kuchenny (📝)</span>
+
+  <div class="note"><b>🔎 „Sprawdzamy, czy zamówienie dotarło…" / 「注文の到着を確認しています…」</b><br>
+    Przy słabym internecie aplikacja sama sprawdza, czy zamówienie dotarło. Trwa to do ok. 1 minuty.
+    Poproś gościa, żeby <b>poczekał i nic nie naciskał</b>. /
+    <span class="jp">通信が悪いとき、アプリが自動で「注文が届いたか」を確かめます（最大1分ほど）。
+    お客様には<b>何も押さずに待っていただく</b>よう伝えてください。</span></div>
+
+  <div class="note"><b>✅ „Poprzednie zamówienie dotarło" / 「前回のご注文は届いています」</b><br>
+    Pojawia się, gdy gość naciska „Zamawiam" ponownie, a poprzednie zamówienie już dotarło do kuchni.
+    Gość wybiera:<br>
+    ・<b>Tylko poprzednie</b> — jeśli chciał tylko ponowić to samo zamówienie<br>
+    ・<b>Zamów to dodatkowo</b> — jeśli naprawdę chce zamówić coś więcej /
+    <span class="jp">お客様が「注文する」をもう一度押したとき、前回の注文がすでに厨房に届いていれば出ます。<br>
+    ・<b>前回の注文だけでよい</b>：同じ注文を送り直そうとしただけのとき<br>
+    ・<b>今の内容を追加で注文する</b>：本当に追加で頼みたいとき<br>
+    迷っているお客様には、画面の「前回の内容」を一緒に見て確認してください。</span></div>
+
+  <div class="note warn"><b>⚠️ MOŻLIWY DUPLIKAT / 重複の可能性</b><br>
+    W arkuszu zamówienie ma <b>żółte tło</b>, a na ekranie kuchennym w notatce 📝 jest
+    „⚠️ MOŻLIWY DUPLIKAT — sprawdź przy stoliku".
+    Ten sam stolik zamówił prawie to samo w ciągu 3 minut.
+    <b>Zanim kuchnia przygotuje drugie</b>, zapytaj przy stoliku, czy to jest dodatkowe zamówienie.
+    Czasem to prawdziwe dodatkowe zamówienie (np. jeszcze jedno piwo) — wtedy po prostu realizuj. /
+    <span class="jp">注文シートではその注文が<b>黄色</b>になり、キッチン画面ではカードのメモ欄（📝）に
+    「⚠️ MOŻLIWY DUPLIKAT」と出ます。<b>同じテーブルから3分以内に、ほぼ同じ内容</b>の注文が来たしるしです。<br>
+    <b>厨房が2つ目を作り始める前に</b>、テーブルで「追加のご注文ですか？」と確認してください。<br>
+    本当の追加注文（ビールをもう1本など）でも出ることがあります。その場合はそのまま作ってください。
+    二重だった場合の取り消しは、これまでどおりレジまたは厨房で。</span></div>
+
+  <div class="note"><b>✅ „Pieczątka jest dodana" / 「スタンプは付いています」</b><br>
+    Przy słabym internecie aplikacja stempla sama ponawia próbę. Ten komunikat oznacza, że pieczątka
+    <b>jest</b> — wszystko w porządku. /
+    <span class="jp">通信が悪いとき、スタンプ画面は自動でもう一度送ります。この表示はスタンプが<b>付いている</b>という意味で、正常です。</span></div>
+</section>
+
 <!-- 会員カードの告知文 -->
 <section>
   <h2>📣 Ogłoszenie na karcie <span class="pl">会員カードの告知文（店主のみ）</span></h2>
@@ -902,6 +941,10 @@ async function sha256(t) {
     <tr><td>Kamera się nie włącza <span class="jp">/ カメラが起動しない</span></td>
         <td>Zezwól przeglądarce na dostęp do kamery, albo wpisz numer ręcznie
           <span class="jp">/ ブラウザのカメラ許可を出すか、手入力に切り替える</span></td></tr>
+    <tr><td>„Nie można potwierdzić zamówienia" <span class="jp">/「確認できませんでした」</span></td>
+        <td>Internet gościa nie działa. Sprawdź w arkuszu (albo na ekranie kuchennym), czy jest zamówienie z tego stolika;
+          jeśli nie ma — przyjmij zamówienie ustnie
+          <span class="jp">/ お客様の通信が不調。注文シート（またはキッチン画面）でそのテーブルの注文があるか確認し、無ければ口頭で受ける</span></td></tr>
     <tr><td>Nie pamiętam jak… <span class="jp">/ やり方を忘れた</span></td>
         <td>Ta instrukcja + „書き方" w arkuszu <span class="jp">/ この紙＋シート内の凡例</span></td></tr>
   </table>
@@ -981,7 +1024,7 @@ async function sha256(t) {
 
 <div class="foot">
   📍 Wabi Navi — ul. Małe Garbary 5A, 87-100 Toruń<br>
-  和美なび · System v8.12 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
+  和美なび · System v8.13 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
 </div>
 </div>
 

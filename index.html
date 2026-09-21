@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v79-20260920</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v80-20260920</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v79-20260920</div>
+    <div class="ver-tag">v80-20260920</div>
   </div>
 </div>
 
@@ -1371,7 +1371,7 @@ body.show-config .config-bar{display:flex}
 
 <div id="sending-screen">
   <div class="spinner"></div>
-  <div style="color:var(--accent);font-weight:700">Wysyłanie… / Sending…</div>
+  <div id="sending-message" style="color:var(--accent);font-weight:700">Wysyłanie… / Sending…</div>
 </div>
 
 <div id="success-screen">
@@ -1555,6 +1555,7 @@ let urlTable  = "";
 let tableNum  = "";
 let guestNum  = "";
 let cart      = Object.create(null);
+let pendingOrder = null;
 
 // ══ 🛍️ v40: 商品ごとの提供方法（店内/持ち帰り/会計時渡し）＋容器代 ══
 // 容器代は【商品ごと】の単価（2026-09-10 改訂）。
@@ -4502,6 +4503,83 @@ function buildMods(lineKey) {
   };
 }
 
+// 2026-09-20：送信結果が不明な注文は、同じ指紋と注文番号で安全に再確認する。
+function orderFingerprint_(value) {
+  const text = JSON.stringify(value);
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+// 2026-09-20（Claude 検証で追加）：「送信済みの記録」の材料。
+//   「前回の注文だけでよい」を選んだとき、今のカートではなく**前回送った内容**を
+//   送信済みとして残すために、送信する時点で取っておく。会計の分割がこれを使う。
+function snapOrder_(total) {
+  let persons = null;
+  try { const sp = computeSplitTotals(); persons = sp ? sp.finals.slice() : null; } catch (e) {}
+  const lines = [];
+  try {
+    for (const cid in cart) {
+      const it = findItem(cid);
+      if (!it) continue;
+      lines.push({ id: cid, name: (it.nameJP || it.namePL || cid), namePL: (it.namePL || cid),
+        qty: cart[cid].qty || 1, line: lineTotalOf(cid), payers: getPayers(cart[cid]).slice() });
+    }
+  } catch (e) {}
+  return { total: total, persons: persons, lines: lines, coupon: selectedCoupon || null };
+}
+function orderSummary_(items, total) {
+  return items.map(function (item) { return item.namePL + " × " + item.qty; }).join("<br>") +
+    "<br><strong>Razem / Total / 合計: " + fmtZl(total) + "</strong>";
+}
+let orderStatusSleep_ = function (ms) { return new Promise(function (resolve) { setTimeout(resolve, ms); }); };
+async function checkOrderArrival_(orderId) {
+  const waits = [2000, 4000, 6000, 8000];
+  let readAny = false;
+  for (let i = 0; i < waits.length; i++) {
+    await orderStatusSleep_(waits[i]);
+    const ctrl = new AbortController();
+    const timer = setTimeout(function () { ctrl.abort(); }, 15000);
+    try {
+      const sep = getGasUrl().indexOf('?') >= 0 ? '&' : '?';
+      const response = await fetch(getGasUrl() + sep + "action=orderStatus&id=" + encodeURIComponent(orderId),
+        {method:"GET", mode:"cors", signal:ctrl.signal});
+      if (!response.ok) continue;
+      const result = await response.json();
+      if (result && result.status === "ok") {
+        readAny = true;
+        if (result.found === true) return {read:true, found:true};
+      }
+    } catch (e) {
+      // 次の確認へ進む。4回とも読めなければ read:false を返す。
+    } finally { clearTimeout(timer); }
+  }
+  return {read:readAny, found:false};
+}
+function chooseAfterPreviousOrder_(summary) {
+  return new Promise(function (resolve) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay open';
+    overlay.style.zIndex = '420';
+    overlay.innerHTML = '<div class="modal-box" style="max-width:520px">' +
+      '<h3>✅ Poprzednie zamówienie dotarło<br>Your previous order arrived<br>前回のご注文は届いています</h3>' +
+      '<div style="text-align:left;line-height:1.7;margin:1rem 0">' + summary + '</div>' +
+      '<button class="btn-order" data-choice="previous">Tylko poprzednie / Only the previous order / 前回の注文だけでよい</button>' +
+      '<button class="btn-back" style="margin-top:.7rem" data-choice="additional">Zamów to dodatkowo / Send this as an additional order / 今の内容を追加で注文する</button>' +
+      '<small style="display:block;margin-top:1rem">W razie wątpliwości zapytaj obsługę / If unsure, please ask our staff / わからないときは係員にお声がけください</small></div>';
+    document.body.appendChild(overlay);
+    overlay.querySelectorAll('[data-choice]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        const choice = button.getAttribute('data-choice');
+        overlay.remove();
+        resolve(choice);
+      });
+    });
+  });
+}
+
 async function placeOrder() {
   // 🛡 2026-09-13 追加：卓番・人数が空のまま送信されないようにする。
   //    クリア後にメニュー画面が残る不具合で、「Stolik」「os.」だけの
@@ -4528,7 +4606,7 @@ async function placeOrder() {
       (t.coupon ? ' ｜ 🎫kupon −'+fmtZl(t.coupon.discount)+' odliczony od '+t.coupon.who : '') +
       (uwagi ? ' ｜ ' + uwagi : '');
   }
-  const orderId = 'WN-' + Date.now().toString(36).toUpperCase();
+  let orderId = 'WN-' + Date.now().toString(36).toUpperCase();
   const ids     = Object.keys(cart);
   let total = 0;
   const items = ids.map(id => {
@@ -4585,12 +4663,55 @@ async function placeOrder() {
   if (perkCalc && perkCalc.discount > 0) savingsBreakdown.push({ label: '🎁', pl: 'Bonus rangi', jp: 'ランク特典', amt: perkCalc.discount });
   if (riceCalc.discount > 0) savingsBreakdown.push({ label: '🍚', pl: 'Zestaw z ryżem', jp: 'ライスセット', amt: riceCalc.discount });
 
+  const currentFp = orderFingerprint_({table:tableNum, guests:guestNum, uwagi:uwagi, total:total, items:items});
+  const currentSummary = orderSummary_(items, total);
+  let skipSend = false;
+  let previousSnap = null;   // 「前回だけ」を選んだときの送信済み記録
+  document.getElementById('btn-order').disabled = true;
+
+  // 2026-09-20：前回の応答が不明なら、内容を変えた再注文でも先に到着を確認する。
+  if (pendingOrder) {
+    const previous = pendingOrder;
+    document.getElementById('sending-message').textContent =
+      '🔎 Sprawdzamy, czy zamówienie dotarło… / Checking whether your order arrived… / 注文の到着を確認しています…';
+    document.getElementById('sending-screen').classList.add('open');
+    const arrival = await checkOrderArrival_(previous.id);
+    document.getElementById('sending-screen').classList.remove('open');
+    document.getElementById('sending-message').textContent = 'Wysyłanie… / Sending…';
+    if (!arrival.read) {
+      document.getElementById('btn-order').disabled = false;
+      showToast('⚠️ Nie można potwierdzić zamówienia. Zapytaj obsługę / ' +
+        'Could not confirm the order. Please ask our staff / ' +
+        '確認できませんでした。係員にお声がけください', true);
+      return;
+    }
+    if (arrival.found) {
+      const choice = await chooseAfterPreviousOrder_(previous.summary);
+      pendingOrder = null;
+      if (choice === 'previous') {
+        orderId = previous.id;
+        skipSend = true;
+        previousSnap = previous.snap || null;
+      } else {
+        orderId = 'WN-' + Date.now().toString(36).toUpperCase();
+      }
+    } else if (currentFp === previous.fp) {
+      orderId = previous.id;
+    } else {
+      orderId = 'WN-' + Date.now().toString(36).toUpperCase();
+    }
+  }
+
   document.getElementById('confirm-modal').classList.remove('open');
   document.getElementById('btn-order').disabled = true;
 
   let res = null;
   let sendFailed = false;
-  if (gasUrl) {
+  if (skipSend) {
+    res = {status:'ok', orderId:orderId, coseatResults:[], confirmed:true};
+  } else if (gasUrl) {
+    pendingOrder = {id:orderId, fp:currentFp, summary:currentSummary, snap:snapOrder_(total)};
+    persistState();
     document.getElementById('sending-screen').classList.add('open');
     // ⚠️ 2026-09-18：時間制限を設けた。
     //    旧版は応答が届かないと**「送信中」のまま永久に回り続けていた**。
@@ -4627,6 +4748,7 @@ async function placeOrder() {
           coseatMembers: coseatMembers
         })
       });
+      if (!response.ok) throw new Error('NoResponse');
       res = await response.json();
     } catch(e) { sendFailed = true; }
     finally { clearTimeout(_timer); }
@@ -4640,7 +4762,16 @@ async function placeOrder() {
     //    2回流れる。（実際に起きた）
     //    GAS側に orderId による二重防止を入れたので再送信しても安全だが、
     //    客が不安にならないよう「届いている可能性もある」と伝える。
-    if (sendFailed || !res) {
+    if (sendFailed || !res || res.status === 'busy') {
+      document.getElementById('sending-screen').classList.add('open');
+      document.getElementById('sending-message').textContent =
+        '🔎 Sprawdzamy, czy zamówienie dotarło… / Checking whether your order arrived… / 注文の到着を確認しています…';
+      const arrival = await checkOrderArrival_(orderId);
+      document.getElementById('sending-screen').classList.remove('open');
+      document.getElementById('sending-message').textContent = 'Wysyłanie… / Sending…';
+      if (arrival.found) {
+        res = {status:'ok', orderId:orderId, coseatResults:[], confirmed:true};
+      } else {
       document.getElementById('btn-order').disabled = false;
       document.getElementById('confirm-modal').classList.add('open');
       // 他の画面と同じく3言語で揃える（ポーランド語 / 英語 / 日本語）
@@ -4650,42 +4781,29 @@ async function placeOrder() {
         + 'Tap again (no duplicate) or ask our staff / '
         + '応答がありません。注文は届いている可能性があります。'
         + 'もう一度押しても二重にはなりません。係員にお尋ねください', true);
+      persistState();
       return;
+      }
     }
   }
 
   // 送信成功 → 使用クーポンを消し込み、カートを空にして完了画面へ
+  pendingOrder = null;
   // v48: この注文の客別内訳を残す。会計時に卓の全注文をまたいで合算するため。
-  let splitSnap = null;
-  try { splitSnap = computeSplitTotals(); } catch (e) { splitSnap = null; }
+  const snap = previousSnap || snapOrder_(total);
   // ※ 客別内訳はクーポン適用後の金額で持たせる必要があるため、
   //    selectedCoupon をリセットする前に計算しておく。
-  if (isMember && selectedCoupon && memberInfo.coupons) {
-    const ci = memberInfo.coupons.findIndex(c => !c.u && c.t === selectedCoupon);
+  if (isMember && snap.coupon && memberInfo.coupons) {
+    const ci = memberInfo.coupons.findIndex(c => !c.u && c.t === snap.coupon);
     if (ci >= 0) memberInfo.coupons.splice(ci, 1);
   }
   selectedCoupon = null;
   // 🧾 v58: 会計画面で割り当てをやり直せるよう、商品明細も残す。
 //    旧版は id と total と persons しか保存していなかったため、
 //    送信後に「この餃子は誰の分か」を決め直すことができなかった。
-  const lineSnap = [];
-  try {
-    for (const cid in cart) {
-      const it = findItem(cid);
-      if (!it) continue;
-      lineSnap.push({
-        id: cid,
-        name: (it.nameJP || it.namePL || cid),
-        namePL: (it.namePL || cid),
-        qty: cart[cid].qty || 1,
-        line: lineTotalOf(cid),
-        payers: getPayers(cart[cid]).slice()
-      });
-    }
-  } catch (e) {}
-  sessionOrders.push({ id: orderId, total: total,
-    persons: splitSnap ? splitSnap.finals.slice() : null,
-    lines: lineSnap });
+  sessionOrders.push({ id: orderId, total: snap.total,
+    persons: snap.persons,
+    lines: snap.lines });
   cart = Object.create(null);
   updateBadge();
   if (typeof persistState === 'function') persistState();
@@ -4694,7 +4812,8 @@ async function placeOrder() {
   document.getElementById('order-id-display').textContent = `Nr zamówienia / Order ID: ${orderId}`;
 
   // ⭐ お得額カード：合計値引きがあれば、確定直後にそっと見せる
-  renderSavingsCard(totalSavings, savingsBreakdown);
+  // 「前回だけ」のときは今のカートの値引きは確定していないので出さない
+  if (!previousSnap) renderSavingsCard(totalSavings, savingsBreakdown);
 
   // 同席会員のスタンプ結果を表示
   const coseatResultsData = res && res.coseatResults ? res.coseatResults : [];
@@ -5675,7 +5794,7 @@ function persistState() {
       cart, coseatMembers, sessionOrders, inMenu: menuOpen, t: Date.now(),
       orderModeDecided, orderGroups, groupTakeaway, groupSetupAssigned,
       currentGroupIndex, splitBill, groupBillingAuto, payGroups,
-      defaultPayers, addOrderMode, activeLine
+      defaultPayers, addOrderMode, activeLine, pendingOrder
     }));
   } catch (e) {}
 }
@@ -5703,7 +5822,7 @@ function tryRestoreState() {
     //   カートが空なら復元する意味がない（通知だけ出て紛らわしい）
     const hasItems = s.cart && Object.keys(s.cart).length > 0;
     const hasSent  = s.sessionOrders && s.sessionOrders.length > 0;
-    if (!hasItems && !hasSent) { clearPersistedState(); return false; }
+    if (!hasItems && !hasSent && !s.pendingOrder) { clearPersistedState(); return false; }
     tableNum = s.tableNum; guestNum = s.guestNum; isMember = s.isMember;
     memberContact = s.memberContact || ''; memberName = s.memberName || '';
     memberInfo = s.memberInfo || {};
@@ -5721,6 +5840,7 @@ function tryRestoreState() {
     defaultPayers      = s.defaultPayers || [];
     addOrderMode       = !!s.addOrderMode;
     activeLine         = s.activeLine || Object.create(null);
+    pendingOrder       = s.pendingOrder || null;
     ['welcome-screen','member-check-screen','register-prompt-screen'].forEach(sid => {
       const el = document.getElementById(sid); if (el) el.style.display = 'none';
     });
@@ -5748,7 +5868,8 @@ function tryRestoreState() {
       const r = await origPlace.apply(this, arguments);
       // 送信済みの注文を復元する意味はなく、次のお客様に見えると事故になる。
       // 画面遷移で再保存されるのを避けるため、少し待ってから消す。
-      setTimeout(clearPersistedState, 1500);
+      if (pendingOrder) persistState();
+      else setTimeout(clearPersistedState, 1500);
       return r;
     };
   }

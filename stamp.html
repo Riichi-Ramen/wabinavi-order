@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="stamp-20260920">
+<meta name="wabi-version" content="stamp-20260920b">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — Stamp / スタンプ</title>
 <style>
@@ -125,7 +125,7 @@ body{
 <!-- ══ SCREEN 1: 入力 ══ -->
 <div class="card screen active" id="screen-email">
   <label class="form-label">
-    🪪 会員ID / ID członka / Member ID
+    📱 電話番号またはメール / Telefon lub e-mail / Phone or e-mail
   </label>
   <!-- 📱 既定は電話番号（2026-09-13）。スマホではメールを打つより早く、
        客も自分の番号のほうを覚えているため。 -->
@@ -186,7 +186,7 @@ body{
 
 <!-- ══ SCREEN 3: 会員カード ══ -->
 <div class="card screen" id="screen-card">
-  <label class="form-label">🪪 会員ID / ID członka / Member ID</label>
+  <label class="form-label">📱 電話番号またはメール / Telefon lub e-mail / Phone or e-mail</label>
   <div class="id-tabs">
     <button class="id-tab active" id="tab-phone-card"
       onclick="switchCardTab('phone')">📱 Telefon</button>
@@ -670,7 +670,7 @@ function showError(id, msg) {
 async function doStamp() {
   const email = getStampId();
   if (!email) {
-    showError('email-error','会員IDを入力してください / Wprowadź ID członka / Enter member ID');
+    showError('email-error','電話番号またはメールを入力してください / Wprowadź telefon lub e-mail / Enter phone or e-mail');
     return;
   }
   if (stampTab === 'email' && !email.includes('@')) {
@@ -699,7 +699,8 @@ async function doStamp() {
   try {
     const codeEl = document.getElementById('stamp-code');
     const code   = codeEl ? codeEl.value.replace(/\D/g, '') : '';
-    const res = await postGAS({action:'stamp', email, code});
+    const request = {action:'stamp', email, code};
+    const res = await postGAS(request);
     // 通ったコードだけを端末に記憶する（間違ったコードは覚えない）
     if (res && res.status !== 'badCode' && code) {
       try { localStorage.setItem('wabi_stamp_code', code); } catch(e) {}
@@ -709,8 +710,23 @@ async function doStamp() {
     // 時間切れは別扱いにする（2026-09-18）。
     //    サーバー側は成功している可能性が高いので、
     //    「失敗」と断定せず、台帳を確かめるよう伝える。
-    renderStampResult({ status: (e && e.name === 'AbortError') ? 'timeout' : 'error',
-                        message: '' });
+    if (e && (e.name === 'AbortError' || e.name === 'NoResponse')) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      try {
+        const codeEl = document.getElementById('stamp-code');
+        const code = codeEl ? codeEl.value.replace(/\D/g, '') : '';
+        const retry = await postGAS({action:'stamp', email, code});
+        if (retry && retry.status !== 'badCode' && code) {
+          try { localStorage.setItem('wabi_stamp_code', code); } catch(e) {}
+        }
+        if (retry && retry.status === 'alreadyStamped') retry.retryConfirmed = true;
+        renderStampResult(retry);
+      } catch (retryError) {
+        renderStampResult({status:'timeout', message:''});
+      }
+    } else {
+      renderStampResult({status:'error', message:''});
+    }
   }
 }
 
@@ -752,6 +768,13 @@ function renderStampResult(res) {
         ${res.rank.icon} ${res.rank.name}<br>
         <small>Osiągnąłeś/aś poziom ${res.rank.name}! ／ You reached ${res.rank.name}! ／ ${res.rank.name} になりました！</small></div></div>`;
     }
+    if (res.member) cardArea.innerHTML = renderCard(res.member);
+
+  } else if (res.status === 'alreadyStamped' && res.retryConfirmed) {
+    icon.textContent  = '✅';
+    title.textContent = 'Pieczątka jest dodana / Your stamp has been added / スタンプは付いています';
+    msg.textContent   = '';
+    pts.style.display = 'none';
     if (res.member) cardArea.innerHTML = renderCard(res.member);
 
   } else if (res.status === 'alreadyStamped') {
@@ -852,7 +875,7 @@ function renderStampResult(res) {
 async function doGetCard() {
   const email = getCardId();
   if (!email) {
-    showError('card-error','会員IDを入力してください / Enter member ID');
+    showError('card-error','電話番号またはメールを入力してください / Wprowadź telefon lub e-mail / Enter phone or e-mail');
     return;
   }
   if (cardTab === 'email' && !email.includes('@')) {
@@ -1283,7 +1306,18 @@ async function postGAS(data) {
       body: JSON.stringify(data),
       signal: ctrl.signal
     });
-    return await res.json();
+    if (!res.ok) {
+      const error = new Error('No response');
+      error.name = 'NoResponse';
+      throw error;
+    }
+    try {
+      return await res.json();
+    } catch (e) {
+      const error = new Error('No response');
+      error.name = 'NoResponse';
+      throw error;
+    }
   } finally {
     clearTimeout(timer);
   }
