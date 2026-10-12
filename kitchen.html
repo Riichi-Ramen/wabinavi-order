@@ -187,7 +187,8 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 // ════════════════════════════════════════════════════════════════════
 
 const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec";
-function gasUrl(){ try{ return localStorage.getItem('wabi_gas_url') || DEFAULT_GAS_URL; }catch(e){ return DEFAULT_GAS_URL; } }
+try { localStorage.removeItem('wabi_gas_url'); } catch (e) {}   // 2026-09-20：端末ごとのGAS URL上書きは廃止（D7）。古い保存値を掃除する
+function gasUrl(){ return DEFAULT_GAS_URL; }   // 2026-09-20：端末ごとの上書きは廃止（D7）
 
 const POLL_MS   = 12000;   // 何ミリ秒ごとに注文を取りに行くか
 const WARN_MIN  = 10;      // 黄色点滅（分）

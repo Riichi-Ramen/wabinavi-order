@@ -106,7 +106,10 @@ select,input[type=text]{font-family:inherit;font-size:.9rem;padding:.5rem .6rem;
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-const GAS_URL = localStorage.getItem('wabi_gas_url') ||
+// 🔒 送り先はこのURLだけ（2026-09-20・D7：端末ごとの上書きを廃止。古い値が残ると黙って別のサーバーに繋がり、
+//    店のタブレットに他人のURLを仕込まれる危険もあったため）
+try { localStorage.removeItem('wabi_gas_url'); } catch (e) {}   // 2026-09-20：端末ごとのGAS URL上書きは廃止（D7）。古い保存値を掃除する
+const GAS_URL =
   'https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec';
 
 let BOOKS = [];
