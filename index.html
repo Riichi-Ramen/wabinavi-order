@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v81-20260920</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v82-20260920</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v81-20260920</div>
+    <div class="ver-tag">v82-20260920</div>
   </div>
 </div>
 
@@ -1265,7 +1265,7 @@ body.show-config .config-bar{display:flex}
 
   <div class="config-bar">
     <span>📡 Google Sheets:</span>
-    <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/…/exec" oninput="saveGasUrl()">
+    <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/…/exec" readonly title="固定（2026-09-20 以降は変更できません）">
     <button onclick="testGasUrl()">Save</button>
   </div>
 
@@ -1489,7 +1489,7 @@ function applyServerMenu(menu) {
 //    DEFAULT_GAS_URL は下方で宣言されるため、setTimeout で1周ずらして参照する。
 setTimeout(function fetchServerMenu(){
   try {
-    const gasUrl = localStorage.getItem('wabi_gas_url') || DEFAULT_GAS_URL;
+    const gasUrl = DEFAULT_GAS_URL;
     if (!gasUrl) return;
     fetch(gasUrl + '?action=getMenu')
       .then(r => r.json())
@@ -1508,7 +1508,7 @@ try { HIDDEN_ITEMS = new Set(JSON.parse(localStorage.getItem('wabi_hidden_items'
 
 setTimeout(function fetchHiddenItems(){   // ← 同じ理由で既定URLを使う（2026-09-08 修正）
   try {
-    const gasUrl = localStorage.getItem('wabi_gas_url') || DEFAULT_GAS_URL;
+    const gasUrl = DEFAULT_GAS_URL;
     if (!gasUrl) return;
     fetch(gasUrl + '?action=getHiddenItems')
       .then(r => r.json())
@@ -5691,10 +5691,11 @@ function resetApp() {
   document.getElementById('uwagi-ta').value = '';
 }
 
-function getGasUrl()    { try { return localStorage.getItem('wabi_gas_url') || DEFAULT_GAS_URL; } catch(e){ return DEFAULT_GAS_URL; } }
-function saveGasUrl()   { try { localStorage.setItem('wabi_gas_url', document.getElementById('gas-url-input').value.trim()); } catch(e){} }
+try { localStorage.removeItem('wabi_gas_url'); } catch (e) {}   // 2026-09-20：端末ごとのGAS URL上書きは廃止（D7）。古い保存値を掃除する
+function getGasUrl()    { return DEFAULT_GAS_URL; }   // 2026-09-20：端末ごとの上書きは廃止（D7）
+function saveGasUrl()   { /* 廃止（D7）。設定欄はURLの表示だけ */ }
 
-function testGasUrl()   { showToast("✅ URL zapisany / Saved",false); }
+function testGasUrl()   { showToast("🔒 Adres serwera jest stały / Server URL is fixed / 送り先は固定です",false); }
 
 function showToast(msg, isErr=true) {
   const el = document.getElementById('error-toast');
