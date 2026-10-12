@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v82-20260920</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v83-20261012</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v82-20260920</div>
+    <div class="ver-tag">v83-20261012</div>
   </div>
 </div>
 
@@ -922,11 +922,12 @@ body.show-config .config-bar{display:flex}
       🎉 Promocje i oferty specjalne / Special offers / 特別オファー<br>
       🎓 Zniżka studencka / Student discount / 学生割引<br>
       🧓 Zniżka senioralna / Senior discount / シニア割引<br>
-      🍜 Program lojalnościowy / Loyalty / ラーメン特典（1杯 = 10pt）:<br>
-      &nbsp;&nbsp;⭐ 50 pkt → 6. miska −50% / <strong>6th bowl half price</strong> / 6杯目 半額<br>
-      &nbsp;&nbsp;🎁 100 pkt → 12. miska GRATIS / <strong>12th bowl free</strong> / 12杯目 無料<br>
-      &nbsp;&nbsp;🔁 Dalej co 50 pkt na przemian / Then alternating every 50 pts /
-      以降50ptごとに交互（18杯目半額・24杯目無料…）<br>
+      🍜 Program lojalnościowy / Loyalty / スタンプカード:<br>
+      &nbsp;&nbsp;🎫 Karta pieczątek: jedna runda co 100 pkt. Kupon −50% przy 50 pkt, gratis przy 100 pkt.<br>
+      &nbsp;&nbsp;<strong>Stamp card: one round per 100 pts. Half-price coupon at 50 pts, free coupon at 100 pts.</strong><br>
+      &nbsp;&nbsp;スタンプカード：100ptで1周。50ptで半額券、100ptで無料券。<br>
+      &nbsp;&nbsp;🏅 Ranga / Rank / ランク: Sakura 0 / Ume 50 / Take 100 / Matsu 200 / Fuji 350 pt<br>
+      &nbsp;&nbsp;<small>Ranga nie spada poza 8 miesiącami bez wizyty / Rank does not go down except after 8 months without a visit / ランクは下がりません（8ヶ月ご来店がない場合を除く）</small><br>
       &nbsp;&nbsp;<small>※ Za miski −50% i gratis pkt nie są naliczane /
       Discounted and free bowls do not earn points / 半額・無料の丼はポイント対象外<br>
       &nbsp;&nbsp;※ −50% nie łączy się ze zniżką studencką i senioralną /
@@ -3887,7 +3888,7 @@ const RANK_TOPPING_PERK = {
 
 // 1来店1回（この卓の最初の注文で自動適用）。対象＝Dodatkiの単品トッピング
 function computeRankPerk() {
-  if (!isMember || sessionOrders.length > 0) return null;
+  if (!isMember || sessionOrders.length > 0 || selectedCoupon) return null;
   const rankKey = ((memberInfo && memberInfo.rank) || '').replace(/[^A-Za-z]/g, '');
   const perk = RANK_TOPPING_PERK[rankKey];
   if (!perk) return null;
@@ -3960,6 +3961,18 @@ function renderBonusBox() {
 function renderRankPerkBox() {
   const ta = document.getElementById('uwagi-ta');
   let box = document.getElementById('rankperk-area');
+  if (selectedCoupon) {
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'rankperk-area';
+      box.style.cssText = 'margin:.8rem 0;padding:.8rem .9rem;border:2px solid #b36b00;border-radius:12px;' +
+        'background:#fff7e6;font-size:.8rem;line-height:1.7;color:#704000';
+      ta.parentNode.insertBefore(box, ta);
+    }
+    box.innerHTML = '<strong>🎫 Nie łączy się z kuponem / Not combined with coupons / クーポン使用時はトッピング特典は使えません</strong>';
+    box.style.display = 'block';
+    return;
+  }
   const p = computeRankPerk();
   if (!p) { if (box) box.style.display = 'none'; return; }
   if (!box) {

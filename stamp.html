@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="stamp-20260920c">
+<meta name="wabi-version" content="stamp-20261012">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — Stamp / スタンプ</title>
 <style>
@@ -220,8 +220,8 @@ body{
     <small style="color:#7a6858">Zniżka studencka: -10% na ramen (legitymacja studencka)</small><br>
     🧓 <strong>シニア会員（65歳以上）:</strong> ラーメン10%引き<br>
     <small style="color:#7a6858">Zniżka seniora (65+): -10% na ramen (potwierdzenie wieku)</small><br>
-    ⚠️ <small style="color:#7a6858">割引は6杯目半額・無料ボーナスとの併用不可<br>
-    Zniżka nie łączy się z bonusem za 6. i 11. miskę</small>
+    ⚠️ <small style="color:#7a6858">学割・シニア割はクーポンとの併用不可<br>
+    Zniżka studencka i senioralna nie łączy się z kuponem</small>
   </div>
   <label class="form-label">👤 氏名 / Imię i nazwisko <span style="color:var(--accent)">★</span></label>
   <input class="form-input" type="text" id="reg-name" placeholder="Imię i Nazwisko">
@@ -613,9 +613,9 @@ const RANK_INFO = {
     ['Voucher powitalny na napój (kawa / herbata / lemoniada)',
      'Welcome drink voucher (coffee / tea / lemonade)',
      '入会ドリンク券1枚（コーヒー・紅茶・レモネード）'],
-    ['Cena standardowa (miski 1–5)',
-     'Standard price (bowls 1–5)',
-     '通常料金（1〜5杯目）'],
+    ['Karta pieczątek: 100 pkt = 1 runda (50 pkt → kupon −50%)',
+     'Stamp card: one round per 100 pts (half-price coupon at 50 pts)',
+     'スタンプカード：100ptで1周（50ptで半額券）'],
   ]},
   Ume:    {icon:'🏅', cls:'rank-ume', benefits:[
     ['Każda wizyta: 1 dodatek gratis (1–2 zł)',
@@ -789,9 +789,9 @@ function renderStampResult(res) {
   } else if (res.status === 'noRamen') {
     icon.textContent  = '🍜';
     // 拒絶ではなく案内の調子にする（ドリンクのみのご来店が多いため）
-    title.innerHTML   = 'Pieczątkę otrzymasz po zamówieniu ramenu.<br>' +
-                        'A stamp is added after you order ramen.<br>' +
-                        'スタンプはラーメンをご注文いただくと付きます。';
+    title.innerHTML   = 'Pieczątkę otrzymasz po zamówieniu ramenu lub donburi.<br>' +
+                        'A stamp is added after you order ramen or a rice bowl.<br>' +
+                        'スタンプはラーメンまたは丼物のご注文で付きます。';
     msg.textContent   = '';
 
   } else if (res.status === 'badCode') {
@@ -978,12 +978,14 @@ async function doRegister() {
           🎁 <strong>Bonus powitalny: voucher na napój!</strong><br>
           <small>Welcome gift: a free drink voucher! ／ 入会特典：ドリンク券1枚プレゼント！</small><br><br>
           <strong>🌸 Twoje korzyści ／ Your benefits ／ 会員特典一覧</strong><br>
-          🍜 1 miska = 10 pkt<br>
-          <small>1 bowl = 10 pts ／ ラーメン1杯 = 10ポイント</small><br>
-          ⭐ 50 pkt → 6. miska za pół ceny<br>
-          <small>50 pts → 6th bowl half price ／ 50pt → 6杯目が半額</small><br>
-          🎁 100 pkt → 12. miska gratis<br>
-          <small>100 pts → 12th bowl free ／ 100pt → 12杯目が無料</small><br>
+          🍜 Ramen = 10 pkt · Donburi = 7 pkt<br>
+          <small>Ramen = 10 pts · Rice bowl = 7 pts ／ ラーメン=10pt・丼物=7pt</small><br>
+          🎫 Karta pieczątek: 100 pkt = 1 runda<br>
+          <small>Stamp card: one round per 100 pts ／ スタンプカード：100ptで1周</small><br>
+          ⭐ 50 pkt: kupon −50% · 🎁 100 pkt: kupon gratis<br>
+          <small>50 pts: half-price coupon · 100 pts: free coupon ／ 50ptで半額券・100ptで無料券</small><br>
+          🏅 Sakura 0 / Ume 50 / Take 100 / Matsu 200 / Fuji 350 pt<br>
+          <small>Ranga nie spada poza 8 miesiącami bez wizyty / Rank does not go down except after 8 months without a visit / ランクは下がりません（8ヶ月ご来店がない場合を除く）</small><br>
           🎂 Urodziny: napój gratis<br>
           <small>Birthday month: a free drink ／ 誕生月：ドリンク1杯無料</small><br>
           🎓🧓 Studenci i seniorzy: −10% na ramen<br>
@@ -1221,10 +1223,8 @@ function renderCard(member) {
   const rank    = RANK_INFO[member.rank] || RANK_INFO.Sakura;
   const pts     = member.points || 0;
   const visits  = (member.history || []).length;
-  const nextMilestone = pts < 50 ? 50 : pts < 100 ? 100 : pts < 200 ? 200 :
-                        pts < 300 ? 300 : pts < 400 ? 400 : pts < 500 ? 500 : null;
-  const progressPct = nextMilestone
-    ? Math.min(100, Math.round((pts / nextMilestone)*100)) : 100;
+  const cardPoints = pts % 100;
+  const progressPct = cardPoints;
 
   const benefitsHtml = rank.benefits.map(b =>
     `<div class="benefit-item">✅ ${b[0]}<br>
@@ -1261,8 +1261,8 @@ function renderCard(member) {
     ${qrHtml}
     <div class="progress-wrap">
       <div class="progress-label">
-        <span>現在 / Teraz: ${pts}pt</span>
-        <span>${nextMilestone ? '次 / Następny: '+nextMilestone+'pt' : '🎖️ MAX'}</span>
+        <span>Karta / Card / カード: ${cardPoints} / 100 pt</span>
+        <span>Łącznie / Total / 累計: ${pts} pt</span>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" style="width:${progressPct}%"></div>
