@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="stamp-20261013e">
+<meta name="wabi-version" content="stamp-20261013f">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — Stamp / スタンプ</title>
 <style>
@@ -1210,13 +1210,13 @@ function maybeSavePw(pw, res) {
   } catch(e) {}
 }
 
-async function qrStamp(memberId, force) {
+async function qrStamp(memberId, force, table) {
   const password = document.getElementById('staff-password').value;
   const area = document.getElementById('qr-result');
   area.style.display = 'block';
   area.innerHTML = '<div class="loading"><span class="spinner"></span>照合中 / Weryfikacja…</div>';
   try {
-    const res = await postGAS({ action:'staffQrStamp', password, memberId, force: !!force });
+    const res = await postGAS({ action:'staffQrStamp', password, memberId, force: !!force, table: table ? String(table).trim() : '' });
     maybeSavePw(password, res);
     if (res.status === 'ok') {
       area.innerHTML = `<div class="rankup-box"><div class="rankup-text">
@@ -1232,15 +1232,20 @@ async function qrStamp(memberId, force) {
         本日の注文にこの会員は紐付いていません。<br>
         Brak zamówienia powiązanego z tym członkiem dzisiaj.<br><br>
         <strong>同席者としてポイントを付与しますか？</strong><br>
-        <small>※ラーメン注文のテーブルに同席していたことを確認してから付与してください</small></div>
-        <button class="btn btn-green" style="margin-top:.6rem" onclick="qrStamp('${memberId}', true)">
+        <small>※同席していた卓の番号を入力してください。<br>
+        その卓の今日のラーメンが<b>2杯以上</b>のときだけ付与できます（付与できる同席者は、ラーメンの杯数−1人まで）。<br>
+        Podaj numer stolika. Punkty dla osoby towarzyszącej tylko przy min. <b>2 ramen</b> przy stoliku (max: liczba ramen − 1 osób).<br>
+        Enter the table number. Companions can be credited only if the table ordered at least <b>2 ramen</b> (max: ramen count − 1 people).</small>
+        <div style="margin-top:.5rem"><input id="coseat-table" type="number" inputmode="numeric" min="1" max="99"
+          placeholder="卓番号 / Nr stolika / Table" style="width:100%;padding:.6rem;border:1.5px solid rgba(192,57,43,.4);border-radius:8px;font-size:1rem;text-align:center"></div></div>
+        <button class="btn btn-green" style="margin-top:.6rem" onclick="qrStamp('${memberId}', true, document.getElementById('coseat-table').value)">
           ✅ 同席者として付与 / Przyznaj punkty
         </button>
         <button class="btn btn-secondary" onclick="document.getElementById('qr-result').style.display='none'">
           ✖ キャンセル / Anuluj
         </button></div>`;
     } else {
-      area.innerHTML = `<div class="bonus-box"><div class="bonus-text">❌ ${res.message || res.status}</div></div>`;
+      area.innerHTML = `<div class="bonus-box"><div class="bonus-text">❌ ${String(res.message || res.status).replace(/\n/g, '<br>')}</div></div>`;
     }
   } catch(e) {
     area.innerHTML = '<div class="bonus-box"><div class="bonus-text">📡 通信エラー / Błąd połączenia</div></div>';
