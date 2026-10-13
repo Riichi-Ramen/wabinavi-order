@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v94-20261013</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v95-20261013</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v94-20261013</div>
+    <div class="ver-tag">v95-20261013</div>
   </div>
 </div>
 
@@ -4593,6 +4593,67 @@ function orderFingerprint_(value) {
 // 2026-09-20（Claude 検証で追加）：「送信済みの記録」の材料。
 //   「前回の注文だけでよい」を選んだとき、今のカートではなく**前回送った内容**を
 //   送信済みとして残すために、送信する時点で取っておく。会計の分割がこれを使う。
+// ══════════════════════════════════════════════════════════════
+//  🎁 スタンプで獲得できるpt の予告（2026-10-13）
+//   注文の確定時にptが付くわけではない。食事のあとに stamp.html で押したときに付く。
+//   その目安を、この卓で送信済みの自分の注文（クーポン不使用）から計算して見せる。
+//   ⚠️ 分類は GAS 07_Stamp.txt の stampKindOf_ と同じ。pt数を変えるときは両方直す。
+//      ラーメン10／丼物7／前菜・おにぎり・ご飯・寿司3／ドリンク・アルコール2／トッピング・容器0。
+//      区分ごとに1来店1回だけ数え、区分をまたぐ分は足し算。
+// ══════════════════════════════════════════════════════════════
+const STAMP_PREVIEW_PT = { ramen:10, donburi:7, starter:3, drink:2 };
+function stampKindOfId_(rawId) {
+  const id = String(baseId(rawId) || '').trim().toLowerCase();
+  if (!id) return '';
+  if (/^r\d+[a-z]?$/.test(id))  return 'ramen';
+  if (/^o[3-9]$/.test(id))       return 'donburi';
+  if (/^a\d+[a-z]?$/.test(id))  return 'starter';
+  if (/^o(1|1b|2|10|11)$/.test(id)) return 'starter';
+  if (/^s\d+$/.test(id))        return 'starter';
+  if (/^n\d+[a-z]?$/.test(id))  return 'drink';
+  if (/^al\d+[a-z]?$/.test(id)) return 'drink';
+  return '';
+}
+function stampPreview_() {
+  const has = { ramen:false, donburi:false, starter:false, drink:false };
+  let couponOrders = 0, normalOrders = 0;
+  (sessionOrders || []).forEach(o => {
+    if (o.coupon) { couponOrders++; return; }
+    normalOrders++;
+    (o.lines || []).forEach(l => {
+      const k = stampKindOfId_(l.itemId || l.id);
+      if (k) has[k] = true;
+    });
+  });
+  const parts = [];
+  let total = 0;
+  const icons = { ramen:'🍜', donburi:'🍚', starter:'🥟', drink:'🍵' };
+  ['ramen','donburi','starter','drink'].forEach(k => {
+    if (has[k]) { total += STAMP_PREVIEW_PT[k]; parts.push(icons[k] + STAMP_PREVIEW_PT[k]); }
+  });
+  return { total, parts, couponOrders, normalOrders };
+}
+function stampPreviewHtml_() {
+  const p = stampPreview_();
+  const link = `<a href="stamp.html" style="display:inline-block;margin-top:.5rem;padding:.45rem .9rem;border-radius:20px;
+      background:var(--accent);color:#fff;text-decoration:none;font-size:.78rem;font-weight:700">
+      📲 Pieczątka / Stamp / スタンプ</a>`;
+  if (p.total > 0) {
+    return `<strong style="color:var(--accent);display:block;margin:.1rem 0 .3rem;font-size:.95rem">
+        🎁 Po posiłku naciśnij pieczątkę — dostaniesz ${p.total} pkt<br>
+        <span style="font-size:.8rem">After your meal, tap Stamp to get ${p.total} pts<br>
+        食事のあと、スタンプを押すと ${p.total}pt もらえます</span></strong>
+      <span style="font-size:.72rem">${p.parts.join(' + ')}${p.couponOrders ? ' ／ 🎫 kupon = 0' : ''}</span><br>
+      <span style="font-size:.7rem;opacity:.85">Naciśnij <b>po ostatnim zamówieniu</b> (raz dziennie; kod poda obsługa). Dalsze zamówienia mogą dodać punkty.<br>
+      Tap <b>after your last order</b> (once a day; ask staff for the code). More orders may add points.<br>
+      スタンプは<b>最後の注文のあと</b>に（1日1回・コードは係員から）。追加注文でptが増えることがあります。</span><br>${link}`;
+  }
+  if (p.couponOrders > 0 && p.normalOrders === 0) {
+    return `<span style="font-size:.78rem">🎫 Kupon użyty = brak punktów dziś. / Coupon visits earn no points. / クーポンを使った来店はポイントなしです。</span>`;
+  }
+  return '';
+}
+
 function snapOrder_(total) {
   let persons = null;
   try { const sp = computeSplitTotals(); persons = sp ? sp.finals.slice() : null; } catch (e) {}
@@ -4601,7 +4662,7 @@ function snapOrder_(total) {
     for (const cid in cart) {
       const it = findItem(cid);
       if (!it) continue;
-      lines.push({ id: cid, name: (it.nameJP || it.namePL || cid), namePL: (it.namePL || cid),
+      lines.push({ id: cid, itemId: (it.id || baseId(cid)), name: (it.nameJP || it.namePL || cid), namePL: (it.namePL || cid),
         qty: cart[cid].qty || 1, line: lineTotalOf(cid), payers: getPayers(cart[cid]).slice() });
     }
   } catch (e) {}
@@ -4880,7 +4941,8 @@ async function placeOrder() {
 //    送信後に「この餃子は誰の分か」を決め直すことができなかった。
   sessionOrders.push({ id: orderId, total: snap.total,
     persons: snap.persons,
-    lines: snap.lines });
+    lines: snap.lines,
+    coupon: snap.coupon || null });   // 2026-10-13：獲得pt予告で「クーポンを使った注文は0pt」を判定するため
   cart = Object.create(null);
   updateBadge();
   if (typeof persistState === 'function') persistState();
@@ -4933,7 +4995,7 @@ async function placeOrder() {
                同じ名前が3つ並ぶだけで煩わしかったため廃止（2026-09-10）。 -->
           <strong style="color:var(--accent);font-size:1.25rem;display:block;line-height:1.4;
             margin-bottom:.35rem">Dziękujemy, ${memberName}!</strong>
-          <span style="font-size:.75rem">Punkty zostaną naliczone. / Points will be credited. / ポイントが加算されます。</span>
+          <span style="font-size:.75rem;display:block">${stampPreviewHtml_()}</span>
         </div>
       </div>`;
   }

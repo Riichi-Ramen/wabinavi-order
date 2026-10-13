@@ -762,6 +762,9 @@ async function sha256(t) {
     Jeśli zrobi to po samym napoju (2 pkt), pieczątka na ten dzień jest już zużyta. /
     <span class="jp"><b>スタンプは「最後の注文のあと」に押すようお客様に伝えてください。</b>
     先にドリンクだけで押すと2ptで確定し、その日はもう押せません。</span><br>
+    <small>Po wysłaniu zamówienia członek widzi zapowiedź: „po posiłku naciśnij pieczątkę — dostaniesz N pkt” (orientacyjnie, z dzisiejszych zamówień). /
+    <span class="jp">注文完了の画面に、会員には「食事のあとスタンプを押すとNpt」の予告が出ます（本日の注文からの目安）。
+    ※この予告の計算は <code>index.html</code> の <code>STAMP_PREVIEW_PT</code>。pt数を変えるときは 07_Stamp と両方直す。</span></small><br>
     <small>Zmiana wartości: <code>07_Stamp.gs</code> — <code>STAMP_PT_RAMEN / DONBURI / STARTER / DRINK</code> /
     <span class="jp">pt数の変更は 07_Stamp の定数（店主のみ）</span></small></div>
 
