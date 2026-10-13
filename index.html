@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v83-20261012</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v85-20261013</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v83-20261012</div>
+    <div class="ver-tag">v85-20261013</div>
   </div>
 </div>
 
@@ -1337,6 +1337,12 @@ body.show-config .config-bar{display:flex}
         </div>
       </div>
     </div>
+    <!-- 2026-10-13：送信後の変更は係員へ。取り消し・変更そのものを減らすための一行 -->
+    <div style="padding:.6rem 1.3rem 0;font-size:.74rem;line-height:1.55;text-align:center;color:#704000">
+      ⚠️ Po wysłaniu zmiany tylko przez obsługę.<br>
+      After sending, changes can only be made through our staff.<br>
+      送信後の変更は、係員にお尋ねください。
+    </div>
     <div class="modal-ft">
       <button class="btn-back" onclick="closeConfirm()">← Wróć / Back</button>
       <button class="btn-order" id="btn-order" onclick="placeOrder()">🎌 ZAMAWIAM / ORDER NOW</button>
@@ -1397,6 +1403,22 @@ body.show-config .config-bar{display:flex}
     onclick="backToMenuKeepSession()">➕ Zamów więcej / Order more / 追加注文する</button>
   <button class="new-btn" style="background:linear-gradient(135deg,#5b3b8e,#7a52b8);margin-top:.5rem"
     onclick="openCheckout()">🧾 Rachunek / The bill / お会計</button>
+  <!-- ✋ 注文の取り消し・変更（2026-10-13）。即時には受け付けず、係員へ誘導するだけ。
+       送信済みの注文は厨房が動いているため、変更は係員が状況を見て判断する。 -->
+  <button id="change-order-btn" type="button" onclick="toggleChangeNotice()"
+    style="background:none;border:1.5px solid rgba(120,90,70,.45);color:var(--muted);border-radius:12px;
+    padding:.55rem 1rem;font-size:.82rem;margin-top:.6rem;cursor:pointer;width:100%;max-width:420px">
+    ✋ Anulowanie / zmiana zamówienia · Cancel / change · 注文の取り消し・変更</button>
+  <div id="change-order-notice" style="display:none;width:100%;max-width:420px;margin:.5rem 0;padding:.8rem .9rem;
+    border:2px solid #b36b00;border-radius:12px;background:#fff7e6;font-size:.82rem;line-height:1.7;color:#704000;text-align:left">
+    <strong>🙋 Prosimy zapytać obsługę.</strong><br>
+    Aby anulować lub zmienić zamówienie, podejdź do obsługi. Jeśli kuchnia już zaczęła przygotowanie, zmiana może nie być możliwa.<br>
+    <strong>Please ask our staff.</strong><br>
+    To cancel or change your order, please speak to a member of staff. If the kitchen has already started, it may not be possible.<br>
+    <strong>係員にお尋ねください。</strong><br>
+    注文の取り消し・変更は、係員にお声がけください。調理が始まっている場合は、お受けできないことがあります。
+    <div id="change-order-ref" style="margin-top:.5rem;font-size:.75rem;color:#8a6a40"></div>
+  </div>
   <!-- 🔄 卓のリセットは**従業員専用**（2026-09-13）。
        客のスマホ（テーブルQR経由）には出さない。
        客が押す理由がない上、押すと卓番・人数・注文履歴が全部消えるため。 -->
@@ -1413,8 +1435,8 @@ body.show-config .config-bar{display:flex}
         🎓 Zniżka studencka / Student discount<br>
         🧓 Zniżka senioralna / Senior discount<br>
         ☕ Darmowe dodatki dla stałych klientów / Free extras for regulars<br>
-        🍜 5 mis = następna w połowie ceny, 10 mis = następna gratis!<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;5 bowls = next half price, 10 bowls = next one free!<br>
+        🍜 Karta pieczątek: 100 pkt = 1 runda. Kupon −50% przy 50 pkt, gratis przy 100 pkt.<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Stamp card: one round per 100 pts. Half-price coupon at 50 pts, free coupon at 100 pts.<br>
         🌸 Zaproszenia na wydarzenia kulturalne / Japanese culture events
       </div>
     </div>
@@ -5479,6 +5501,20 @@ function renderSessionOrders() {
 }
 
 // 追加注文：セッション（テーブル・会員情報・注文履歴）を保持したままメニューへ
+// ✋ 注文の取り消し・変更：その場では受け付けず、案内を出すだけ（2026-10-13）
+function toggleChangeNotice() {
+  const box = document.getElementById('change-order-notice');
+  if (!box) return;
+  const open = box.style.display === 'none';
+  box.style.display = open ? 'block' : 'none';
+  if (open) {
+    // 係員が注文を探しやすいよう、卓番号と注文番号を添える
+    const ref = document.getElementById('change-order-ref');
+    const idTxt = (document.getElementById('order-id-display') || {}).textContent || '';
+    if (ref) ref.textContent = 'Stolik / Table / 卓: ' + (tableNum || '—') + (idTxt ? '  ·  ' + idTxt : '');
+  }
+}
+
 function backToMenuKeepSession() {
   const n = Math.max(parseInt(guestNum, 10) || 1, 1);
   addOrderMode = false;

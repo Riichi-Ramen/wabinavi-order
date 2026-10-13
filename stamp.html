@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="stamp-20261012">
+<meta name="wabi-version" content="stamp-20261013">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — Stamp / スタンプ</title>
 <style>
@@ -756,14 +756,22 @@ function renderStampResult(res) {
     msg.textContent   = '';
     pts.textContent   = res.newPt + ' pt';
     pts.style.display = 'block';
-    ptslabel.textContent = `(+10 pkt) Łącznie / Total / 累計`;
+    // 2026-10-13：付与ptは固定の10ではない（丼物7・ハッピーアワー等）。サーバの増分を表示する
+    const gained = (typeof res.oldPt === 'number') ? (res.newPt - res.oldPt) : 10;
+    ptslabel.textContent = `(+${gained} pkt) Łącznie / Total / 累計`;
     ptslabel.style.display = 'block';
 
     if (res.bonus) {
+      // 2026-10-13：50ptは半額券、100ptは無料券。券の種類ごとに出し分ける
+      //   （以前は常に「無料券」と表示していた）。res.bonus は獲得した券の配列。
+      const earned = Array.isArray(res.bonus) ? res.bonus : [{t:'free'}];
+      const lines = earned.map(c => c.t === 'half'
+        ? `Kupon na ramen −50%!<br><small>A half-price ramen coupon is yours! ／ ラーメン半額券をゲット！</small>`
+        : `Kupon na darmowe ramen!<br><small>A free ramen coupon is yours! ／ ラーメン1杯無料券をゲット！</small>`
+      ).join('<br>');
       bonusArea.innerHTML = `<div class="bonus-box">
         <div class="bonus-text">🎉 Bonus osiągnięty! / Bonus unlocked! / ボーナス達成！<br>
-        Voucher na darmowe ramen!<br>
-        <small>A free ramen voucher is yours! ／ ラーメン1杯無料券をゲット！</small></div></div>`;
+        ${lines}</div></div>`;
     }
     if (res.rankUp) {
       rankupArea.innerHTML = `<div class="rankup-box">
@@ -1192,7 +1200,7 @@ async function qrStamp(memberId, force) {
     if (res.status === 'ok') {
       area.innerHTML = `<div class="rankup-box"><div class="rankup-text">
         ✅ ${res.member.name}（${memberId}）<br>
-        ${res.oldPt}pt → <strong>${res.newPt}pt</strong>（+10）<br>
+        ${res.oldPt}pt → <strong>${res.newPt}pt</strong>（+${res.newPt - res.oldPt}）<br>
         ${res.coseat ? '👥 同席救済・係員承認として記録' : '🍜 当日注文を自動確認済み / Zamówienie potwierdzone'}
         ${res.rankUp ? '<br>🎉 ランクアップ！ ' + res.rank.icon + ' ' + res.rank.name : ''}
         ${res.bonus ? '<br>🎫 クーポン獲得！ / Kupon zdobyty!' : ''}
@@ -1256,7 +1264,7 @@ function renderCard(member) {
       <div class="rank-name">${member.rank}</div>
       <div class="rank-name-jp">Wabi Navi Members Club</div>
       <div class="rank-member">👤 ${member.name}</div>
-      <div class="rank-pts">${pts} pt　（${visits}杯 / misek）</div>
+      <div class="rank-pts">${pts} pt　（来店 ${visits}回 / ${visits} wizyt）</div>
     </div>
     ${qrHtml}
     <div class="progress-wrap">
