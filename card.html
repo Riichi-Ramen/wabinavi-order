@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="card-20261012">
+<meta name="wabi-version" content="card-20261013">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび — 会員カード / Karta Członkowska</title>
 <style>
@@ -623,7 +623,7 @@ function renderFullCard(m) {
     <!-- スタンプカード（100ptで1周） -->
     <div class="stamp-section">
       <div class="stamp-title">🎫 Karta pieczątek / Stamp card / スタンプカード（${cardPt} / 100 pt）</div>
-      <div class="stamp-grid">${stampHtml}</div>
+      <div class="stamp-grid" style="display:grid;grid-template-columns:repeat(5,36px);gap:.5rem;justify-content:start">${stampHtml}</div>
       <div class="stamp-legend">
         <div class="stamp-legend-item"><div class="stamp-dot" style="background:var(--accent)"></div>10 pt</div>
         <div class="stamp-legend-item"><div class="stamp-dot" style="background:#e67e22"></div>50 pt → −50%</div>
