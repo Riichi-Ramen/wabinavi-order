@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v95-20261013</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v96-20261013</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -722,29 +722,29 @@ body.show-config .config-bar{display:flex}
   </div>
   <div class="logo-jp">Witamy • Welcome • いらっしゃいませ</div>
   <div class="welcome-form">
-    <h2>🍜 Rozpocznij zamówienie / Start your order</h2>
+    <h2>🍜 Rozpocznij zamówienie / Start your order<br><span style="font-size:.82rem;font-weight:400">ご注文を始める</span></h2>
     <div class="form-row">
-      <label>Numer stolika / Table Number</label>
+      <label>Numer stolika / Table Number / 卓番号</label>
       <div id="table-input-area">
         <select id="sel-table">
-          <option value="">— wybierz / select —</option>
+          <option value="">— wybierz / select / 選択 —</option>
           <option value="1">Stolik 1 / Table 1</option><option value="2">Stolik 2 / Table 2</option><option value="3">Stolik 3 / Table 3</option><option value="4">Stolik 4 / Table 4</option><option value="5">Stolik 5 / Table 5</option><option value="6">Stolik 6 / Table 6</option><option value="7">Stolik 7 / Table 7</option><option value="8">Stolik 8 / Table 8</option><option value="9">Stolik 9 / Table 9</option><option value="10">Stolik 10 / Table 10</option><option value="11">Stolik 11 / Table 11</option><option value="12">Stolik 12 / Table 12</option><option value="13">Stolik 13 / Table 13</option><option value="14">Stolik 14 / Table 14</option>
         </select>
       </div>
     </div>
     <div class="form-row">
-      <label>Liczba osób / Number of Guests</label>
+      <label>Liczba osób / Number of Guests / 人数</label>
       <select id="sel-guests">
-        <option value="">— wybierz / select —</option>
-        <option value="1">1 osoba / 1 guest</option><option value="2">2 osoby / 2 guests</option><option value="3">3 osoby / 3 guests</option><option value="4">4 osoby / 4 guests</option><option value="5">5 osób / 5 guests</option><option value="6">6 osób / 6 guests</option><option value="7">7 osób / 7 guests</option><option value="8">8 osób / 8 guests</option><option value="9">9 osób / 9 guests</option><option value="10">10 osób / 10 guests</option><option value="11">11 osób / 11 guests</option><option value="12">12 osób / 12 guests</option>
+        <option value="">— wybierz / select / 選択 —</option>
+        <option value="1">1 osoba / 1 guest / 1名</option><option value="2">2 osoby / 2 guests / 2名</option><option value="3">3 osoby / 3 guests / 3名</option><option value="4">4 osoby / 4 guests / 4名</option><option value="5">5 osób / 5 guests / 5名</option><option value="6">6 osób / 6 guests / 6名</option><option value="7">7 osób / 7 guests / 7名</option><option value="8">8 osób / 8 guests / 8名</option><option value="9">9 osób / 9 guests / 9名</option><option value="10">10 osób / 10 guests / 10名</option><option value="11">11 osób / 11 guests / 11名</option><option value="12">12 osób / 12 guests / 12名</option>
       </select>
     </div>
     <button class="start-btn" onclick="startOrder()">
       🎌 ROZPOCZNIJ ZAMÓWIENIE<br>
-      <small style="font-weight:400;font-size:.8rem">START ORDER</small>
+      <small style="font-weight:400;font-size:.8rem">START ORDER / 注文を始める</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v95-20261013</div>
+    <div class="ver-tag">v96-20261013</div>
   </div>
 </div>
 
@@ -1658,8 +1658,8 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   const area = document.getElementById('table-input-area');
-  area.innerHTML = `<div class="table-locked">📍 Stolik ${urlTable} / Table ${urlTable}</div>
-    <div class="table-locked-note">Wykryto automatycznie z kodu QR / Auto-detected from QR code</div>`;
+  area.innerHTML = `<div class="table-locked">📍 Stolik ${urlTable} / Table ${urlTable} / ${urlTable}番</div>
+    <div class="table-locked-note">Wykryto automatycznie z kodu QR / Auto-detected from QR code / QRコードから自動で読み取りました</div>`;
 
   const gasUrl = getGasUrl();
   if (gasUrl) document.getElementById('gas-url-input').value = gasUrl;
@@ -1670,8 +1670,8 @@ function startOrder() {
   const selTable = document.getElementById('sel-table')?.value || urlTable;
   guestNum = document.getElementById('sel-guests').value;
   const chosenTable = urlTable || selTable;
-  if (!chosenTable) { showToast("Wybierz stolik / Select table"); return; }
-  if (!guestNum)    { showToast("Wybierz liczbę osób / Select guests"); return; }
+  if (!chosenTable) { showToast("Wybierz stolik / Select table / テーブルを選んでください"); return; }
+  if (!guestNum)    { showToast("Wybierz liczbę osób / Select guests / 人数を選んでください"); return; }
   if (urlTable && selTable && selTable !== urlTable && !document.querySelector('.table-locked')) {
     document.getElementById('mm-url-table').textContent = `Stolik ${urlTable}`;
     document.getElementById('mm-sel-table').textContent = `Stolik ${selTable}`;
