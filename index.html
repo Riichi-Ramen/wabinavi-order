@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v91-20261013</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v93-20261013</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v91-20261013</div>
+    <div class="ver-tag">v93-20261013</div>
   </div>
 </div>
 
@@ -2840,8 +2840,8 @@ function renderCard(item) {
       border:1.5px solid rgba(45,122,58,0.3);border-radius:10px;
       padding:.7rem;margin-top:.7rem">
       <div class="remove-title" style="color:#2d7a3a">
-        ✨ Zamiast usuwać — zmień lub dodaj!<br>
-        <small style="font-weight:400;opacity:.85">Instead of removing — change or add! / 取り消す代わりに、変更・追加！</small>
+        ✨ Zamiast wyrzucać składnik — zmień lub dodaj!<br>
+        <small style="font-weight:400;opacity:.85">Instead of leaving out an ingredient — change or add! / 具材を抜く代わりに、変更・追加できます！</small>
       </div>
       ${optionRows}
     </div>` : '';
