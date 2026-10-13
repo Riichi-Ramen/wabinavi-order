@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="stamp-20261013">
+<meta name="wabi-version" content="stamp-20261013d">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — Stamp / スタンプ</title>
 <style>
@@ -153,6 +153,23 @@ body{
   <button class="btn btn-primary" onclick="doStamp()">
     🎋 スタンプを押す / Otrzymaj pieczątkę / Get stamp
   </button>
+  <div class="pt-rules" style="margin:.9rem 0;padding:.8rem .9rem;background:rgba(255,252,245,.95);border:1px solid rgba(192,57,43,.25);border-radius:12px;font-size:.78rem;line-height:1.55;text-align:left;color:var(--text)">
+    <div style="font-weight:700;color:var(--accent);margin-bottom:.4rem">🍜 Ile punktów? / How points work / ポイントのつき方</div>
+    <table style="width:100%;border-collapse:collapse;font-size:.76rem">
+      <tr style="border-bottom:1px solid rgba(192,57,43,.15)"><td style="padding:.25rem 0">🍜 <b>Ramen</b> / ラーメン</td><td style="text-align:right;font-weight:700;color:var(--accent);white-space:nowrap;padding-left:.6rem;vertical-align:top">10 pkt</td></tr>
+      <tr style="border-bottom:1px solid rgba(192,57,43,.15)"><td style="padding:.25rem 0">🍚 <b>Donburi</b> / 丼物</td><td style="text-align:right;font-weight:700;color:var(--accent);white-space:nowrap;padding-left:.6rem;vertical-align:top">7 pkt</td></tr>
+      <tr style="border-bottom:1px solid rgba(192,57,43,.15)"><td style="padding:.25rem 0">🥟 Przystawki, onigiri, ryż, sushi<br><span style="opacity:.75">Starters, onigiri, rice, sushi ／ 前菜・おにぎり・ご飯・寿司</span></td><td style="text-align:right;font-weight:700;color:var(--accent);white-space:nowrap;padding-left:.6rem;vertical-align:top">3 pkt</td></tr>
+      <tr style="border-bottom:1px solid rgba(192,57,43,.15)"><td style="padding:.25rem 0">🍵 Napoje, alkohol, desery<br><span style="opacity:.75">Drinks, alcohol, desserts ／ ドリンク・アルコール・デザート</span></td><td style="text-align:right;font-weight:700;color:var(--accent);white-space:nowrap;padding-left:.6rem;vertical-align:top">2 pkt</td></tr>
+      <tr><td style="padding:.25rem 0">➕ Dodatki, opakowania na wynos<br><span style="opacity:.75">Toppings, takeaway containers ／ トッピング・持ち帰り容器</span></td><td style="text-align:right;font-weight:700;white-space:nowrap;padding-left:.6rem;vertical-align:top">0</td></tr>
+    </table>
+    <div style="margin-top:.5rem">
+      ✅ <b>1 wizyta = 1 pieczątka. Liczy się tylko najwyższa pozycja z zamówienia — nie sumujemy.</b> Np. ramen + napój = 10 pkt (nie 12).<br>
+      <span style="opacity:.8"><b>1 visit = 1 stamp. Only the highest item counts — no adding up.</b> e.g. ramen + drink = 10 pts (not 12).</span><br>
+      <span style="opacity:.8"><b>1来店1スタンプ。注文のうち最も高い1つだけが付きます（足し算ではありません）。</b>例：ラーメン＋ドリンク＝10pt（12ptではありません）。</span><br>
+      ✅ Kupon użyty = brak punktów. / Coupon visits earn no points. / クーポンを使った来店はポイントなし。<br>
+      ✅ Naciśnij pieczątkę <b>po ostatnim zamówieniu</b> (raz dziennie). / Stamp after your last order (once a day). / スタンプは<b>最後の注文のあと</b>に（1日1回）。
+    </div>
+  </div>
   <hr class="divider">
   <button class="btn btn-secondary" onclick="showScreen('screen-register')">
     🌸 新規会員登録 / Zarejestruj się / Register
@@ -780,6 +797,7 @@ function renderStampResult(res) {
         <small>Osiągnąłeś/aś poziom ${res.rank.name}! ／ You reached ${res.rank.name}! ／ ${res.rank.name} になりました！</small></div></div>`;
     }
     if (res.member) cardArea.innerHTML = renderCard(res.member);
+    if (res.member) refreshCouponList();
 
   } else if (res.status === 'alreadyStamped' && res.retryConfirmed) {
     icon.textContent  = '✅';
@@ -787,19 +805,21 @@ function renderStampResult(res) {
     msg.textContent   = '';
     pts.style.display = 'none';
     if (res.member) cardArea.innerHTML = renderCard(res.member);
+    if (res.member) refreshCouponList();
 
   } else if (res.status === 'alreadyStamped') {
     icon.textContent  = '⏰';
     title.textContent = 'Już ostemplowano / Already stamped today / 本日スタンプ済み';
     msg.textContent   = res.message;
     if (res.member) cardArea.innerHTML = renderCard(res.member);
+    if (res.member) refreshCouponList();
 
   } else if (res.status === 'noRamen') {
     icon.textContent  = '🍜';
     // 拒絶ではなく案内の調子にする（ドリンクのみのご来店が多いため）
-    title.innerHTML   = 'Pieczątkę otrzymasz po zamówieniu ramenu lub donburi.<br>' +
-                        'A stamp is added after you order ramen or a rice bowl.<br>' +
-                        'スタンプはラーメンまたは丼物のご注文で付きます。';
+    title.innerHTML   = 'Pieczątkę otrzymasz po zamówieniu dania lub napoju (same dodatki i opakowania nie liczą się).<br>' +
+                        'A stamp is added when you order a dish or a drink (toppings or containers alone do not count).<br>' +
+                        'スタンプはお料理・お飲み物のご注文で付きます（トッピング・容器だけは対象外）。';
     msg.textContent   = '';
 
   } else if (res.status === 'badCode') {
@@ -986,8 +1006,9 @@ async function doRegister() {
           🎁 <strong>Bonus powitalny: voucher na napój!</strong><br>
           <small>Welcome gift: a free drink voucher! ／ 入会特典：ドリンク券1枚プレゼント！</small><br><br>
           <strong>🌸 Twoje korzyści ／ Your benefits ／ 会員特典一覧</strong><br>
-          🍜 Ramen = 10 pkt · Donburi = 7 pkt<br>
-          <small>Ramen = 10 pts · Rice bowl = 7 pts ／ ラーメン=10pt・丼物=7pt</small><br>
+          🍜 Ramen 10 · Donburi 7 · przystawki/onigiri/ryż/sushi 3 · napoje i alkohol 2 pkt<br>
+          <small>Ramen 10 · Rice bowl 7 · starters/onigiri/rice/sushi 3 · drinks & alcohol 2 pts ／ ラーメン10・丼物7・前菜/おにぎり/ご飯/寿司3・ドリンク/アルコール2pt<br>
+          1 wizyta = najwyższa pozycja, bez sumowania (ramen + napój = 10) ／ 1来店＝最も高い1つだけ（ラーメン＋ドリンク＝10pt）</small><br>
           🎫 Karta pieczątek: 100 pkt = 1 runda<br>
           <small>Stamp card: one round per 100 pts ／ スタンプカード：100ptで1周</small><br>
           ⭐ 50 pkt: kupon −50% · 🎁 100 pkt: kupon gratis<br>
@@ -1226,6 +1247,36 @@ async function qrStamp(memberId, force) {
   }
 }
 
+// 2026-10-13：持っている未使用クーポンを「現在の特典」欄に出す。
+//   以前は注文画面でしか券が見えず、獲得画面を閉じると券の存在が分からなくなった。
+function couponListHtml(coupons) {
+  const list = Array.isArray(coupons) ? coupons.filter(c => c && !c.u) : [];
+  if (!list.length) return '';
+  const n = t => list.filter(c => c.t === t).length;
+  const row = (icon, pl, en, jp, cnt) => cnt ? `<div class="benefit-item" style="font-weight:700;color:#8e6b00">${icon} ${pl} ×${cnt}<br>
+      <small style="opacity:.8;font-weight:400;font-size:.78em">${en} ／ ${jp}</small></div>` : '';
+  return `<div style="background:rgba(255,236,170,.35);border:1.5px solid #b8860b;border-radius:8px;padding:.5rem .6rem;margin-bottom:.5rem">
+    ${row('🍜','Kupon na ramen gratis','Free ramen coupon','ラーメン無料券', n('free'))}
+    ${row('🎫','Kupon na ramen −50%','Half-price ramen coupon','ラーメン半額券', n('half'))}
+    <div style="font-size:.68rem;color:var(--muted);margin-top:.2rem;line-height:1.5">
+      Użyj przy następnym zamówieniu (wybierz kupon na ekranie potwierdzenia). / Use it on your next order (choose it on the confirm screen). / 次回のご注文時、確認画面で選んでお使いください。</div>
+  </div>`;
+}
+
+// スタンプ結果の画面は member に券を含まないため、あとから会員情報を取り直して券欄だけ更新する
+async function refreshCouponList() {
+  try {
+    const email = getStampId();
+    if (!email) return;
+    const res = await postGAS({action:'getCard', email});
+    if (res && res.status === 'ok' && res.member) {
+      document.querySelectorAll('.coupon-list').forEach(el => {
+        el.innerHTML = couponListHtml(res.member.coupons);
+      });
+    }
+  } catch (e) { /* 取れなくてもスタンプ結果の表示は壊さない */ }
+}
+
 // ── 会員カードHTML生成 ────────────────────────────────────────────
 function renderCard(member) {
   const rank    = RANK_INFO[member.rank] || RANK_INFO.Sakura;
@@ -1278,6 +1329,7 @@ function renderCard(member) {
     </div>
     <div class="benefit-box">
       <div class="benefit-title">🎁 Aktualne korzyści / Your benefits / 現在の特典</div>
+      <div class="coupon-list">${couponListHtml(member.coupons)}</div>
       ${benefitsHtml}
     </div>
     ${historyHtml ? `<div class="history-title">Historia wizyt / Visit history / 来店履歴</div>

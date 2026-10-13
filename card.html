@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="card-20261013">
+<meta name="wabi-version" content="card-20261013d">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび — 会員カード / Karta Członkowska</title>
 <style>
@@ -495,6 +495,19 @@ function renderFullCard(m) {
     stampHtml += `<div class="stamp-bowl ${cls}">${emoji}</div>`;
   }
 
+  // 2026-10-13：持っている未使用クーポン（getCard が m.coupons で返す）
+  const myCoupons = Array.isArray(m.coupons) ? m.coupons.filter(c => c && !c.u) : [];
+  const cpN = t => myCoupons.filter(c => c.t === t).length;
+  const cpRow = (icon, pl, en, jp, cnt) => cnt ? `<div class="benefit-item" style="font-weight:700;color:#8e6b00">
+      <span class="benefit-icon">${icon}</span>
+      <span>${pl} ×${cnt}<br><small style="color:var(--muted);font-weight:400">${en} ／ ${jp}</small></span></div>` : '';
+  const couponsHtml = myCoupons.length ? `<div style="background:rgba(255,236,170,.35);border:1.5px solid #b8860b;border-radius:10px;padding:.4rem .8rem;margin-bottom:.6rem">
+      ${cpRow('🍜','Kupon na ramen gratis','Free ramen coupon','ラーメン無料券', cpN('free'))}
+      ${cpRow('🎫','Kupon na ramen −50%','Half-price ramen coupon','ラーメン半額券', cpN('half'))}
+      <div style="font-size:.72rem;color:var(--muted);line-height:1.5;padding-bottom:.3rem">
+        Użyj przy następnym zamówieniu (wybierz kupon na ekranie potwierdzenia). / Use it on your next order (choose it on the confirm screen). / 次回のご注文時、確認画面で選んでお使いください。</div>
+    </div>` : '';
+
   // 特典一覧
   const benefitsHtml = rank.benefits.map(b =>
     `<div class="benefit-item">
@@ -630,14 +643,31 @@ function renderFullCard(m) {
         <div class="stamp-legend-item"><div class="stamp-dot" style="background:#2d7a3a"></div>100 pt → GRATIS</div>
       </div>
       <div style="font-size:.62rem;color:var(--muted);margin-top:.5rem">
-        1 pole = 10 pkt · ramen 10 pkt, donburi 7 pkt / 1 cell = 10 pts · ramen 10 pts, rice bowl 7 pts<br>
-        1マス=10pt。ラーメン10pt・丼物7ptなので、マスの数と来店回数は一致しません。
+        1 pole = 10 pkt / 1 cell = 10 pts / 1マス=10pt。付くpt数は注文により違うので、マスの数と来店回数は一致しません。
       </div>
+      <div class="pt-rules" style="margin:.9rem 0;padding:.8rem .9rem;background:rgba(255,252,245,.95);border:1px solid rgba(192,57,43,.25);border-radius:12px;font-size:.78rem;line-height:1.55;text-align:left;color:var(--text)">
+    <div style="font-weight:700;color:var(--accent);margin-bottom:.4rem">🍜 Ile punktów? / How points work / ポイントのつき方</div>
+    <table style="width:100%;border-collapse:collapse;font-size:.76rem">
+      <tr style="border-bottom:1px solid rgba(192,57,43,.15)"><td style="padding:.25rem 0">🍜 <b>Ramen</b> / ラーメン</td><td style="text-align:right;font-weight:700;color:var(--accent);white-space:nowrap;padding-left:.6rem;vertical-align:top">10 pkt</td></tr>
+      <tr style="border-bottom:1px solid rgba(192,57,43,.15)"><td style="padding:.25rem 0">🍚 <b>Donburi</b> / 丼物</td><td style="text-align:right;font-weight:700;color:var(--accent);white-space:nowrap;padding-left:.6rem;vertical-align:top">7 pkt</td></tr>
+      <tr style="border-bottom:1px solid rgba(192,57,43,.15)"><td style="padding:.25rem 0">🥟 Przystawki, onigiri, ryż, sushi<br><span style="opacity:.75">Starters, onigiri, rice, sushi ／ 前菜・おにぎり・ご飯・寿司</span></td><td style="text-align:right;font-weight:700;color:var(--accent);white-space:nowrap;padding-left:.6rem;vertical-align:top">3 pkt</td></tr>
+      <tr style="border-bottom:1px solid rgba(192,57,43,.15)"><td style="padding:.25rem 0">🍵 Napoje, alkohol, desery<br><span style="opacity:.75">Drinks, alcohol, desserts ／ ドリンク・アルコール・デザート</span></td><td style="text-align:right;font-weight:700;color:var(--accent);white-space:nowrap;padding-left:.6rem;vertical-align:top">2 pkt</td></tr>
+      <tr><td style="padding:.25rem 0">➕ Dodatki, opakowania na wynos<br><span style="opacity:.75">Toppings, takeaway containers ／ トッピング・持ち帰り容器</span></td><td style="text-align:right;font-weight:700;white-space:nowrap;padding-left:.6rem;vertical-align:top">0</td></tr>
+    </table>
+    <div style="margin-top:.5rem">
+      ✅ <b>1 wizyta = 1 pieczątka. Liczy się tylko najwyższa pozycja z zamówienia — nie sumujemy.</b> Np. ramen + napój = 10 pkt (nie 12).<br>
+      <span style="opacity:.8"><b>1 visit = 1 stamp. Only the highest item counts — no adding up.</b> e.g. ramen + drink = 10 pts (not 12).</span><br>
+      <span style="opacity:.8"><b>1来店1スタンプ。注文のうち最も高い1つだけが付きます（足し算ではありません）。</b>例：ラーメン＋ドリンク＝10pt（12ptではありません）。</span><br>
+      ✅ Kupon użyty = brak punktów. / Coupon visits earn no points. / クーポンを使った来店はポイントなし。<br>
+      ✅ Naciśnij pieczątkę <b>po ostatnim zamówieniu</b> (raz dziennie). / Stamp after your last order (once a day). / スタンプは<b>最後の注文のあと</b>に（1日1回）。
+    </div>
+  </div>
     </div>
 
     <!-- 現在の特典 -->
     <div class="benefit-section">
       <div class="benefit-title">🎁 現在の特典 / Aktualne korzyści — ${rank.icon} ${rank.name}</div>
+      ${couponsHtml}
       ${benefitsHtml}
     </div>
 

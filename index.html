@@ -446,7 +446,7 @@ body.modal-open #app-version{display:none !important}
 .uwagi-box>label{display:block;font-size:.8rem;color:var(--accent);font-weight:600;margin-bottom:.3rem}
 .uwagi-sub{font-size:.72rem;color:var(--muted);margin-bottom:.5rem;line-height:1.5}
 .preset-list{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.5rem}
-.preset-btn{background:rgba(255,245,235,0.8);border:1px solid rgba(192,57,43,0.25);color:var(--muted);border-radius:20px;padding:.28rem .65rem;font-size:.72rem;cursor:pointer}
+.preset-btn{background:rgba(255,245,235,0.8);border:1px solid rgba(192,57,43,0.25);color:var(--muted);border-radius:14px;padding:.3rem .7rem;font-size:.72rem;cursor:pointer;line-height:1.35;text-align:left}
 .preset-btn:hover{border-color:var(--accent);color:var(--accent)}
 textarea.uwagi-ta{width:100%;background:rgba(255,252,248,0.9);border:1px solid rgba(192,57,43,0.3);color:var(--text);border-radius:8px;padding:.65rem;font-size:.82rem;resize:vertical;min-height:72px;font-family:inherit}
 textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v86-20261013</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v89-20261013</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v86-20261013</div>
+    <div class="ver-tag">v89-20261013</div>
   </div>
 </div>
 
@@ -926,6 +926,9 @@ body.show-config .config-bar{display:flex}
       &nbsp;&nbsp;🎫 Karta pieczątek: jedna runda co 100 pkt. Kupon −50% przy 50 pkt, gratis przy 100 pkt.<br>
       &nbsp;&nbsp;<strong>Stamp card: one round per 100 pts. Half-price coupon at 50 pts, free coupon at 100 pts.</strong><br>
       &nbsp;&nbsp;スタンプカード：100ptで1周。50ptで半額券、100ptで無料券。<br>
+      &nbsp;&nbsp;🍜 Ramen 10 · Donburi 7 · przystawki/onigiri/ryż/sushi 3 · napoje i alkohol 2 pkt (1 wizyta = najwyższa pozycja)<br>
+      &nbsp;&nbsp;Ramen 10 · Rice bowl 7 · starters/onigiri/rice/sushi 3 · drinks &amp; alcohol 2 pts (highest item per visit)<br>
+      &nbsp;&nbsp;ラーメン10・丼物7・前菜/おにぎり/ご飯/寿司3・ドリンク/アルコール2pt（1来店・最も高い1つだけ。ラーメン＋ドリンクは10pt）<br>
       &nbsp;&nbsp;🏅 Ranga / Rank / ランク: Sakura 0 / Ume 50 / Take 100 / Matsu 200 / Fuji 350 pt<br>
       &nbsp;&nbsp;<small>Ranga nie spada poza 8 miesiącami bez wizyty / Rank does not go down except after 8 months without a visit / ランクは下がりません（8ヶ月ご来店がない場合を除く）</small><br>
       &nbsp;&nbsp;<small>※ Za miski −50% i gratis pkt nie są naliczane /
@@ -1437,6 +1440,9 @@ body.show-config .config-bar{display:flex}
         ☕ Darmowe dodatki dla stałych klientów / Free extras for regulars<br>
         🍜 Karta pieczątek: 100 pkt = 1 runda. Kupon −50% przy 50 pkt, gratis przy 100 pkt.<br>
         &nbsp;&nbsp;&nbsp;&nbsp;Stamp card: one round per 100 pts. Half-price coupon at 50 pts, free coupon at 100 pts.<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;🍜 Ramen 10 · Donburi 7 · przystawki/onigiri/ryż/sushi 3 · napoje 2 pkt — liczy się najwyższa pozycja (ramen + napój = 10)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Ramen 10 · Rice bowl 7 · starters/onigiri/rice/sushi 3 · drinks 2 pts — highest item counts (ramen + drink = 10)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;ラーメン10・丼物7・前菜等3・ドリンク2pt — 最も高い1つだけ（ラーメン＋ドリンク＝10pt）<br>
         🌸 Zaproszenia na wydarzenia kulturalne / Japanese culture events
       </div>
     </div>
@@ -1560,7 +1566,7 @@ try {
   if (_mc && Array.isArray(_mc.menu) && _mc.menu.length) MENU = _mc.menu;
 } catch(e){}
 ensureSplitBowlOption(MENU);
-const PRESETS = [{"pl": "Zupa bardziej pikantna", "en": "Spicy broth"}, {"pl": "Zupa mniej pikantna", "en": "Mild broth"}, {"pl": "Przynieś wszystko jednocześnie", "en": "Serve all at once"}, {"pl": "Przystawki i danie osobno", "en": "Starters then main"}, {"pl": "Bez kolendry", "en": "No coriander"}, {"pl": "Alergia: gluten", "en": "Allergy: gluten"}, {"pl": "Alergia: orzechy", "en": "Allergy: nuts"}, {"pl": "Alergia: nabiał", "en": "Allergy: dairy"}];
+const PRESETS = [{"pl": "Zupa bardziej pikantna", "en": "Spicy broth", "jp": "スープを辛めに"}, {"pl": "Zupa mniej pikantna", "en": "Mild broth", "jp": "スープを辛さ控えめに"}, {"pl": "Przynieś wszystko jednocześnie", "en": "Serve all at once", "jp": "すべて同時にお持ちください"}, {"pl": "Przystawki i danie osobno", "en": "Starters then main", "jp": "前菜とメインを分けて"}, {"pl": "Alergia: gluten", "en": "Allergy: gluten", "jp": "アレルギー：グルテン（小麦）"}, {"pl": "Alergia: orzechy", "en": "Allergy: nuts", "jp": "アレルギー：ナッツ類"}, {"pl": "Alergia: nabiał", "en": "Allergy: dairy", "jp": "アレルギー：乳製品"}];
 const ALLERGEN_NAMES = {"1": {"pl": "Gluten", "en": "Gluten"}, "2": {"pl": "Skorupiaki", "en": "Crustaceans"}, "3": {"pl": "Jaja", "en": "Eggs"}, "4": {"pl": "Ryby", "en": "Fish"}, "5": {"pl": "Orzeszki ziemne", "en": "Peanuts"}, "6": {"pl": "Soja", "en": "Soybeans"}, "7": {"pl": "Mleko", "en": "Milk"}, "8": {"pl": "Orzechy", "en": "Nuts"}, "9": {"pl": "Seler", "en": "Celery"}, "10": {"pl": "Gorczyca", "en": "Mustard"}, "11": {"pl": "Sezam", "en": "Sesame"}, "12": {"pl": "Dwutlenek siarki", "en": "Sulphites"}, "13": {"pl": "Łubin", "en": "Lupin"}, "14": {"pl": "Mięczaki", "en": "Molluscs"}};
 const BROTH_LABELS = {"tori": {"pl": "Bulion Drobiowy", "en": "Chicken Broth", "jp": "鶏だし"}, "buta": {"pl": "Bulion Wieprzowy", "en": "Pork Broth", "jp": "豚だし"}, "oferta": {"pl": "Oferta Specjalna", "en": "Special Offer", "jp": "スペシャル"}, "zimne": {"pl": "Na Zimno", "en": "Cold Noodles", "jp": "冷やし"}};
 const BROTH_ICONS = {tori:"🐔", buta:"🐖", oferta:"⭐", zimne:"❄️"};
@@ -4085,11 +4091,10 @@ function applyCouponToTotal() {
     ? `<span style="text-decoration:line-through;opacity:.5;font-size:.8em">${base} zł</span> ${base - allDisc} zł`
     : base + ' zł';
   renderRankPerkBox();
-  // 🎫 クーポン欄（2026-09-13 修正）。
-  //    旧版は renderCouponBox() を**どこからも呼んでいなかった**ため、
-  //    未使用のクーポンがあっても確認画面に一切出なかった。
-  //    renderRankPerkBox() は呼ばれていたので、特典だけが動いていた。
-  renderCouponBox();
+  // 🎫 クーポン欄の描画は openConfirm() が行う（2026-09-13）。
+  // ⚠️ 2026-10-13 修正：ここで renderCouponBox() を呼ぶと、ラジオを選ぶたびに
+  //    欄が作り直されて「使わない」に戻り、selectedCoupon も null になってしまった
+  //    （画面は半額、実際はクーポンなしで送信される状態）。ここでは呼ばない。
   loadBonusInfo().then(renderBonusBox);   // 💰 金額ボーナスの案内
   renderSplitSummary();
 }
@@ -4380,7 +4385,7 @@ function openConfirm() {
   const oldDLine = document.getElementById('coupon-discount-line');
   if (oldDLine) oldDLine.style.display = 'none';
   document.getElementById('preset-list').innerHTML =
-    PRESETS.map(p=>`<button class="preset-btn" onclick="addPreset('${p.pl} / ${p.en}')">${p.pl}</button>`).join('');
+    PRESETS.map(p=>`<button class="preset-btn" onclick="addPreset('${p.pl} / ${p.en}')">${p.pl}<br><small style="opacity:.8">${p.en} ・ ${p.jp}</small></button>`).join('');
   document.getElementById('confirm-modal').classList.add('open');
 }
 
@@ -4419,6 +4424,23 @@ function checkAllergyWarning() {
     ta.parentNode.insertBefore(box, ta.nextSibling);
   }
   const text = (ta?.value || '').toLowerCase();
+  // 2026-10-13：グルテン／ナッツの申告は、注文アプリだけでは対応しきれないので係員へ誘導する
+  let staffNote = document.getElementById('allergy-staff-note');
+  if (!staffNote) {
+    staffNote = document.createElement('div');
+    staffNote.id = 'allergy-staff-note';
+    staffNote.style.cssText = 'display:none;margin:.6rem 0;padding:.7rem .8rem;border:2px solid #b36b00;' +
+      'border-radius:10px;background:#fff7e6;color:#704000;font-size:.8rem;line-height:1.6;font-weight:600';
+    ta.parentNode.insertBefore(staffNote, ta.nextSibling);
+  }
+  if (text.includes('gluten') || text.includes('orzechy')) {
+    staffNote.innerHTML = '🙋 Prosimy powiedzieć o alergii obsłudze. Nie zawsze możemy spełnić prośbę.<br>' +
+      'Please tell our staff about your allergy. We may not always be able to accommodate your request.<br>' +
+      '係員にお申し付けください。ご要望に応じられない場合がございます。';
+    staffNote.style.display = 'block';
+  } else {
+    staffNote.style.display = 'none';
+  }
   const warnings = [];
   for (const key in ALLERGY_PRESET_MAP) {
     if (!text.includes(key)) continue;
