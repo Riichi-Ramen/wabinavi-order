@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.15 · Toruń</div>
+  <div class="ver">System v8.17 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -723,9 +723,42 @@ async function sha256(t) {
 
   <div class="note"><b>🎫 Karta pieczątek / スタンプカード</b><br>
     100 pkt = 1 runda. Przy 50 pkt gość dostaje kupon −50%, przy 100 pkt kupon gratis.
-    Ramen daje 10 pkt, samo donburi 7 pkt; najwyżej raz dziennie. /<br>
-    <span class="jp">100ptで1周。50ptで半額券、100ptで無料券。ラーメンは10pt、丼物だけなら7pt。1日1回までです。</span><br>
-    Rank depends on total earned points: Sakura 0 / Ume 50 / Take 100 / Matsu 200 / Fuji 350 pt.<br>
+    Najwyżej raz dziennie. /<br>
+    <span class="jp">100ptで1周。50ptで半額券、100ptで無料券。1日1回までです。</span></div>
+
+  <div class="note"><b>🍜 Ile punktów za wizytę? / 1回の来店で何ポイント付くか</b>
+    <table style="margin-top:.4rem">
+      <tr><th>Zamówienie <span class="jp">/ 注文の中身</span></th><th>Punkty <span class="jp">/ pt</span></th></tr>
+      <tr><td>🍜 Ramen <span class="jp">/ ラーメン（r1〜r28）</span></td><td><b>10</b></td></tr>
+      <tr><td>🍚 Donburi <span class="jp">/ 丼物（Tamago・Oyako・Soboro・Chashu・Potato Ebi・Una・Yasai Kakiage）</span></td><td><b>7</b></td></tr>
+      <tr><td>🥟 Przystawki, onigiri, inari, ryż, zestaw, sushi
+        <span class="jp">/ 前菜・おにぎり・いなり・ご飯・セット・寿司</span></td><td><b>3</b></td></tr>
+      <tr><td>🍵 Napoje, alkohol, desery <span class="jp">/ ドリンク・アルコール・デザート</span></td><td><b>2</b></td></tr>
+      <tr><td>➕ Dodatki, opakowania na wynos <span class="jp">/ トッピング・持ち帰り容器</span></td><td><b>0</b></td></tr>
+    </table>
+    <b>Zasada: każdą kategorię liczymy RAZ na wizytę (bez względu na liczbę sztuk), a punkty z różnych kategorii SIĘ SUMUJĄ.</b> /
+    <span class="jp"><b>ルール：各区分は何杯・何皿でも1来店につき1回だけ数え、区分ごとに足し算します。</b></span>
+    <ul style="margin:.4rem 0 0 1.2rem;font-size:.84rem">
+      <li>Ramen + napój = <b>12</b> <span class="jp">／ラーメン＋ドリンク＝12pt</span></li>
+      <li>2 × ramen + 3 × napój = <b>12</b> (kategoria raz) <span class="jp">／ラーメン2杯＋ドリンク3杯＝12pt（区分ごとに1回）</span></li>
+      <li>Ramen + donburi = <b>17</b> <span class="jp">／ラーメン＋丼物＝17pt</span></li>
+      <li>Ramen + przystawka + napój = <b>15</b> <span class="jp">／ラーメン＋前菜＋ドリンク＝15pt</span></li>
+      <li>Donburi + przystawka + napój = <b>12</b> <span class="jp">／丼物＋餃子＋ドリンク＝12pt</span></li>
+      <li>Przystawka + napój = <b>5</b> <span class="jp">／前菜＋ドリンク＝5pt</span></li>
+      <li>Same napoje = <b>2</b> <span class="jp">／ドリンクだけ＝2pt</span></li>
+      <li>Same dodatki lub opakowania = <b>0</b> — aplikacja mówi, że pieczątka nie przysługuje
+        <span class="jp">／トッピングや容器だけ＝0pt（アプリは「対象外」の案内を出します）</span></li>
+      <li>Użyty kupon = <b>0</b> <span class="jp">／クーポンを使った来店＝0pt</span></li>
+    </ul>
+    <b>⚠️ Poproś gościa, by nacisnął pieczątkę PO OSTATNIM zamówieniu.</b>
+    Jeśli zrobi to po samym napoju (2 pkt), pieczątka na ten dzień jest już zużyta. /
+    <span class="jp"><b>スタンプは「最後の注文のあと」に押すようお客様に伝えてください。</b>
+    先にドリンクだけで押すと2ptで確定し、その日はもう押せません。</span><br>
+    <small>Zmiana wartości: <code>07_Stamp.gs</code> — <code>STAMP_PT_RAMEN / DONBURI / STARTER / DRINK</code> /
+    <span class="jp">pt数の変更は 07_Stamp の定数（店主のみ）</span></small></div>
+
+  <div class="note">
+        Rank depends on total earned points: Sakura 0 / Ume 50 / Take 100 / Matsu 200 / Fuji 350 pt.<br>
     Ranga nie spada, chyba że gość nie odwiedza lokalu przez 8 miesięcy. /
     <span class="jp">ランクは獲得ポイントの合計で決まり、下がりません（8ヶ月ご来店がない場合を除く）。</span></div>
 
@@ -1049,7 +1082,7 @@ async function sha256(t) {
 
 <div class="foot">
   📍 Wabi Navi — ul. Małe Garbary 5A, 87-100 Toruń<br>
-  和美なび · System v8.15 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
+  和美なび · System v8.17 · Wydrukuj i powieś w kuchni / 印刷して厨房に掲示
 </div>
 </div>
 

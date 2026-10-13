@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v93-20261013</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v94-20261013</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v93-20261013</div>
+    <div class="ver-tag">v94-20261013</div>
   </div>
 </div>
 
@@ -926,9 +926,9 @@ body.show-config .config-bar{display:flex}
       &nbsp;&nbsp;🎫 Karta pieczątek: jedna runda co 100 pkt. Kupon −50% przy 50 pkt, gratis przy 100 pkt.<br>
       &nbsp;&nbsp;<strong>Stamp card: one round per 100 pts. Half-price coupon at 50 pts, free coupon at 100 pts.</strong><br>
       &nbsp;&nbsp;スタンプカード：100ptで1周。50ptで半額券、100ptで無料券。<br>
-      &nbsp;&nbsp;🍜 Ramen 10 · Donburi 7 · przystawki/onigiri/ryż/sushi 3 · napoje i alkohol 2 pkt (1 wizyta = najwyższa pozycja)<br>
-      &nbsp;&nbsp;Ramen 10 · Rice bowl 7 · starters/onigiri/rice/sushi 3 · drinks &amp; alcohol 2 pts (highest item per visit)<br>
-      &nbsp;&nbsp;ラーメン10・丼物7・前菜/おにぎり/ご飯/寿司3・ドリンク/アルコール2pt（1来店・最も高い1つだけ。ラーメン＋ドリンクは10pt）<br>
+      &nbsp;&nbsp;🍜 Ramen 10 · Donburi 7 · przystawki/onigiri/ryż/sushi 3 · napoje i alkohol 2 pkt (każda kategoria raz na wizytę, punkty się sumują)<br>
+      &nbsp;&nbsp;Ramen 10 · Rice bowl 7 · starters/onigiri/rice/sushi 3 · drinks &amp; alcohol 2 pts (each category once per visit, points add up)<br>
+      &nbsp;&nbsp;ラーメン10・丼物7・前菜/おにぎり/ご飯/寿司3・ドリンク/アルコール2pt（区分ごとに1来店1回・足し算。ラーメン＋ドリンクは12pt）<br>
       &nbsp;&nbsp;🏅 Ranga / Rank / ランク: Sakura 0 / Ume 50 / Take 100 / Matsu 200 / Fuji 350 pt<br>
       &nbsp;&nbsp;<small>Ranga nie spada poza 8 miesiącami bez wizyty / Rank does not go down except after 8 months without a visit / ランクは下がりません（8ヶ月ご来店がない場合を除く）</small><br>
       &nbsp;&nbsp;<small>※ Za miski −50% i gratis pkt nie są naliczane /
@@ -1440,9 +1440,9 @@ body.show-config .config-bar{display:flex}
         ☕ Darmowe dodatki dla stałych klientów / Free extras for regulars<br>
         🍜 Karta pieczątek: 100 pkt = 1 runda. Kupon −50% przy 50 pkt, gratis przy 100 pkt.<br>
         &nbsp;&nbsp;&nbsp;&nbsp;Stamp card: one round per 100 pts. Half-price coupon at 50 pts, free coupon at 100 pts.<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;🍜 Ramen 10 · Donburi 7 · przystawki/onigiri/ryż/sushi 3 · napoje 2 pkt — liczy się najwyższa pozycja (ramen + napój = 10)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;Ramen 10 · Rice bowl 7 · starters/onigiri/rice/sushi 3 · drinks 2 pts — highest item counts (ramen + drink = 10)<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;ラーメン10・丼物7・前菜等3・ドリンク2pt — 最も高い1つだけ（ラーメン＋ドリンク＝10pt）<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;🍜 Ramen 10 · Donburi 7 · przystawki/onigiri/ryż/sushi 3 · napoje 2 pkt — każda kategoria raz na wizytę, punkty się sumują (ramen + napój = 12)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Ramen 10 · Rice bowl 7 · starters/onigiri/rice/sushi 3 · drinks 2 pts — each category once per visit, points add up (ramen + drink = 12)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;ラーメン10・丼物7・前菜等3・ドリンク2pt — 区分ごとに1来店1回・足し算（ラーメン＋ドリンク＝12pt）<br>
         🌸 Zaproszenia na wydarzenia kulturalne / Japanese culture events
       </div>
     </div>
