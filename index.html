@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v90-20261013</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v91-20261013</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v90-20261013</div>
+    <div class="ver-tag">v91-20261013</div>
   </div>
 </div>
 
@@ -3989,14 +3989,19 @@ function renderBonusBox() {
 function renderRankPerkBox() {
   const ta = document.getElementById('uwagi-ta');
   let box = document.getElementById('rankperk-area');
+  // ⚠️ 2026-10-13 修正：枠は一度作ったら色が変わらず、クーポンを選んでも
+  //   「緑の枠に併用不可の文」が出ていた。表示のたびに色を指定し直す。
+  const ORANGE = 'margin:.8rem 0;padding:.8rem .9rem;border:2px solid #b36b00;border-radius:12px;' +
+    'background:#fff7e6;font-size:.8rem;line-height:1.7;color:#704000';
+  const GREEN  = 'margin:.8rem 0;padding:.8rem .9rem;border:2px solid #2d7a3a;border-radius:12px;' +
+    'background:linear-gradient(135deg,#f2f9ee,#e6f3df);font-size:.8rem;line-height:1.7;color:#1f5429';
   if (selectedCoupon) {
     if (!box) {
       box = document.createElement('div');
       box.id = 'rankperk-area';
-      box.style.cssText = 'margin:.8rem 0;padding:.8rem .9rem;border:2px solid #b36b00;border-radius:12px;' +
-        'background:#fff7e6;font-size:.8rem;line-height:1.7;color:#704000';
       ta.parentNode.insertBefore(box, ta);
     }
+    box.style.cssText = ORANGE;
     box.innerHTML = '<strong>🎫 Nie łączy się z kuponem / Not combined with coupons / クーポン使用時はトッピング特典は使えません</strong>';
     box.style.display = 'block';
     return;
@@ -4006,10 +4011,9 @@ function renderRankPerkBox() {
   if (!box) {
     box = document.createElement('div');
     box.id = 'rankperk-area';
-    box.style.cssText = 'margin:.8rem 0;padding:.8rem .9rem;border:2px solid #2d7a3a;border-radius:12px;' +
-      'background:linear-gradient(135deg,#f2f9ee,#e6f3df);font-size:.8rem;line-height:1.7;color:#1f5429';
     ta.parentNode.insertBefore(box, ta);
   }
+  box.style.cssText = GREEN;
   let html = `<strong>🎁 Bonus rangi ${p.rank} / ${p.rank}ランク特典</strong><br>
     Darmowe dodatki: ${p.count} szt. (do ${p.maxPrice} zł) — przy każdej wizycie!<br>
     毎回、${p.maxPrice}złまでのトッピング${p.count}品が無料です`;
