@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v89-20261013</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v90-20261013</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v89-20261013</div>
+    <div class="ver-tag">v90-20261013</div>
   </div>
 </div>
 
@@ -1566,7 +1566,7 @@ try {
   if (_mc && Array.isArray(_mc.menu) && _mc.menu.length) MENU = _mc.menu;
 } catch(e){}
 ensureSplitBowlOption(MENU);
-const PRESETS = [{"pl": "Zupa bardziej pikantna", "en": "Spicy broth", "jp": "スープを辛めに"}, {"pl": "Zupa mniej pikantna", "en": "Mild broth", "jp": "スープを辛さ控えめに"}, {"pl": "Przynieś wszystko jednocześnie", "en": "Serve all at once", "jp": "すべて同時にお持ちください"}, {"pl": "Przystawki i danie osobno", "en": "Starters then main", "jp": "前菜とメインを分けて"}, {"pl": "Alergia: gluten", "en": "Allergy: gluten", "jp": "アレルギー：グルテン（小麦）"}, {"pl": "Alergia: orzechy", "en": "Allergy: nuts", "jp": "アレルギー：ナッツ類"}, {"pl": "Alergia: nabiał", "en": "Allergy: dairy", "jp": "アレルギー：乳製品"}];
+const PRESETS = [{"pl": "Zupa bardziej pikantna", "en": "Spicy broth", "jp": "スープを辛めに"}, {"pl": "Zupa mniej pikantna", "en": "Mild broth", "jp": "スープを辛さ控えめに"}, {"pl": "Przynieś wszystko jednocześnie", "en": "Serve all at once", "jp": "すべて同時にお持ちください"}, {"pl": "Przystawki i danie osobno", "en": "Starters then main", "jp": "前菜とメインを分けて"}, {"pl": "Alergia", "en": "Allergy", "jp": "アレルギー", "allergy": true}];
 const ALLERGEN_NAMES = {"1": {"pl": "Gluten", "en": "Gluten"}, "2": {"pl": "Skorupiaki", "en": "Crustaceans"}, "3": {"pl": "Jaja", "en": "Eggs"}, "4": {"pl": "Ryby", "en": "Fish"}, "5": {"pl": "Orzeszki ziemne", "en": "Peanuts"}, "6": {"pl": "Soja", "en": "Soybeans"}, "7": {"pl": "Mleko", "en": "Milk"}, "8": {"pl": "Orzechy", "en": "Nuts"}, "9": {"pl": "Seler", "en": "Celery"}, "10": {"pl": "Gorczyca", "en": "Mustard"}, "11": {"pl": "Sezam", "en": "Sesame"}, "12": {"pl": "Dwutlenek siarki", "en": "Sulphites"}, "13": {"pl": "Łubin", "en": "Lupin"}, "14": {"pl": "Mięczaki", "en": "Molluscs"}};
 const BROTH_LABELS = {"tori": {"pl": "Bulion Drobiowy", "en": "Chicken Broth", "jp": "鶏だし"}, "buta": {"pl": "Bulion Wieprzowy", "en": "Pork Broth", "jp": "豚だし"}, "oferta": {"pl": "Oferta Specjalna", "en": "Special Offer", "jp": "スペシャル"}, "zimne": {"pl": "Na Zimno", "en": "Cold Noodles", "jp": "冷やし"}};
 const BROTH_ICONS = {tori:"🐔", buta:"🐖", oferta:"⭐", zimne:"❄️"};
@@ -4385,7 +4385,7 @@ function openConfirm() {
   const oldDLine = document.getElementById('coupon-discount-line');
   if (oldDLine) oldDLine.style.display = 'none';
   document.getElementById('preset-list').innerHTML =
-    PRESETS.map(p=>`<button class="preset-btn" onclick="addPreset('${p.pl} / ${p.en}')">${p.pl}<br><small style="opacity:.8">${p.en} ・ ${p.jp}</small></button>`).join('');
+    PRESETS.map(p=>`<button class="preset-btn" onclick="addPreset('${p.allergy ? 'Alergia / Allergy / アレルギー: ' : p.pl + ' / ' + p.en}')">${p.pl}<br><small style="opacity:.8">${p.en} ・ ${p.jp}</small></button>`).join('');
   document.getElementById('confirm-modal').classList.add('open');
 }
 
@@ -4405,14 +4405,24 @@ function addPreset(t) {
   const ta = document.getElementById('uwagi-ta');
   ta.value = ta.value ? ta.value+'; '+t : t;
   checkAllergyWarning();
+  // 2026-10-13：アレルギーのチップは「何に」を客が続けて書く。入力位置を末尾に置く
+  try { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
 }
 
 // アレルギー申告と選択中商品のアレルゲンを照合して警告
+// 2026-10-13：アレルギーのチップを1つにしたので、客が自由記入した語（PL/EN/JP）で照合する。
 const ALLERGY_PRESET_MAP = {
-  'gluten':  { nums: [1],    pl: 'GLUTEN',           jp: 'グルテン' },
-  'orzechy': { nums: [5, 8], pl: 'ORZECHY',          jp: 'ナッツ類' },
-  'nabiał':  { nums: [7],    pl: 'NABIAŁ (mleko)',   jp: '乳製品' }
+  'gluten':  { nums: [1],    pl: 'GLUTEN',           jp: 'グルテン',
+               kw: ['gluten', 'グルテン', '小麦', 'wheat'] },
+  'orzechy': { nums: [5, 8], pl: 'ORZECHY',          jp: 'ナッツ類',
+               kw: ['orzech', 'nuts', 'nut allergy', 'ナッツ', 'peanut', 'arachid'] },
+  'nabiał':  { nums: [7],    pl: 'NABIAŁ (mleko)',   jp: '乳製品',
+               kw: ['nabiał', 'nabial', 'mleko', 'dairy', 'milk', '乳', 'ミルク', 'チーズ'] }
 };
+const ALLERGY_ANY_KW = ['alergi', 'allerg', 'アレルギー'];
+function allergyKeyHit_(text, key) {
+  return ALLERGY_PRESET_MAP[key].kw.some(k => text.includes(k));
+}
 function checkAllergyWarning() {
   const ta = document.getElementById('uwagi-ta');
   let box = document.getElementById('allergy-warning');
@@ -4433,17 +4443,18 @@ function checkAllergyWarning() {
       'border-radius:10px;background:#fff7e6;color:#704000;font-size:.8rem;line-height:1.6;font-weight:600';
     ta.parentNode.insertBefore(staffNote, ta.nextSibling);
   }
-  if (text.includes('gluten') || text.includes('orzechy')) {
+  if (ALLERGY_ANY_KW.some(k => text.includes(k)) || Object.keys(ALLERGY_PRESET_MAP).some(k => allergyKeyHit_(text, k))) {
     staffNote.innerHTML = '🙋 Prosimy powiedzieć o alergii obsłudze. Nie zawsze możemy spełnić prośbę.<br>' +
       'Please tell our staff about your allergy. We may not always be able to accommodate your request.<br>' +
-      '係員にお申し付けください。ご要望に応じられない場合がございます。';
+      '係員にお申し付けください。ご要望に応じられない場合がございます。<br>' +
+      '<small style="font-weight:400">✍️ Wpisz poniżej, na co masz alergię. / Please write your allergen below. / アレルギーの内容を下の欄にご記入ください。</small>';
     staffNote.style.display = 'block';
   } else {
     staffNote.style.display = 'none';
   }
   const warnings = [];
   for (const key in ALLERGY_PRESET_MAP) {
-    if (!text.includes(key)) continue;
+    if (!allergyKeyHit_(text, key)) continue;
     const def = ALLERGY_PRESET_MAP[key];
     const hits = [];
     for (const id in cart) {
