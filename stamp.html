@@ -447,7 +447,7 @@ body{
 <div class="card screen" id="screen-staff">
   <div class="staff-title">🔒 係員専用パネル / Panel obsługi</div>
   <label class="form-label">🔑 パスワード / Hasło</label>
-  <input class="form-input" type="password" id="staff-password" placeholder="パスワードを入力">
+  <input class="form-input" type="password" id="staff-password" placeholder="パスワードを入力" onchange="loadStaffPresets()">
   <label style="display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--muted);margin:.3rem 0 .5rem;cursor:pointer">
     <input type="checkbox" id="staff-remember" style="width:16px;height:16px;accent-color:var(--accent)">
     この端末を記憶する（スタッフ端末のみ）/ Zapamiętaj to urządzenie
@@ -457,7 +457,7 @@ body{
   <label class="form-label">📧 会員メールアドレス / E-mail członka</label>
   <input class="form-input" type="email" id="staff-email" placeholder="jan@email.com">
   <label class="form-label">🍜 ポイント数 / Liczba punktów</label>
-  <div class="id-tabs">
+  <div class="id-tabs" id="staff-pt-tabs" style="flex-wrap:wrap">
     <button class="id-tab active" id="tab-pts-10" onclick="switchStaffPoints(10)">
       🍜 +10pt<br><small>1杯 / 1 miska</small>
     </button>
@@ -1088,18 +1088,46 @@ async function doStaffAddPoint() {
   }
 }
 
-// ── 係員ポイント数切替（10pt / 20ptダブル / 5ptクイズ） ──────────
+// ── 係員ポイント数切替（⚙️ポイント設定シートのプリセット） ──────────
+//  2026-10-14：10/20/5 の固定3つをやめ、シートのプリセット（getPointPresets）を
+//  読んで並べる。取得できないとき（未入力・通信失敗）は従来の3つのまま使える。
 let staffPoints = 10;
+let staffPresets = null;   // [{pts,label,visits}] 取得できたときだけ入る
+
+function escStaffHtml_(t) {
+  return String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+async function loadStaffPresets() {
+  const pw = document.getElementById('staff-password').value;
+  if (!pw || !GAS_URL) return;
+  try {
+    const r = await fetch(GAS_URL + '?action=getPointPresets&password=' + encodeURIComponent(pw));
+    const d = await r.json();
+    if (!d || d.status !== 'ok' || !d.presets || !d.presets.length) return;
+    staffPresets = d.presets;
+    const box = document.getElementById('staff-pt-tabs');
+    box.innerHTML = staffPresets.map(p =>
+      '<button class="id-tab" style="flex:1 1 30%" data-pts="' + p.pts + '" onclick="switchStaffPoints(' + p.pts + ')">' +
+      '+' + p.pts + 'pt<br><small>' + escStaffHtml_(p.label) + '</small></button>').join('');
+    // 選択中の値がシートに無ければ、10 があれば10、なければ先頭にする
+    const has = v => staffPresets.some(p => p.pts === v);
+    switchStaffPoints(has(staffPoints) ? staffPoints : (has(10) ? 10 : staffPresets[0].pts));
+  } catch (e) { /* 取れなければ従来の3つのまま */ }
+}
 
 function switchStaffPoints(pts) {
   staffPoints = pts;
-  document.getElementById('tab-pts-10').classList.toggle('active', pts === 10);
-  document.getElementById('tab-pts-20').classList.toggle('active', pts === 20);
-  document.getElementById('tab-pts-5').classList.toggle('active',  pts === 5);
+  document.querySelectorAll('#staff-pt-tabs .id-tab').forEach(b => {
+    const v = b.dataset.pts ? Number(b.dataset.pts) : Number((b.id || '').replace('tab-pts-', ''));
+    b.classList.toggle('active', v === pts);
+  });
+  const pr = staffPresets && staffPresets.find(p => p.pts === pts);
   document.getElementById('staff-add-btn').textContent =
+    pr ? '＋' + pts + 'pt 追加（' + pr.label + '） / Dodaj ' + pts + ' punktów' :
     pts === 20 ? '＋20pt 追加（ダブル） / Dodaj 20 punktów' :
     pts === 5  ? '＋5pt 追加（🎌クイズ正解） / Dodaj 5 punktów'
-               : '＋10pt 追加 / Dodaj 10 punktów';
+               : '＋' + pts + 'pt 追加 / Dodaj ' + pts + ' punktów';
 }
 
 // ── 係員ポイント取消（-10pt / -5pt） ─────────────────────────────
@@ -1420,6 +1448,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (savedPw) {
     document.getElementById('staff-password').value = savedPw;
     document.getElementById('staff-remember').checked = true;
+    loadStaffPresets();
   }
   // 記憶した今週のコードを入れておく（常連の方は入力不要）
   try {
