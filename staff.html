@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="staff-20261017a">
+<meta name="wabi-version" content="staff-20261017b">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — 係員専用 / Obsługa</title>
@@ -134,6 +134,51 @@ body{
 </div>
 
 <!-- ══ SCREEN 5: 係員専用 ══ -->
+<div class="card" id="support-card">
+  <div class="staff-title">🙋 Pomoc gościom / お客様サポート</div>
+
+  <label class="form-label">🔎 Sprawdź członka / 会員の状況を確認（電話またはメール）</label>
+  <input class="form-input" type="text" inputmode="email" autocapitalize="off" id="sup-contact" placeholder="669751337 / jan@email.com">
+  <button class="btn btn-secondary" style="margin-top:.4rem" onclick="supLookup()">🔎 Sprawdź / 照会</button>
+  <div id="sup-result" style="margin-top:.6rem;display:none"></div>
+
+  <hr class="divider">
+  <div class="staff-title">📱 Otwórz ekran gościa / お客様の画面を開く</div>
+  <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+    <a class="btn btn-secondary" style="flex:1 1 45%;margin:0;text-align:center;text-decoration:none" href="stamp.html" target="_blank" rel="noopener">🎋 Pieczątka / スタンプ</a>
+    <a class="btn btn-secondary" style="flex:1 1 45%;margin:0;text-align:center;text-decoration:none" href="card.html" target="_blank" rel="noopener">👤 Karta / 会員カード</a>
+  </div>
+  <div style="display:flex;gap:.5rem;margin-top:.5rem;align-items:stretch">
+    <input class="form-input" type="number" inputmode="numeric" min="1" max="14" id="sup-table" placeholder="Stolik 1–14 / 卓番号" style="margin:0;flex:1">
+    <button class="btn btn-secondary" style="margin:0;flex:1" onclick="supOpenOrder()">🍜 Zamów za gościa / 注文を開く</button>
+  </div>
+
+  <hr class="divider">
+  <details>
+    <summary style="font-weight:700;font-size:.85rem;cursor:pointer;color:var(--accent)">📖 Jak to wytłumaczyć gościowi / お客様への使い方の案内</summary>
+    <div style="font-size:.76rem;line-height:1.7;margin-top:.5rem">
+      <b>🎋 Pieczątka / スタンプ（ポイントをもらう）</b>
+      <ol style="margin:.3rem 0 .6rem 1.2rem">
+        <li>Zamów przez QR na stoliku. Po posiłku otwórz „Pieczątka”. / 注文はテーブルのQRから。食事のあとに「スタンプ」を開く。</li>
+        <li>Wpisz telefon lub e-mail z rejestracji. / 登録した電話番号かメールを入力。</li>
+        <li>Wpisz kod tygodnia (podaje obsługa — arkusz „🔑 Kod”). Raz zapamiętany. / 今週のコードを入力（係員が口頭で伝える・シート「🔑 コード」）。一度通れば端末が記憶。</li>
+        <li>Naciśnij pieczątkę — tylko <b>raz dziennie</b>, <b>po ostatnim zamówieniu</b> (ramen 10 · donburi 7 · przystawki 3 · napoje 2 pkt). / スタンプは<b>1日1回</b>・<b>最後の注文のあと</b>に押す（ラーメン10・丼物7・前菜3・ドリンク2pt）。</li>
+      </ol>
+      <b>Gość nie ma telefonu lub nie daje rady / スマホがない・うまくいかないとき</b>
+      <ul style="margin:.3rem 0 .6rem 1.2rem">
+        <li>Poproś o QR z karty członka (👤 Karta) → „📷 Skanuj kod QR członka” powyżej. / 会員カードのQRを見せてもらい、上の「会員QRスキャン付与」で読み取る。</li>
+        <li>Nie jest członkiem? Zarejestruj go w „Pieczątka” → „Zarejestruj”. / 会員でなければ「スタンプ」画面から新規登録。</li>
+        <li>Kupon = brak pieczątki tego dnia. / クーポンを使った来店はスタンプが付かない。</li>
+      </ul>
+      <b>Zamawianie / 注文</b>
+      <ul style="margin:.3rem 0 0 1.2rem">
+        <li>QR na stoliku → wybierz dania → „Zamawiam”. Zmiany po wysłaniu zgłasza się obsłudze. / テーブルのQR→品を選ぶ→送信。送信後の変更・取消は係員へ。</li>
+        <li>Przycisk „Zamów za gościa” otwiera aplikację dla wybranego stolika. / 「注文を開く」で、その卓の注文画面をこの端末で開けます。</li>
+      </ul>
+    </div>
+  </details>
+</div>
+
 <div class="card" id="screen-staff">
   <div class="staff-title">🔒 係員専用パネル / Panel obsługi</div>
   <div style="background:rgba(192,57,43,.07);border-radius:10px;padding:.55rem .7rem;margin:.2rem 0 .8rem;font-size:.72rem;line-height:1.6;color:var(--ink)">
@@ -462,6 +507,43 @@ async function qrStamp(memberId, force, table) {
   }
 }
 
+
+// ── お客様サポート ───────────────────────────────────────────────
+function supEsc(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function supOpenOrder() {
+  const t = parseInt(document.getElementById('sup-table').value, 10);
+  if (!(t >= 1 && t <= 14)) { alert('Stolik 1–14 / 卓番号は 1〜14 です'); return; }
+  window.open('index.html?table=' + t, '_blank', 'noopener');
+}
+
+async function supLookup() {
+  const q = document.getElementById('sup-contact').value.trim();
+  const area = document.getElementById('sup-result');
+  area.style.display = 'block';
+  if (!q) { area.innerHTML = '<div class="bonus-box"><div class="bonus-text">Wpisz telefon lub e-mail / 電話またはメールを入力</div></div>'; return; }
+  area.innerHTML = '<div class="loading"><span class="spinner"></span>…</div>';
+  try {
+    const res = await postGAS({ action:'getCard', email:q });
+    if (res.status === 'ok' && res.member) {
+      const m = res.member;
+      const coupons = (Array.isArray(m.coupons) ? m.coupons : []).filter(c => c && !c.u);
+      const cn = t => coupons.filter(c => c.t === t).length;
+      const hist = (m.history || []).slice(-5).reverse().join(' · ');
+      area.innerHTML = `<div class="rankup-box" style="text-align:left"><div class="rankup-text" style="font-weight:400;color:var(--text)">
+        👤 <b>${supEsc(m.name)}</b>（${supEsc(m.memberId || '')}）<br>
+        🏅 ${supEsc(m.rank || '')} · <b>${Number(m.points) || 0}pt</b>（karta / カード ${(Number(m.points) || 0) % 100}/100）<br>
+        🎫 free ×${cn('free')} · half ×${cn('half')} · book ×${cn('book')}<br>
+        <small>📅 ${supEsc(hist) || '—'}</small></div></div>`;
+    } else if (res.status === 'notFound' || res.status === 'notRegistered') {
+      area.innerHTML = '<div class="bonus-box"><div class="bonus-text">Nie znaleziono członka / 会員が見つかりません<br><small>Sprawdź numer (9 cyfr) / 番号を確認（ポーランドの番号は9桁）</small></div></div>';
+    } else {
+      area.innerHTML = '<div class="bonus-box"><div class="bonus-text">❌ ' + supEsc(res.message || res.status) + '</div></div>';
+    }
+  } catch (e) {
+    area.innerHTML = '<div class="bonus-box"><div class="bonus-text">📡 Błąd połączenia / 通信エラー</div></div>';
+  }
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   initStaffDevice();
