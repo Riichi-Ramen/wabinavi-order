@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="stamp-20261013f">
+<meta name="wabi-version" content="stamp-20261017a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — Stamp / スタンプ</title>
 <style>
@@ -446,17 +446,25 @@ body{
 <!-- ══ SCREEN 5: 係員専用 ══ -->
 <div class="card screen" id="screen-staff">
   <div class="staff-title">🔒 係員専用パネル / Panel obsługi</div>
+  <div style="background:rgba(192,57,43,.07);border-radius:10px;padding:.55rem .7rem;margin:.2rem 0 .8rem;font-size:.72rem;line-height:1.6;color:var(--ink)">
+    <b>このパネルでできること</b><br>
+    ① ポイントの<b>手動付与</b>（下のボタン：会員のメール／電話番号を入力）<br>
+    ② 付与の<b>取消</b>（−10pt／−5pt）<br>
+    ③ <b>会員QRの読み取り</b>で付与（さらに下）<br>
+    <span style="color:var(--muted)">※ 注文に応じた通常のスタンプ（ラーメン10・丼物7・前菜3・ドリンク2pt）は<b>お客様が自分で押す</b>と自動で付きます。ここは係員が手で付ける・取り消すときだけ使います。</span>
+  </div>
   <label class="form-label">🔑 パスワード / Hasło</label>
-  <input class="form-input" type="password" id="staff-password" placeholder="パスワードを入力" onchange="loadStaffPresets()">
+  <input class="form-input" type="password" id="staff-password" placeholder="パスワードを入力" onchange="loadStaffPresets()" oninput="scheduleStaffPresets()">
   <label style="display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--muted);margin:.3rem 0 .5rem;cursor:pointer">
     <input type="checkbox" id="staff-remember" style="width:16px;height:16px;accent-color:var(--accent)">
     この端末を記憶する（スタッフ端末のみ）/ Zapamiętaj to urządzenie
   </label>
   <p style="font-size:.62rem;color:var(--muted);margin:0 0 .5rem;line-height:1.4">
     ※チェックを外して操作すると記憶は消去されます。お客様の端末では使用しないでください。</p>
-  <label class="form-label">📧 会員メールアドレス / E-mail członka</label>
-  <input class="form-input" type="email" id="staff-email" placeholder="jan@email.com">
-  <label class="form-label">🍜 ポイント数 / Liczba punktów</label>
+  <label class="form-label">📧 会員のメールまたは電話番号 / E-mail lub telefon członka</label>
+  <input class="form-input" type="text" inputmode="email" autocapitalize="off" id="staff-email" placeholder="jan@email.com / 669751337">
+  <label class="form-label">🍜 付与するポイント（手動） / Liczba punktów</label>
+  <div id="staff-preset-status" style="font-size:.64rem;color:var(--muted);margin:-.2rem 0 .4rem">パスワード入力後、「ポイント設定」シートの内容に切り替わります（読み込み前は標準の3つ）</div>
   <div class="id-tabs" id="staff-pt-tabs" style="flex-wrap:wrap">
     <button class="id-tab active" id="tab-pts-10" onclick="switchStaffPoints(10)">
       🍜 +10pt<br><small>1杯 / 1 miska</small>
@@ -677,6 +685,7 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
+  if (id === 'screen-staff' && typeof loadStaffPresets === 'function') loadStaffPresets();
 }
 
 function showError(id, msg) {
@@ -1101,11 +1110,17 @@ function escStaffHtml_(t) {
 async function loadStaffPresets() {
   const pw = document.getElementById('staff-password').value;
   if (!pw || !GAS_URL) return;
+  const st = document.getElementById('staff-preset-status');
+  if (st) st.textContent = '⏳ ポイント設定を読み込み中…';
   try {
     const r = await fetch(GAS_URL + '?action=getPointPresets&password=' + encodeURIComponent(pw));
     const d = await r.json();
-    if (!d || d.status !== 'ok' || !d.presets || !d.presets.length) return;
+    if (!d || d.status !== 'ok' || !d.presets || !d.presets.length) {
+      if (st) st.textContent = '⚠️ 読み込めませんでした（パスワード違い／通信）。標準の3つを表示中';
+      return;
+    }
     staffPresets = d.presets;
+    if (st) st.textContent = '✅ 「ポイント設定」シートの内容（' + d.presets.length + '件）';
     const box = document.getElementById('staff-pt-tabs');
     box.innerHTML = staffPresets.map(p =>
       '<button class="id-tab" style="flex:1 1 30%" data-pts="' + p.pts + '" onclick="switchStaffPoints(' + p.pts + ')">' +
@@ -1113,7 +1128,16 @@ async function loadStaffPresets() {
     // 選択中の値がシートに無ければ、10 があれば10、なければ先頭にする
     const has = v => staffPresets.some(p => p.pts === v);
     switchStaffPoints(has(staffPoints) ? staffPoints : (has(10) ? 10 : staffPresets[0].pts));
-  } catch (e) { /* 取れなければ従来の3つのまま */ }
+  } catch (e) {
+    if (st) st.textContent = '⚠️ 通信エラー。標準の3つを表示中';
+  }
+}
+
+// 入力が止まって0.7秒後に読み込む（スマホでは onchange がキーボードを閉じるまで発火しないため）
+let _staffPresetTimer = null;
+function scheduleStaffPresets() {
+  clearTimeout(_staffPresetTimer);
+  _staffPresetTimer = setTimeout(loadStaffPresets, 700);
 }
 
 function switchStaffPoints(pts) {
