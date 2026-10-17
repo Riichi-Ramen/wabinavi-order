@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="stamp-20261017b">
+<meta name="wabi-version" content="stamp-20261017d">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — Stamp / スタンプ</title>
 <style>
@@ -183,7 +183,7 @@ body{
   <div class="staff-panel" id="staff-entry" style="display:none">
     <div class="staff-title">🔒 Dla obsługi / 係員専用</div>
     <button class="btn btn-secondary" style="margin:0" onclick="showScreen('screen-staff')">
-      🔑 係員パネルを開く（パスワード入力・手動付与・QR読み取り） / Otwórz panel obsługi
+      🔑 Otwórz panel obsługi / Open staff panel / 係員パネルを開く
     </button>
   </div>
 </div>
@@ -447,24 +447,26 @@ body{
 <div class="card screen" id="screen-staff">
   <div class="staff-title">🔒 係員専用パネル / Panel obsługi</div>
   <div style="background:rgba(192,57,43,.07);border-radius:10px;padding:.55rem .7rem;margin:.2rem 0 .8rem;font-size:.72rem;line-height:1.6;color:var(--ink)">
-    <b>このパネルでできること</b><br>
-    ① ポイントの<b>手動付与</b>（下のボタン：会員のメール／電話番号を入力）<br>
-    ② 付与の<b>取消</b>（−10pt／−5pt）<br>
-    ③ <b>会員QRの読み取り</b>で付与（さらに下）<br>
-    <span style="color:var(--muted)">※ 注文に応じた通常のスタンプ（ラーメン10・丼物7・前菜3・ドリンク2pt）は<b>お客様が自分で押す</b>と自動で付きます。ここは係員が手で付ける・取り消すときだけ使います。</span>
+    <b>Co można tu zrobić / What you can do here / このパネルでできること</b><br>
+    ① Ręczne dodanie punktów (przyciski poniżej) / Add points manually (buttons below) / ポイントの<b>手動付与</b><br>
+    ② Cofnięcie punktów (−10 / −5) / Undo points (−10 / −5) / 付与の<b>取消</b><br>
+    ③ Skanowanie QR członka / Scan the member's QR code / <b>会員QRの読み取り</b>で付与<br>
+    <span style="color:var(--muted)">Zwykłe pieczątki za zamówienie (ramen 10 · donburi 7 · przystawki 3 · napoje 2 pkt) gość dostaje sam, naciskając pieczątkę — tutaj tylko ręczne dodawanie i cofanie.<br>
+    Regular stamps (ramen 10 · donburi 7 · starters 3 · drinks 2 pts) are earned by guests themselves — use this panel only to add or undo points by hand.<br>
+    注文に応じた通常のスタンプ（ラーメン10・丼物7・前菜3・ドリンク2pt）はお客様が自分で押すと自動で付きます。ここは係員が手で付ける・取り消すときだけ使います。</span>
   </div>
   <label class="form-label">🔑 パスワード / Hasło</label>
-  <input class="form-input" type="password" id="staff-password" placeholder="パスワードを入力" onchange="loadStaffPresets()" oninput="scheduleStaffPresets()">
+  <input class="form-input" type="password" id="staff-password" placeholder="Hasło / Password / パスワード" onchange="loadStaffPresets()" oninput="scheduleStaffPresets()">
   <label style="display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--muted);margin:.3rem 0 .5rem;cursor:pointer">
     <input type="checkbox" id="staff-remember" style="width:16px;height:16px;accent-color:var(--accent)">
     この端末を記憶する（スタッフ端末のみ）/ Zapamiętaj to urządzenie
   </label>
   <p style="font-size:.62rem;color:var(--muted);margin:0 0 .5rem;line-height:1.4">
-    ※チェックを外して操作すると記憶は消去されます。お客様の端末では使用しないでください。</p>
-  <label class="form-label">📧 会員のメールまたは電話番号 / E-mail lub telefon członka</label>
+    Odznaczenie i wykonanie operacji usuwa zapamiętane hasło. Nie używaj na urządzeniach gości. / Unchecking and performing an action clears the saved password. Do not use on guests' devices. / ※チェックを外して操作すると記憶は消去されます。お客様の端末では使用しないでください。</p>
+  <label class="form-label">📧 E-mail lub telefon członka / Member e-mail or phone / 会員のメールまたは電話番号</label>
   <input class="form-input" type="text" inputmode="email" autocapitalize="off" id="staff-email" placeholder="jan@email.com / 669751337">
-  <label class="form-label">🍜 付与するポイント（手動） / Liczba punktów</label>
-  <div id="staff-preset-status" style="font-size:.64rem;color:var(--muted);margin:-.2rem 0 .4rem">パスワード入力後、「ポイント設定」シートの内容に切り替わります（読み込み前は標準の3つ）</div>
+  <label class="form-label">🍜 Liczba punktów / Points to add (manual) / 付与するポイント（手動）</label>
+  <div id="staff-preset-status" style="font-size:.64rem;color:var(--muted);margin:-.2rem 0 .4rem">Po wpisaniu hasła przyciski zmienią się wg arkusza „Punkty” (do tego czasu: 3 standardowe) / After you enter the password, the buttons follow the “Punkty” sheet (until then: 3 defaults) / パスワード入力後、「ポイント設定」シートの内容に切り替わります（読み込み前は標準の3つ）</div>
   <div class="id-tabs" id="staff-pt-tabs" style="flex-wrap:wrap">
     <button class="id-tab active" id="tab-pts-10" onclick="switchStaffPoints(10)">
       🍜 +10pt<br><small>1杯 / 1 miska</small>
@@ -482,16 +484,17 @@ body{
   </button>
   <div style="display:flex;gap:.5rem;margin-top:.5rem">
     <button class="btn btn-secondary" style="flex:1;margin:0;font-size:.78rem;border-color:rgba(192,57,43,0.4);color:var(--accent)"
-      onclick="doStaffRemovePoint(10)">↩️ -10pt 取消</button>
+      onclick="doStaffRemovePoint(10)">↩️ −10 pkt cofnij / Undo −10 / −10pt取消</button>
     <button class="btn btn-secondary" style="flex:1;margin:0;font-size:.78rem;border-color:rgba(192,57,43,0.4);color:var(--accent)"
-      onclick="doStaffRemovePoint(5)">↩️ -5pt 取消</button>
+      onclick="doStaffRemovePoint(5)">↩️ −5 pkt cofnij / Undo −5 / −5pt取消</button>
   </div>
   <div id="staff-result" style="margin-top:.8rem;display:none"></div>
   <hr class="divider">
   <div class="staff-title" style="font-size:.85rem">📷 会員QRスキャン付与 / Skanuj kod QR członka</div>
   <p style="font-size:.72rem;color:var(--muted);margin:.3rem 0 .6rem;line-height:1.5">
-    お客様の会員カード画面のQRを読み取ると、当日注文を自動照合してポイントを付与します。<br>
-    Zeskanuj kod QR z karty członka — zamówienie zostanie zweryfikowane automatycznie.
+    Zeskanuj kod QR z karty członka — zamówienie zostanie zweryfikowane automatycznie.<br>
+    Scan the QR code on the guest's member card — today's order is verified automatically.<br>
+    お客様の会員カード画面のQRを読み取ると、当日注文を自動照合してポイントを付与します。
   </p>
   <button class="btn btn-green" id="qr-scan-btn" onclick="startQrScan()">📷 スキャン開始 / Rozpocznij skanowanie</button>
   <div id="qr-scan-area" style="display:none;margin-top:.6rem;text-align:center">
@@ -962,7 +965,7 @@ async function doRegister() {
   const email  = document.getElementById('reg-email').value.trim();
   const birth  = document.getElementById('reg-birth').value;
   if (!name)  { showError('reg-error','氏名を入力してください / Enter your name'); return; }
-  if (!email || !email.includes('@')) { showError('reg-error','メールアドレスを入力してください'); return; }
+  if (!email || !email.includes('@')) { showError('reg-error','Wpisz poprawny e-mail / Enter a valid e-mail / メールアドレスを入力してください'); return; }
   // RODO：ポリシーへの同意がなければ登録しない
   const consentEl = document.getElementById('reg-consent');
   if (!consentEl || !consentEl.checked) {
@@ -1075,8 +1078,8 @@ async function doRegister() {
 async function doStaffAddPoint() {
   const password = document.getElementById('staff-password').value;
   const email    = document.getElementById('staff-email').value.trim();
-  if (!password) { showError('staff-error','パスワードを入力してください'); return; }
-  if (!email)    { showError('staff-error','メールアドレスを入力してください'); return; }
+  if (!password) { showError('staff-error','Wpisz hasło / Enter the password / パスワードを入力してください'); return; }
+  if (!email)    { showError('staff-error','Wpisz e-mail lub telefon / Enter the member e-mail or phone / メールまたは電話番号を入力してください'); return; }
 
   try {
     const res = await postGAS({action:'staffAddPoint', password, email, points: staffPoints});
@@ -1093,7 +1096,7 @@ async function doStaffAddPoint() {
       area.innerHTML = `<div class="bonus-box"><div class="bonus-text">❌ ${res.message}</div></div>`;
     }
   } catch(e) {
-    showError('staff-error','通信エラー / Connection error');
+    showError('staff-error','Błąd połączenia / Connection error / 通信エラー');
   }
 }
 
@@ -1111,16 +1114,16 @@ async function loadStaffPresets() {
   const pw = document.getElementById('staff-password').value;
   if (!pw || !GAS_URL) return;
   const st = document.getElementById('staff-preset-status');
-  if (st) st.textContent = '⏳ ポイント設定を読み込み中…';
+  if (st) st.textContent = '⏳ Wczytywanie… / Loading… / 読み込み中…';
   try {
     const r = await fetch(GAS_URL + '?action=getPointPresets&password=' + encodeURIComponent(pw));
     const d = await r.json();
     if (!d || d.status !== 'ok' || !d.presets || !d.presets.length) {
-      if (st) st.textContent = '⚠️ 読み込めませんでした（パスワード違い／通信）。標準の3つを表示中';
+      if (st) st.textContent = '⚠️ Nie wczytano (hasło / połączenie) — standardowe 3 / Could not load (password / connection) — showing 3 defaults / 読み込めませんでした。標準の3つを表示中';
       return;
     }
     staffPresets = d.presets;
-    if (st) st.textContent = '✅ 「ポイント設定」シートの内容（' + d.presets.length + '件）';
+    if (st) st.textContent = '✅ Arkusz „Punkty” / “Punkty” sheet / ポイント設定シート（' + d.presets.length + '）';
     const box = document.getElementById('staff-pt-tabs');
     box.innerHTML = staffPresets.map(p =>
       '<button class="id-tab" style="flex:1 1 30%" data-pts="' + p.pts + '" onclick="switchStaffPoints(' + p.pts + ')">' +
@@ -1129,7 +1132,7 @@ async function loadStaffPresets() {
     const has = v => staffPresets.some(p => p.pts === v);
     switchStaffPoints(has(staffPoints) ? staffPoints : (has(10) ? 10 : staffPresets[0].pts));
   } catch (e) {
-    if (st) st.textContent = '⚠️ 通信エラー。標準の3つを表示中';
+    if (st) st.textContent = '⚠️ Błąd połączenia — standardowe 3 / Connection error — showing 3 defaults / 通信エラー。標準の3つを表示中';
   }
 }
 
@@ -1158,8 +1161,8 @@ function switchStaffPoints(pts) {
 async function doStaffRemovePoint(amt) {
   const password = document.getElementById('staff-password').value;
   const email    = document.getElementById('staff-email').value.trim();
-  if (!password) { showError('staff-error','パスワードを入力してください'); return; }
-  if (!email)    { showError('staff-error','メールアドレスを入力してください'); return; }
+  if (!password) { showError('staff-error','Wpisz hasło / Enter the password / パスワードを入力してください'); return; }
+  if (!email)    { showError('staff-error','Wpisz e-mail lub telefon / Enter the member e-mail or phone / メールまたは電話番号を入力してください'); return; }
   if (!confirm('↩️ ' + email + ' から -' + amt + 'pt 取り消します。\n' +
       (amt === 10 ? '（当日付与分のみ・来店履歴も1件削除されます）' : '（クイズ分・ポイントのみ減算）') +
       '\nよろしいですか？')) return;
@@ -1176,7 +1179,7 @@ async function doStaffRemovePoint(amt) {
       area.innerHTML = `<div class="bonus-box"><div class="bonus-text">❌ ${res.message}</div></div>`;
     }
   } catch(e) {
-    showError('staff-error','通信エラー / Connection error');
+    showError('staff-error','Błąd połączenia / Connection error / 通信エラー');
   }
 }
 
