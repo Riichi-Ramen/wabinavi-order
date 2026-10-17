@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.17 · Toruń</div>
+  <div class="ver">System v8.18 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -583,6 +583,44 @@ async function sha256(t) {
     <span class="jp">👥 <b>自分で注文していない同席者（係員がQRを読む）：</b>会員QRを読む →「同席者として付与」の画面で<b>卓番号</b>を入力。
     その卓の今日のラーメンが<b>2杯以上</b>のときだけ10pt付与。付与できる人数は<b>ラーメンの杯数−1人まで</b>
     （例：3杯なら2人まで、1杯なら付与できません）。自分のスマホで注文した会員は自動で付き、人数の上限には数えません。</span></div>
+</section>
+
+<!-- 係員端末アクセス方法（2026-10-17 追加） -->
+<section>
+  <h2>📱 Telefon obsługi <span class="pl">係員端末アクセス方法</span></h2>
+  <span class="path">https://riichi-ramen.github.io/wabinavi-order/stamp.html?staff=1</span>
+
+  <div class="note"><b>Panel obsługi otwierasz na własnym telefonie — nie potrzeba specjalnego kodu QR.</b>
+    Wystarczy raz otworzyć powyższy adres. Telefon zapamięta, że jest urządzeniem obsługi.<br>
+    <span class="jp"><b>係員パネルは、ご自身のスマホで開けます。特別なQRコードは不要です。</b>
+    上のURLを1回開くだけで、そのスマホが「係員端末」として記憶されます。</span></div>
+
+  <table>
+    <tr><th>Krok <span class="jp">/ 手順</span></th><th>Co zrobić <span class="jp">/ 操作</span></th></tr>
+    <tr><td>1</td>
+        <td>Otwórz w przeglądarce adres z <b>?staff=1</b> na końcu (patrz wyżej).<br>
+            <span class="jp">末尾に <b>?staff=1</b> が付いたURL（上記）をブラウザで開く。</span></td></tr>
+    <tr><td>2</td>
+        <td>Na dole ekranu pojawi się ramka „🔒 Dla obsługi” z przyciskiem „Dodaj punkty ręcznie”. Naciśnij go.<br>
+            <span class="jp">画面の下に「🔒 係員専用」の枠と「＋ 手動ポイント追加」のボタンが出ます。押すと係員パネルが開きます。</span></td></tr>
+    <tr><td>3</td>
+        <td>Wpisz <b>hasło obsługi</b>. Zaznacz „zapamiętaj”, aby nie wpisywać go za każdym razem — <b>tylko na swoim telefonie</b>.<br>
+            <span class="jp"><b>係員パスワード</b>を入力。「記憶する」にチェックすると次回から入力不要です（<b>ご自身のスマホだけ</b>）。</span></td></tr>
+    <tr><td>4</td>
+        <td>W panelu: ręczne dodawanie punktów oraz „📷 Skanuj kod QR członka” (aparat — przy pierwszym użyciu zezwól na dostęp).<br>
+            <span class="jp">パネルでは、手動ポイント付与と「📷 会員QRスキャン付与」ができます（カメラは初回に許可が必要）。</span></td></tr>
+  </table>
+
+  <div class="note">⚠️ <b>Nigdy nie zaznaczaj „zapamiętaj” na telefonie gościa ani na wspólnym tablecie.</b>
+    Adres z <b>?staff=1</b> nie jest dla gości. Hasło obsługi nie jest wyświetlane w aplikacji.<br>
+    <span class="jp">⚠️ <b>お客様のスマホや共用タブレットでは「記憶する」にチェックしないでください。</b>
+    <b>?staff=1</b> のURLはお客様向けではありません。</span></div>
+
+  <div class="note">🔓 <b>Wyłączanie trybu obsługi:</b> otwórz adres z <b>?staff=0</b> na końcu
+    (np. gdy pracownik odchodzi albo telefon zostaje zgubiony). Telefon zapomni zarówno tryb obsługi, jak i hasło.<br>
+    <span class="jp">🔓 <b>係員端末を解除するとき：</b>末尾が <b>?staff=0</b> のURLを開きます
+    （退職者の端末・紛失時など）。係員の記憶とパスワードの記憶が両方消えます。<br>
+    URL：<span class="path" style="display:inline">https://riichi-ramen.github.io/wabinavi-order/stamp.html?staff=0</span></span></div>
 </section>
 
 <!-- 注文アプリ：会計を分ける -->
