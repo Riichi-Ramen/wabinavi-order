@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.18 · Toruń</div>
+  <div class="ver">System v8.19 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -585,42 +585,42 @@ async function sha256(t) {
     （例：3杯なら2人まで、1杯なら付与できません）。自分のスマホで注文した会員は自動で付き、人数の上限には数えません。</span></div>
 </section>
 
-<!-- 係員端末アクセス方法（2026-10-17 追加） -->
+<!-- 係員端末アクセス方法（2026-10-17 追加・同日 staff.html に分離） -->
 <section>
   <h2>📱 Telefon obsługi <span class="pl">係員端末アクセス方法</span></h2>
-  <span class="path">https://riichi-ramen.github.io/wabinavi-order/stamp.html?staff=1</span>
+  <span class="path">https://riichi-ramen.github.io/wabinavi-order/staff.html</span>
 
-  <div class="note"><b>Panel obsługi otwierasz na własnym telefonie — nie potrzeba specjalnego kodu QR.</b>
-    Wystarczy raz otworzyć powyższy adres. Telefon zapamięta, że jest urządzeniem obsługi.<br>
-    <span class="jp"><b>係員パネルは、ご自身のスマホで開けます。特別なQRコードは不要です。</b>
-    上のURLを1回開くだけで、そのスマホが「係員端末」として記憶されます。</span></div>
+  <div class="note"><b>Panel obsługi to osobna strona (staff.html). Gość nie widzi jej w aplikacji pieczątek.</b>
+    Otwierasz ją na własnym telefonie — nie potrzeba specjalnego kodu QR. Adres nie jest nigdzie podlinkowany.<br>
+    <span class="jp"><b>係員パネルは専用ページ（staff.html）に分けました。お客様用のスタンプ画面には表示されません。</b>
+    ご自身のスマホで開けます。特別なQRコードは不要で、このURLはどの画面にもリンクされていません。</span></div>
 
   <table>
     <tr><th>Krok <span class="jp">/ 手順</span></th><th>Co zrobić <span class="jp">/ 操作</span></th></tr>
     <tr><td>1</td>
-        <td>Otwórz w przeglądarce adres z <b>?staff=1</b> na końcu (patrz wyżej).<br>
-            <span class="jp">末尾に <b>?staff=1</b> が付いたURL（上記）をブラウザで開く。</span></td></tr>
+        <td>Otwórz w przeglądarce adres powyżej i dodaj go do zakładek lub ekranu głównego.<br>
+            <span class="jp">上のURLをブラウザで開き、ブックマークまたは「ホーム画面に追加」をしておく。</span></td></tr>
     <tr><td>2</td>
-        <td>Na dole ekranu pojawi się ramka „🔒 Dla obsługi” z przyciskiem „Dodaj punkty ręcznie”. Naciśnij go.<br>
-            <span class="jp">画面の下に「🔒 係員専用」の枠と「＋ 手動ポイント追加」のボタンが出ます。押すと係員パネルが開きます。</span></td></tr>
-    <tr><td>3</td>
         <td>Wpisz <b>hasło obsługi</b>. Zaznacz „zapamiętaj”, aby nie wpisywać go za każdym razem — <b>tylko na swoim telefonie</b>.<br>
-            <span class="jp"><b>係員パスワード</b>を入力。「記憶する」にチェックすると次回から入力不要です（<b>ご自身のスマホだけ</b>）。</span></td></tr>
-    <tr><td>4</td>
-        <td>W panelu: ręczne dodawanie punktów oraz „📷 Skanuj kod QR członka” (aparat — przy pierwszym użyciu zezwól na dostęp).<br>
-            <span class="jp">パネルでは、手動ポイント付与と「📷 会員QRスキャン付与」ができます（カメラは初回に許可が必要）。</span></td></tr>
+            <span class="jp"><b>係員パスワード</b>を入力。「記憶する」にチェックすると次回から入力不要です（<b>ご自身のスマホだけ</b>）。図書の画面（books.html）と共通で記憶されます。</span></td></tr>
+    <tr><td>3</td>
+        <td>Na stronie: ręczne dodawanie i cofanie punktów oraz „📷 Skanuj kod QR członka” (aparat — przy pierwszym użyciu zezwól na dostęp).
+            U góry jest skrót do wypożyczeń książek (books.html).<br>
+            <span class="jp">ページでは、手動ポイント付与・取消と「📷 会員QRスキャン付与」ができます（カメラは初回に許可が必要）。上部に図書の貸出・返却（books.html）へのボタンがあります。</span></td></tr>
   </table>
 
   <div class="note">⚠️ <b>Nigdy nie zaznaczaj „zapamiętaj” na telefonie gościa ani na wspólnym tablecie.</b>
-    Adres z <b>?staff=1</b> nie jest dla gości. Hasło obsługi nie jest wyświetlane w aplikacji.<br>
+    Hasło obsługi nie jest wyświetlane w aplikacji. Zablokuj ekran telefonu.<br>
     <span class="jp">⚠️ <b>お客様のスマホや共用タブレットでは「記憶する」にチェックしないでください。</b>
-    <b>?staff=1</b> のURLはお客様向けではありません。</span></div>
+    画面ロックも必ずかけてください。</span></div>
 
-  <div class="note">🔓 <b>Wyłączanie trybu obsługi:</b> otwórz adres z <b>?staff=0</b> na końcu
-    (np. gdy pracownik odchodzi albo telefon zostaje zgubiony). Telefon zapomni zarówno tryb obsługi, jak i hasło.<br>
+  <div class="note">🔓 <b>Wyłączanie urządzenia obsługi:</b> otwórz adres z <b>?staff=0</b> na końcu
+    (np. gdy pracownik odchodzi albo telefon zostaje zgubiony). Telefon zapomni hasło.<br>
     <span class="jp">🔓 <b>係員端末を解除するとき：</b>末尾が <b>?staff=0</b> のURLを開きます
-    （退職者の端末・紛失時など）。係員の記憶とパスワードの記憶が両方消えます。<br>
-    URL：<span class="path" style="display:inline">https://riichi-ramen.github.io/wabinavi-order/stamp.html?staff=0</span></span></div>
+    （退職者の端末・紛失時など）。保存されたパスワードが消えます。<br>
+    URL：<span class="path" style="display:inline">https://riichi-ramen.github.io/wabinavi-order/staff.html?staff=0</span></span></div>
+  <div class="note">♻️ <b>Stary adres</b> <code>stamp.html?staff=1</code> przekierowuje automatycznie na staff.html.<br>
+    <span class="jp">♻️ 旧URL <code>stamp.html?staff=1</code> は自動で staff.html に転送されます。</span></div>
 </section>
 
 <!-- 注文アプリ：会計を分ける -->
