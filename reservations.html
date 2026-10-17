@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- reservations.html ・ v1.3-personel-20260909 -->
+<!-- reservations.html ・ v1.4-device-20261017 -->
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
@@ -30,6 +30,8 @@ body{
 .btn-primary{background:var(--accent);color:#fff;width:100%;box-shadow:0 4px 14px rgba(192,57,43,0.3)}
 .error-msg{background:#fee;border:1px solid #f5c6c6;border-radius:8px;padding:.6rem;
   font-size:.78rem;color:#a00;text-align:center;margin-bottom:.8rem;display:none}
+.error-msg.ok{background:#eef8ee;border-color:#b9dcb9;color:#25602f}
+.login-hint{font-size:.7rem;color:var(--muted);text-align:center;line-height:1.5;margin-top:.8rem}
 /* タブ */
 .tabs{display:flex;gap:.4rem;width:100%;max-width:560px;margin-bottom:.8rem}
 .tab{flex:1;padding:.6rem;border-radius:10px;border:1.5px solid var(--border);background:transparent;
@@ -151,6 +153,7 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
   <input class="form-input" type="password" id="pw" placeholder="••••••••"
          onkeydown="if(event.key==='Enter')login()">
   <button class="btn btn-primary" onclick="login()">Zaloguj / ログイン</button>
+  <div class="login-hint">💡 Po zalogowaniu to urządzenie zapamięta hasło / 一度入れると、この端末では次回から入力不要です</div>
 </div>
 
 <!-- 一覧 -->
@@ -259,9 +262,42 @@ const GAS_URL =
 let tapCount = 0;
 // 2026-09-20：ロゴ5回タップのURL変更は廃止（D7）
 
-let PW = localStorage.getItem('wabi_staff_pw') || '';
+/* ══════════════════════════════════════════════════════════════
+   🔑 端末の登録（2026-10-17）— 係員の端末では、パスワード入力画面を出さない
+
+   ・登録：  reservations.html#k=<パスワード>  を一度だけ開く
+            → 端末に保存され、以後はこのページも books.html / staff.html も入力なしで開く。
+            （# 以降はサーバーにも GitHub にも送られず、開いた直後に画面のアドレスからも消す）
+            ⚠️ パスワードに記号があるときは、記号を %XX に直して書く（例：& → %26、# → %23、% → %25）
+   ・解除：  reservations.html?staff=0  （退職・紛失・パスワード変更のとき）
+   ・保存先は books.html / staff.html と共通のキー wabi_staff_pw。どれか1か所で登録すれば全部で有効。
+   ・⚠️ サーバー側の照合は残してある。外すと URL を知った誰でも予約客の氏名・電話・メールを見られる。
+   ・⚠️ 保存したパスワードが違っていたら自動で消す。消さないと、ページを開くたびに
+     失敗が数えられ、5回でロック（全端末共通・15分間）になるため。
+   ══════════════════════════════════════════════════════════════ */
+var DEVICE_RELEASED = false;
+(function initDevice(){
+  try{
+    var rel = new URLSearchParams(location.search).get('staff') === '0';
+    var m = /(?:^|[#&])k=([^&]*)/.exec(location.hash || '');
+    if (rel){
+      ['wabi_staff_device','wabi_staff_pw','wabi_staff_pw_saved'].forEach(function(k){ localStorage.removeItem(k); });
+      history.replaceState(null, '', location.pathname);
+      DEVICE_RELEASED = true;
+    } else if (m && m[1]){
+      var key = decodeURIComponent(m[1]);
+      localStorage.setItem('wabi_staff_pw', key);
+      localStorage.setItem('wabi_staff_device', '1');
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  }catch(e){}
+})();
+
+let PW = '';
+try { PW = localStorage.getItem('wabi_staff_pw') || ''; } catch (e) {}
 let RANGE = 'today';
 let TODAY = '';
+let LOAD_FAIL = '';   // load() が false のとき：'auth'＝パスワードが通らない / 'net'＝通信できない
 
 async function login(){
   const pw = document.getElementById('pw').value;
@@ -269,12 +305,34 @@ async function login(){
   PW = pw;
   const ok = await load(true);
   if (ok){
-    localStorage.setItem('wabi_staff_pw', pw);
+    try { localStorage.setItem('wabi_staff_pw', pw); localStorage.setItem('wabi_staff_device', '1'); } catch (e) {}
     document.getElementById('login-card').style.display = 'none';
     document.getElementById('panel').style.display = 'flex';
   }
 }
-function showLoginErr(m){ const e = document.getElementById('login-err'); e.textContent = m; e.style.display = 'block'; }
+
+// 登録済みの端末：入力画面を出さずに一覧を開く。通らなければ入力画面に戻す。
+async function autoLogin(){
+  const card = document.getElementById('login-card');
+  const panel = document.getElementById('panel');
+  card.style.display = 'none';
+  panel.style.display = 'flex';
+  const ok = await load(true);
+  if (!ok && LOAD_FAIL === 'auth'){
+    panel.style.display = 'none';
+    card.style.display = 'block';
+    document.getElementById('pw').value = '';
+  }
+  // 通信できないだけのとき（LOAD_FAIL === 'net'）は、保存したパスワードは正しい可能性が高いので
+  // 一覧の画面のまま残す（🔄 で再試行できる）
+}
+
+function showLoginErr(m, ok){
+  const e = document.getElementById('login-err');
+  e.textContent = m;
+  e.classList.toggle('ok', !!ok);
+  e.style.display = 'block';
+}
 
 function setRange(r){
   RANGE = r;
@@ -290,16 +348,26 @@ async function load(silentAuth){
     const url = GAS_URL + '?action=getReservations&password=' + encodeURIComponent(PW) + '&range=' + RANGE;
     const d = await (await fetch(url)).json();
     if (d.status === 'unauthorized'){
-      if (silentAuth) showLoginErr('Nieprawidłowe hasło / パスワードが違います');
-      else { localStorage.removeItem('wabi_staff_pw'); location.reload(); }
+      LOAD_FAIL = 'auth';
+      // ロック中（5回失敗→15分）のメッセージには「prób」「15分」が入る。ロック中は保存値が正しくても弾かれるので消さない。
+      const locked = /prób|15分|上限/i.test(d.message || '');
+      if (!locked){
+        // 違うパスワードを残すと、開くたびに失敗が数えられてロックになる。その場で消す。
+        PW = '';
+        try { localStorage.removeItem('wabi_staff_pw'); } catch (e) {}
+      }
+      if (silentAuth) showLoginErr(locked ? d.message : 'Nieprawidłowe hasło / パスワードが違います');
+      else location.reload();
       area.innerHTML = '';
       return false;
     }
+    LOAD_FAIL = '';
     TODAY = d.today;
     render(d.reservations || []);
     if (!staffNamesLoaded){ staffNamesLoaded = true; loadStaffNames(); }
     return true;
   }catch(e){
+    LOAD_FAIL = 'net';
     area.innerHTML = '<p class="empty">⚠️ Błąd połączenia / 通信エラー</p>';
     return false;
   }
@@ -793,10 +861,11 @@ function showDone(d, p){
   window.scrollTo(0,0);
 }
 
-// 保存済みパスワードがあれば自動ログイン
-if (PW){
-  document.getElementById('pw').value = PW;
-  login();
+// 登録済みの端末は入力画面なしで開く。解除した直後は、その旨を出して入力画面に戻す。
+if (DEVICE_RELEASED){
+  showLoginErr('✅ Urządzenie wylogowane / この端末の登録を解除しました', true);
+} else if (PW){
+  autoLogin();
 }
 </script>
 </body>
