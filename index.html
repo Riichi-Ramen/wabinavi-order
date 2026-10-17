@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v96-20261013</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v97-20261017</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER / 注文を始める</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v96-20261013</div>
+    <div class="ver-tag">v97-20261017</div>
   </div>
 </div>
 
@@ -1888,7 +1888,8 @@ async function verifyMemberAndOrder() {
         points:     m.points     || 0,
         rank:       (m.rank || 'Sakura').replace(/[^A-Za-z]/g, ''),  // 絵文字を落とす
         memberId:   m.memberId   || '',
-        coupons:    m.coupons    || []
+        coupons:    m.coupons    || [],
+        perkUsedToday: !!m.perkUsedToday
       };
       saveReturningMember();  // 次回からワンタップ
       ['member-check-screen','register-prompt-screen','welcome-screen'].forEach(sid => {
@@ -2074,6 +2075,7 @@ async function quickLoginReturningMember() {
       memberInfo.rank     = (mm.rank || 'Sakura').replace(/[^A-Za-z]/g, '');
       memberInfo.memberId = mm.memberId || '';
       memberInfo.coupons  = mm.coupons  || [];
+      memberInfo.perkUsedToday = !!mm.perkUsedToday;
       if (typeof renderCouponBox === 'function') { try { renderCouponBox(); } catch (e) {} }
     }
   } catch (e) { /* 取れなくても注文は続けられる */ }
@@ -3905,44 +3907,132 @@ function computeRiceSetDiscount() {
   return { count, discount: count * 6, alloc };
 }
 
-// ══ 🎁 ランク昇格特典：毎回トッピング無料（次のランクに上がるまで継続） ══
-//  梅Ume: 1品(1–2zł) / 竹Take: 2品(1–3zł) / 松Matsu: 3品(1–4zł) / 富士Fuji: 3品(1–6zł)
+// ══ 🎁 ランク昇格特典：トッピング予算（2026-10-17 F-2：品数×上限 → 合計予算） ══
+//  梅Ume: 3zł / 竹Take: 6zł / 松Matsu: 9zł＋麺半盛り無料 / 富士Fuji: 12zł＋麺半盛り無料
+//  ・予算内は無料、超えた分は通常価格（店主 A・2026-10-14）。1品が残り予算より高いときは残り予算ぶんだけ値引き。
+//  ・麺の半盛り無料は予算とは別枠。ラーメン1杯につき1回まで（超えた分は通常価格）。大盛りは有料。
+//  ・会員1人につき1日1回（店主 B）。正本はサーバー（06_Orders）。ここは表示と計算の予告。
+//  ⚠️ サーバー側の同じ計算は 32_Recalc の recalcRankPerk_()。式を変えるときは両方直す。
 const RANK_TOPPING_PERK = {
-  Ume:   { count: 1, maxPrice: 2 },
-  Take:  { count: 2, maxPrice: 3 },
-  Matsu: { count: 3, maxPrice: 4 },
-  Fuji:  { count: 3, maxPrice: 6 }
+  Ume:   { budget: 3,  halfNoodle: false },
+  Take:  { budget: 6,  halfNoodle: false },
+  Matsu: { budget: 9,  halfNoodle: true  },
+  Fuji:  { budget: 12, halfNoodle: true  }
 };
+// 予算の対象外：麺（半盛り・大盛り・麺変更）と追加ライス
+const PERK_EXCLUDE_IDS = ['d_noodle1', 'd_noodle2', 'd_noodle3', 'd_6d'];
 
-// 1来店1回（この卓の最初の注文で自動適用）。対象＝Dodatkiの単品トッピング
+function warsawToday_() {
+  try { return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' }); }
+  catch (e) { return new Date().toISOString().slice(0, 10); }
+}
+// この会員が今日すでに特典を使ったか（サーバーの回答＋この端末の記録）
+function perkUsedToday_() {
+  if (memberInfo && memberInfo.perkUsedToday) return true;
+  try {
+    const r = JSON.parse(localStorage.getItem('wabi_perk_used') || 'null');
+    return !!(r && r.d === warsawToday_() && r.c === String(memberContact || '').toLowerCase());
+  } catch (e) { return false; }
+}
+function markPerkUsedToday_() {
+  try {
+    localStorage.setItem('wabi_perk_used',
+      JSON.stringify({ d: warsawToday_(), c: String(memberContact || '').toLowerCase() }));
+  } catch (e) {}
+  if (memberInfo) memberInfo.perkUsedToday = true;
+}
+
+// 丼カードで「半盛り（Pół porcji）」を選んでいるか → 1杯あたりの価格（なければ0）
+function halfNoodleDelta_(item, o) {
+  if (!item || !o || !o.toppingIdx || !item.toppings) return 0;
+  for (const slot in o.toppingIdx) {
+    const idx = Number(o.toppingIdx[slot]);
+    const t = item.toppings[Number(slot)];
+    if (!idx || !t || !t.options) continue;
+    if (String(t.options[idx] || '').indexOf('Pół porcji') >= 0)
+      return Number((o.toppingDeltas && o.toppingDeltas[slot]) || (t.priceDeltas && t.priceDeltas[idx]) || 0);
+  }
+  return 0;
+}
+
+// 1来店1回・1日1回。対象＝Dodatkiの単品トッピング／丼カード内の追加トッピング＋（Matsu・Fuji）麺の半盛り
 function computeRankPerk() {
-  if (!isMember || sessionOrders.length > 0 || selectedCoupon) return null;
+  if (!isMember || selectedCoupon || perkUsedToday_()) return null;
   const rankKey = ((memberInfo && memberInfo.rank) || '').replace(/[^A-Za-z]/g, '');
   const perk = RANK_TOPPING_PERK[rankKey];
   if (!perk) return null;
-  const units = [];
+
+  // 行ごとの「値引きできる上限」。丼・ラーメンでは定価（＋容器代）を割り込まない
+  const room = {};
+  const roomOf = (id, wholeLine) => {
+    if (room[id] === undefined) {
+      const it = findItem(id), o = cart[id];
+      const total = lineTotalOf(id);
+      room[id] = wholeLine ? total
+        : Math.max(0, total - ((Number(it.price) || 0) * (o.qty || 1) + serveFee(id, o)));
+    }
+    return room[id];
+  };
+
+  const units = [];     // 予算の対象トッピング
+  const halves = [];    // 麺の半盛り
+  let ramenBowls = 0;
   for (const id in cart) {
-    // 単品で注文されたトッピング
-    if (/^d_/.test(baseId(id))) {
-      const item = findItem(id);
-      if (item && item.price >= 1 && item.price <= perk.maxPrice) {
-        for (let k = 0; k < (cart[id].qty || 1); k++)
+    const o = cart[id], item = findItem(id);
+    if (!item) continue;
+    const b = baseId(id);
+    if ((findCatOfItem(id) || {}).id === 'ramen') ramenBowls += (o.qty || 1);
+    if (/^d_/.test(b)) {
+      if (b === 'd_noodle2') {                       // 単品の半盛り（Kaedama）
+        for (let k = 0; k < (o.qty || 1); k++) halves.push({ id, price: item.price, name: item.namePL });
+      } else if (PERK_EXCLUDE_IDS.indexOf(b) < 0 && item.price >= 1) {
+        for (let k = 0; k < (o.qty || 1); k++)
           units.push({ id, price: item.price, name: item.namePL });
       }
     }
-    // v44: 丼カード内で足したトッピングも特典の対象にする（割当先はその丼の行）
-    extrasList(cart[id]).forEach(x => {
-      if (x.item.price < 1 || x.item.price > perk.maxPrice) return;
+    extrasList(o).forEach(x => {                      // 丼カード内で足したトッピング
+      if (PERK_EXCLUDE_IDS.indexOf(x.id) >= 0 || x.item.price < 1) return;
       for (let k = 0; k < x.n; k++)
-        units.push({ id: id, price: x.item.price, name: x.item.namePL });
+        units.push({ id, price: x.item.price, name: x.item.namePL });
     });
+    const hd = halfNoodleDelta_(item, o);              // 丼カード内の半盛り（+4）
+    for (let k = 0; k < (o.qty || 1) && hd > 0; k++)
+      halves.push({ id, price: hd, name: 'Pół porcji / 半盛り' });
   }
-  units.sort((a, b) => b.price - a.price); // 高い順に無料化（客に有利）
-  const take = units.slice(0, perk.count);
+
   const alloc = {}; let discount = 0; const names = [];
-  take.forEach(u => { alloc[u.id] = (alloc[u.id] || 0) + u.price; discount += u.price; names.push(u.name); });
-  return { count: perk.count, maxPrice: perk.maxPrice, rank: rankKey,
-           discount, alloc, names, remaining: perk.count - take.length };
+  const give = (u, want) => {
+    const r = roomOf(u.id, /^d_/.test(baseId(u.id)));   // 単品行は全額、丼の行は定価を超えた分だけ
+    const take = Math.min(want, r);
+    if (take <= 0) return 0;
+    room[u.id] = r - take;
+    alloc[u.id] = (alloc[u.id] || 0) + take;
+    discount += take;
+    return take;
+  };
+
+  // ① トッピング予算：高い順に（客に有利）。残り予算ぶんだけ値引き
+  units.sort((a, b) => b.price - a.price);
+  let left = perk.budget, budgetUsed = 0;
+  for (const u of units) {
+    if (left <= 0) break;
+    const t = give(u, Math.min(u.price, left));
+    if (t > 0) { left -= t; budgetUsed += t; names.push(t < u.price ? u.name + ' (−' + t + ')' : u.name); }
+  }
+  // ② 麺の半盛り：ラーメンの杯数まで。高い方（単品6zł）を先に
+  let halfUsed = 0, halfCount = 0;
+  if (perk.halfNoodle) {
+    halves.sort((a, b) => b.price - a.price);
+    for (const h of halves) {
+      if (halfCount >= ramenBowls) break;
+      const t = give(h, h.price);
+      if (t > 0) { halfCount++; halfUsed += t; names.push(h.name); }
+    }
+  }
+  return { rank: rankKey, budget: perk.budget, halfNoodle: !!perk.halfNoodle,
+           discount, alloc, names,
+           budgetUsed, halfUsed, halfCount,
+           remaining: Math.max(0, perk.budget - budgetUsed) };
 }
 
 // 確認画面のランク特典ボックス（案内＋トッピング追加への誘導）
@@ -4015,13 +4105,19 @@ function renderRankPerkBox() {
   }
   box.style.cssText = GREEN;
   let html = `<strong>🎁 Bonus rangi ${p.rank} / ${p.rank}ランク特典</strong><br>
-    Darmowe dodatki: ${p.count} szt. (do ${p.maxPrice} zł) — przy każdej wizycie!<br>
-    毎回、${p.maxPrice}złまでのトッピング${p.count}品が無料です`;
+    Dodatki gratis do ${p.budget} zł łącznie (powyżej — normalna cena), raz dziennie<br>
+    <span style="opacity:.85">Toppings free up to ${p.budget} zł in total (the rest at normal price), once a day</span><br>
+    トッピングは合計${p.budget}złまで無料（超えた分は通常価格）・1日1回`;
+  if (p.halfNoodle) {
+    html += `<br>🍜 + Pół porcji makaronu gratis (do liczby misek ramenu) /
+      + half noodle portion free (up to the number of ramen bowls) /
+      ＋麺の半盛り無料（ラーメンの杯数まで）`;
+  }
   if (p.discount > 0) {
-    html += `<br>✅ Zastosowano / 適用中: ${p.names.join(', ')} <strong>−${p.discount} zł</strong>`;
-    if (p.remaining > 0) html += `<br><small>Możesz dodać jeszcze ${p.remaining} / あと${p.remaining}品追加できます</small>`;
+    html += `<br>✅ Zastosowano / Applied / 適用中: ${p.names.join(', ')} <strong>−${p.discount} zł</strong>`;
+    if (p.remaining > 0) html += `<br><small>Zostało ${p.remaining} zł budżetu / ${p.remaining} zł of budget left / 予算の残り ${p.remaining} zł</small>`;
   } else {
-    html += `<br><small>Dodaj dodatki, aby skorzystać / 対象トッピングをカートに追加すると自動で無料になります</small>`;
+    html += `<br><small>Dodaj dodatki, aby skorzystać / Add toppings to use it / 対象トッピングをカートに追加すると自動で無料になります</small>`;
   }
   html += `<br><button onclick="document.getElementById('confirm-modal').classList.remove('open');jumpToCheapToppings()"
     style="margin-top:.4rem;background:#2d7a3a;color:#fff;border:none;border-radius:8px;
@@ -4881,6 +4977,8 @@ async function placeOrder() {
           riceSetDiscount: riceCalc.discount,
           riceSetCount: riceCalc.count,
           rankPerkDiscount: perkCalc ? perkCalc.discount : 0,
+          rankPerkBudgetUsed: perkCalc ? perkCalc.budgetUsed : 0,
+          rankPerkHalfNoodle: perkCalc ? perkCalc.halfUsed : 0,
           rankPerkRank: perkCalc ? perkCalc.rank : "",
           rankPerkDetail: perkCalc ? perkCalc.names.join(", ") : "",
           coseatMembers: coseatMembers
@@ -4936,6 +5034,8 @@ async function placeOrder() {
     if (ci >= 0) memberInfo.coupons.splice(ci, 1);
   }
   selectedCoupon = null;
+  // 🎁 2026-10-17 F-2：特典は会員1人1日1回。使ったらこの端末にも記録する（正本はサーバー）
+  if (isMember && perkCalc && perkCalc.discount > 0 && !previousSnap) markPerkUsedToday_();
   // 🧾 v58: 会計画面で割り当てをやり直せるよう、商品明細も残す。
 //    旧版は id と total と persons しか保存していなかったため、
 //    送信後に「この餃子は誰の分か」を決め直すことができなかった。
