@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="staff-20261017b">
+<meta name="wabi-version" content="staff-20261017c">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — 係員専用 / Obsługa</title>
@@ -126,14 +126,20 @@ body{
   <small style="color:var(--muted)">Zapomniano urządzenie obsługi i hasło. / This device and saved password were cleared.</small>
 </div>
 
-<div class="card" style="padding:1rem">
-  <div class="staff-title">📚 Biblioteka / 図書の貸出・返却</div>
-  <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0" href="books.html">
-    📚 Wypożyczenia i zwroty / 図書の貸出・返却 →
-  </a>
+<div class="card" id="admin-menu" style="padding:1rem">
+  <div class="staff-title">🧰 Menu obsługi / 係員メニュー</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="books.html">📚 Książki<br><small>図書の貸出・返却</small></a>
+    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="reservations.html">📅 Rezerwacje<br><small>予約の確認・操作</small></a>
+    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="kitchen.html">🍳 Kuchnia<br><small>キッチン表示</small></a>
+    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="items.html">🚫 Wyprzedane<br><small>商品の表示・売切</small></a>
+    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="nihongo.html" target="_blank" rel="noopener">🎌 Japoński / Quiz<br><small>日本語・クイズ（確認用）</small></a>
+    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="book_labels.html">🏷 Etykiety QR<br><small>書籍QRラベル印刷</small></a>
+  </div>
+  <div style="font-size:.66rem;color:var(--muted);margin-top:.5rem;line-height:1.5">
+    Punkty: poniżej / ポイント付与は下のパネル。Każda strona prosi o hasło obsługi. / 各ページで係員パスワードを求められる場合があります。</div>
 </div>
 
-<!-- ══ SCREEN 5: 係員専用 ══ -->
 <div class="card" id="support-card">
   <div class="staff-title">🙋 Pomoc gościom / お客様サポート</div>
 
@@ -177,6 +183,46 @@ body{
       </ul>
     </div>
   </details>
+</div>
+
+<div class="card" id="howto-card">
+  <div class="staff-title">📖 Instrukcje / 手順の案内（スプレッドシート・メール）</div>
+  <div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem;line-height:1.5">
+    Te czynności wykonuje się w arkuszu Google lub e-mailem (brak osobnej strony). / これらはスプレッドシートかメールで行います（専用ページはありません）。</div>
+    <details style="margin-bottom:.4rem;border:1px solid var(--border);border-radius:8px;padding:.4rem .6rem;background:rgba(255,255,255,.5)">
+      <summary style="font-weight:700;font-size:.8rem;cursor:pointer">💰 Cena / 価格を変える・商品の入れ替え</summary>
+      <div style="font-size:.74rem;line-height:1.65;margin-top:.4rem">Arkusz „メニュー / Menu” → kolumna <b>F</b> (cena), <b>G</b> (stan), <b>T</b> (pojemnik). Zmiana widoczna w ok. 1 min.<br>シート「メニュー / Menu」：<b>F列</b>＝価格、<b>G列</b>＝状態、<b>T列</b>＝容器代。書き換えて約1分で注文アプリとHPに反映。</div>
+    </details>
+    <details style="margin-bottom:.4rem;border:1px solid var(--border);border-radius:8px;padding:.4rem .6rem;background:rgba(255,255,255,.5)">
+      <summary style="font-weight:700;font-size:.8rem;cursor:pointer">🚫 Wyprzedane / 売り切れ・非表示</summary>
+      <div style="font-size:.74rem;line-height:1.65;margin-top:.4rem">Kolumna <b>G</b>: 表示 / 売り切れ / 非表示 — albo strona <a href="items.html">items.html</a>.<br>メニューシートのG列プルダウン、または上の「商品の表示・売切」ページ。「売り切れ」は「表示」に戻せば即復活。</div>
+    </details>
+    <details style="margin-bottom:.4rem;border:1px solid var(--border);border-radius:8px;padding:.4rem .6rem;background:rgba(255,255,255,.5)">
+      <summary style="font-weight:700;font-size:.8rem;cursor:pointer">⭐ Polecane / おすすめ商品を掲載</summary>
+      <div style="font-size:.74rem;line-height:1.65;margin-top:.4rem">Arkusz „おすすめ / Polecane” → nowy wiersz (A: ID dania, B: od, C: do, D: cena promo, E/F: znaczek PL/JP, G: kolejność). Po dacie w C znika sam.<br>シート「おすすめ / Polecane」に1行追加（A商品ID・B開始日・C終了日・D特価・E/Fバッジ・G順）。終了日を過ぎると自動で消えます。書き方は 🍜 Wabi Navi → ⭐ おすすめ。</div>
+    </details>
+    <details style="margin-bottom:.4rem;border:1px solid var(--border);border-radius:8px;padding:.4rem .6rem;background:rgba(255,255,255,.5)">
+      <summary style="font-weight:700;font-size:.8rem;cursor:pointer">📸 Zdjęcia / 掲載写真の追加・更新（メール）</summary>
+      <div style="font-size:.74rem;line-height:1.65;margin-top:.4rem">E-mail na <b>wabinavi@gmail.com</b>, temat <b>foto:ID</b> (np. <b>foto:r4</b>), zdjęcie w załączniku. Temat MUSI zaczynać się od <b>foto:</b>. Ok. 10 min.<br>宛先 <b>wabinavi@gmail.com</b>、件名 <b>foto:商品ID</b>（例 foto:r4）、写真を添付。<b>件名は必ず foto: で始める</b>（無いと無視されます）。反映まで約10分。商品IDはメニューシートのB列。</div>
+    </details>
+    <details style="margin-bottom:.4rem;border:1px solid var(--border);border-radius:8px;padding:.4rem .6rem;background:rgba(255,255,255,.5)">
+      <summary style="font-weight:700;font-size:.8rem;cursor:pointer">📣 Promocja / 宣伝（SNS用の文面を自動作成）</summary>
+      <div style="font-size:.74rem;line-height:1.65;margin-top:.4rem">Temat <b>foto:promo_nazwa</b> (np. foto:promo_lato), w treści 1–3 zdania po polsku → przyjdzie e-mail z tekstami na Facebook / Instagram / TikTok / WhatsApp.<br>件名 <b>foto:promo_名前</b>、本文に宣伝文（ポーランド語で1〜3文）→ 各SNS用の投稿文がメールで届きます。貼って投稿。</div>
+    </details>
+    <details style="margin-bottom:.4rem;border:1px solid var(--border);border-radius:8px;padding:.4rem .6rem;background:rgba(255,255,255,.5)">
+      <summary style="font-weight:700;font-size:.8rem;cursor:pointer">📣 Ogłoszenie na karcie / 会員カードの告知文（店主のみ）</summary>
+      <div style="font-size:.74rem;line-height:1.65;margin-top:.4rem">Arkusz „📣 カード告知 / Ogłoszenie”. Tylko właściciel. / 店主専用のシート。従業員は変更しません。</div>
+    </details>
+    <details style="margin-bottom:.4rem;border:1px solid var(--border);border-radius:8px;padding:.4rem .6rem;background:rgba(255,255,255,.5)">
+      <summary style="font-weight:700;font-size:.8rem;cursor:pointer">🎌 Quiz i lekcje / クイズ・日本語講座のON/OFF</summary>
+      <div style="font-size:.74rem;line-height:1.65;margin-top:.4rem">Arkusz → menu <b>🍜 Wabi Navi → ⚙️ Ustawienia / 設定</b> → Quiz / Lekcje ON/OFF.<br>スプレッドシート上部の「🍜 Wabi Navi」→「⚙️ 設定」から、クイズ・講座の公開を切り替えます。</div>
+    </details>
+    <details style="margin-bottom:.4rem;border:1px solid var(--border);border-radius:8px;padding:.4rem .6rem;background:rgba(255,255,255,.5)">
+      <summary style="font-weight:700;font-size:.8rem;cursor:pointer">🔑 Kod tygodnia / 今週のスタンプコード</summary>
+      <div style="font-size:.74rem;line-height:1.65;margin-top:.4rem">Arkusz „🔑 コード / Kod” (pierwsza zakładka). Zmienia się co wtorek rano. Podaj gościowi ustnie.<br>シートの最初のタブ「🔑 コード / Kod」の赤い数字。毎週火曜の朝に自動で変わります。お客様には口頭で伝えます。</div>
+    </details>
+  <div style="font-size:.68rem;margin-top:.5rem;line-height:1.5">
+    📘 <a href="instrukcja-obsluga-7f3a9c2e.html" style="color:var(--accent);font-weight:700">Pełna instrukcja / マニュアル全文</a>（合言葉が必要 / wymaga hasła）</div>
 </div>
 
 <div class="card" id="screen-staff">
