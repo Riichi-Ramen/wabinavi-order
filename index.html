@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v97-20261017</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v98-20261017</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -744,7 +744,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER / 注文を始める</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v97-20261017</div>
+    <div class="ver-tag">v98-20261017</div>
   </div>
 </div>
 
@@ -3957,7 +3957,7 @@ function halfNoodleDelta_(item, o) {
 
 // 1来店1回・1日1回。対象＝Dodatkiの単品トッピング／丼カード内の追加トッピング＋（Matsu・Fuji）麺の半盛り
 function computeRankPerk() {
-  if (!isMember || selectedCoupon || perkUsedToday_()) return null;
+  if (!isMember || ['half','free','bdayf'].indexOf(selectedCoupon) >= 0 || perkUsedToday_()) return null;
   const rankKey = ((memberInfo && memberInfo.rank) || '').replace(/[^A-Za-z]/g, '');
   const perk = RANK_TOPPING_PERK[rankKey];
   if (!perk) return null;
@@ -4085,7 +4085,7 @@ function renderRankPerkBox() {
     'background:#fff7e6;font-size:.8rem;line-height:1.7;color:#704000';
   const GREEN  = 'margin:.8rem 0;padding:.8rem .9rem;border:2px solid #2d7a3a;border-radius:12px;' +
     'background:linear-gradient(135deg,#f2f9ee,#e6f3df);font-size:.8rem;line-height:1.7;color:#1f5429';
-  if (selectedCoupon) {
+  if (['half','free','bdayf'].indexOf(selectedCoupon) >= 0) {
     if (!box) {
       box = document.createElement('div');
       box.id = 'rankperk-area';
@@ -4126,22 +4126,42 @@ function renderRankPerkBox() {
   box.style.display = 'block';
 }
 
-let selectedCoupon = null; // 使用するクーポン（'half'|'free'|null）
+let selectedCoupon = null; // 使用するクーポン（1注文につき1種類）
+let couponAllLose = true;  // 2026-10-19：手持ちのクーポンがすべて「本日ポイントなし」の種類か（選ぶ前の注意の出し分け用）
+
+// 2026-10-19：誕生月・Fuji月次は商品名ではなく固定IDで判定する。
+const BIRTHDAY_DRINK_IDS = [
+  'n1','n2','n3','n4','n5','n6','n7','n8','n9','n10','n11','n12','n13','n14','n15','n16',
+  'n28','n29','n30','n31','n32','n33','n34','n35','n36',
+  'al2','al3','al5','al5b','al6','al7','al8','al9','al10','al11','al12','al13'
+];
+const FUJI_DRINK_IDS = ['n29','n30','n31','n32','n33','n34','n35'];
 
 // クーポン割引額を計算：カート内で最も高いラーメン1杯の基本価格が対象
 // （＝お好きな1杯無料/半額と同等。追加トッピング・替え玉は対象外＝満額請求）
 function computeCouponDiscount() {
   if (!selectedCoupon) return { discount: 0, target: '', targetId: '' };
-  let target = null, targetKey = '';
+  let target = null, targetKey = '', drink = null, drinkKey = '';
   for (const id in cart) {
-    if ((findCatOfItem(id) || {}).id !== 'ramen') continue;   // ラーメンのみ対象
     const item = findItem(id);
     if (!item) continue;
-    if (!target || item.price > target.price) { target = item; targetKey = id; }
+    const bid = baseId(id);
+    if ((findCatOfItem(id) || {}).id === 'ramen' && (!target || item.price > target.price)) {
+      target = item; targetKey = id;
+    }
+    const ids = selectedCoupon === 'fdrink' ? FUJI_DRINK_IDS : BIRTHDAY_DRINK_IDS;
+    if (ids.indexOf(bid) >= 0 && (!drink || item.price > drink.price)) { drink = item; drinkKey = id; }
+  }
+  if (selectedCoupon === 'bday' || selectedCoupon === 'fdrink') {
+    return drink ? { discount:drink.price, target:drink.namePL, targetId:drinkKey }
+                 : { discount:0, target:'', targetId:'' };
+  }
+  if (selectedCoupon === 'bdayf') {
+    const discount = target && drink ? target.price + drink.price : 0;
+    return { discount, target:[target && target.namePL, drink && drink.namePL].filter(Boolean).join(' + '), targetId:targetKey || drinkKey };
   }
   if (!target) return { discount: 0, target: '', targetId: '' };
-  const discount = selectedCoupon === 'free' ? target.price : Math.round(target.price / 2);
-  return { discount, target: target.namePL, targetId: targetKey };
+  return { discount:selectedCoupon === 'free' ? target.price : Math.round(target.price / 2), target:target.namePL, targetId:targetKey };
 }
 
 // クーポン選択が変わったら確認画面の合計を更新
@@ -4170,7 +4190,13 @@ function applyCouponToTotal() {
     dLine.style.display = 'flex';
   } else {
     dLine.style.display = 'none';
-    if (selectedCoupon) showToast('⚠️ Kupon dotyczy ramenu — dodaj ramen do zamówienia / クーポンはラーメンが対象です', true);
+    if (selectedCoupon) {
+      // 2026-10-19：ドリンク券（bday / fdrink）のときは「ドリンクが対象」と案内する
+      if (selectedCoupon === 'bday' || selectedCoupon === 'fdrink')
+        showToast('⚠️ Kupon dotyczy napoju — dodaj napój do zamówienia / Add an eligible drink / クーポンはドリンクが対象です', true);
+      else
+        showToast('⚠️ Kupon dotyczy ramenu — dodaj ramen do zamówienia / クーポンはラーメンが対象です', true);
+    }
   }
   // 🎁 ランク特典行
   const pLine = mkLine('perk-discount-line', '#b8860b');
@@ -4202,8 +4228,11 @@ function applyCouponToTotal() {
 function renderCouponBox() {
   const ta = document.getElementById('uwagi-ta');
   let box = document.getElementById('coupon-area');
-  const coupons = (isMember && memberInfo && memberInfo.coupons) ? memberInfo.coupons.filter(c => !c.u) : [];
+  const today = warsawToday_();
+  const coupons = (isMember && memberInfo && memberInfo.coupons)
+    ? memberInfo.coupons.filter(c => c && !c.u && (!c.x || String(c.x) >= today)) : [];
   if (!coupons.length) { if (box) box.style.display = 'none'; selectedCoupon = null; return; }
+  couponAllLose = coupons.every(c => ['half','free','bdayf'].indexOf(c.t) >= 0);
   if (!box) {
     box = document.createElement('div');
     box.id = 'coupon-area';
@@ -4211,9 +4240,15 @@ function renderCouponBox() {
       'background:linear-gradient(135deg,#fdf6e3,#faedc8);font-size:.82rem;line-height:1.7';
     ta.parentNode.insertBefore(box, ta);
   }
-  const label = c => c.t === 'free'
-    ? `🍜 DARMOWY ramen / ラーメン1杯 無料（${c.m}pt特典）`
-    : `🎫 50% ZNIŻKI na ramen / ラーメン半額（${c.m}pt特典）`;
+  const label = c => {
+    const exp = c.x ? ` — ważny do / valid through / 有効期限 ${c.x}` : '';
+    if (c.t === 'free') return `🍜 DARMOWY ramen / Free ramen / ラーメン1杯 無料（${c.m}pt）${exp}`;
+    if (c.t === 'half') return `🎫 50% ZNIŻKI na ramen / Half-price ramen / ラーメン半額（${c.m}pt）${exp}`;
+    if (c.t === 'bday') return `🎂 Napój urodzinowy gratis / Free birthday drink / 誕生月ドリンク1杯無料${exp}`;
+    if (c.t === 'bdayf') return `🎂 Fuji: ramen + napój gratis / Free ramen + drink / ラーメン＋ドリンク無料${exp}`;
+    if (c.t === 'fdrink') return `☕ Fuji: kawa lub czarna herbata gratis / Free coffee or black tea / コーヒー・紅茶無料${exp}`;
+    return c.t;
+  };
   box.innerHTML = `
     <div style="font-weight:700;color:#8e6b00;margin-bottom:.4rem">
       🎉 Masz kupon! / クーポンをお持ちです！</div>
@@ -4221,7 +4256,7 @@ function renderCouponBox() {
          旧版は小さな注記の3行目にあり、読み飛ばされていた。
          クーポンを使うとその日のポイントが付かないので、
          金額によっては**使わないほうが得**な場合がある。 -->
-    <div style="background:rgba(255,255,255,.7);border-radius:8px;padding:.5rem .6rem;
+    <div id="coupon-point-note" style="display:${couponAllLose ? 'block' : 'none'};background:rgba(255,255,255,.7);border-radius:8px;padding:.5rem .6rem;
       margin-bottom:.5rem;font-size:.76rem;line-height:1.6;color:#8e2418">
       ⚠️ <b>Kupon = brak pieczątki dziś</b><br>
       <span style="color:#7a6858">Using a coupon means no stamp today.<br>
@@ -4237,6 +4272,7 @@ function renderCouponBox() {
     <div style="font-size:.68rem;color:#8e6b00;margin-top:.4rem">
       ※ Dotyczy 1 miski ramenu — cena podstawowa (dodatki, kaedama płatne osobno)<br>
       ※ ラーメン1杯の基本価格に適用（複数注文時は最も高い1杯に自動適用・追加トッピング/替え玉は別料金）<br>
+      ${coupons.some(c => ['bday','bdayf','fdrink'].indexOf(c.t) >= 0) ? `※ Kupon na napój: 1 napój (szklanka/puszka/filiżanka; bez dzbanków, butelek i deserów) / Drink coupons: one glass, can or cup (no pots, bottles or desserts) / ドリンク券：グラス・缶・1杯提供のドリンク1杯が対象（ポット・ボトル・デザートは対象外）<br>` : ''}
 
       ※ Nie łączy się ze zniżką stud./senior. / 学割・シニア割と併用不可</div>`;
   box.style.display = 'block';
@@ -4257,7 +4293,11 @@ function showCouponWarn(on) {
       'background:#8e2418;color:#fff;font-size:.78rem;line-height:1.6;text-align:center';
     box.appendChild(el);
   }
-  if (!on) { el.style.display = 'none'; return; }
+  const losesPoints = ['half','free','bdayf'].indexOf(selectedCoupon) >= 0;
+  const note = document.getElementById('coupon-point-note');
+  // 選ぶ前は手持ちが全部「ポイントなし」の種類のときだけ注意を出す。選んだ後は、その券で決める。
+  if (note) note.style.display = (selectedCoupon ? losesPoints : couponAllLose) ? 'block' : 'none';
+  if (!on || !losesPoints) { el.style.display = 'none'; return; }
   el.innerHTML = '⚠️ Dziś <b>bez pieczątki</b> / No stamp today / '
                + '本日は<b>ポイントが付きません</b>';
   el.style.display = 'block';
@@ -5030,7 +5070,12 @@ async function placeOrder() {
   // ※ 客別内訳はクーポン適用後の金額で持たせる必要があるため、
   //    selectedCoupon をリセットする前に計算しておく。
   if (isMember && snap.coupon && memberInfo.coupons) {
-    const ci = memberInfo.coupons.findIndex(c => !c.u && c.t === snap.coupon);
+    const today = warsawToday_();
+    let ci = -1;
+    memberInfo.coupons.forEach((c, idx) => {
+      if (!c || c.u || c.t !== snap.coupon || (c.x && String(c.x) < today)) return;
+      if (ci < 0 || String(c.x || '9999-12-31') < String(memberInfo.coupons[ci].x || '9999-12-31')) ci = idx;
+    });
     if (ci >= 0) memberInfo.coupons.splice(ci, 1);
   }
   selectedCoupon = null;

@@ -1002,7 +1002,8 @@ async function doRegister() {
 // 2026-10-13：持っている未使用クーポンを「現在の特典」欄に出す。
 //   以前は注文画面でしか券が見えず、獲得画面を閉じると券の存在が分からなくなった。
 function couponListHtml(coupons) {
-  const list = Array.isArray(coupons) ? coupons.filter(c => c && !c.u) : [];
+  const todayCoupon = new Date().toLocaleDateString('sv-SE', { timeZone:'Europe/Warsaw' });
+  const list = Array.isArray(coupons) ? coupons.filter(c => c && !c.u && (!c.x || String(c.x) >= todayCoupon)) : [];
   if (!list.length) return '';
   const n = t => list.filter(c => c.t === t).length;
   const row = (icon, pl, en, jp, cnt) => cnt ? `<div class="benefit-item" style="font-weight:700;color:#8e6b00">${icon} ${pl} ×${cnt}<br>
@@ -1010,6 +1011,9 @@ function couponListHtml(coupons) {
   return `<div style="background:rgba(255,236,170,.35);border:1.5px solid #b8860b;border-radius:8px;padding:.5rem .6rem;margin-bottom:.5rem">
     ${row('🍜','Kupon na ramen gratis','Free ramen coupon','ラーメン無料券', n('free'))}
     ${row('🎫','Kupon na ramen −50%','Half-price ramen coupon','ラーメン半額券', n('half'))}
+    ${row('🎂','Napój urodzinowy gratis','Free birthday drink','誕生月ドリンク無料券', n('bday'))}
+    ${row('🎂','Fuji: ramen + napój gratis','Fuji birthday ramen + drink','Fuji誕生月ラーメン＋ドリンク券', n('bdayf'))}
+    ${row('☕','Fuji: kawa lub czarna herbata gratis','Fuji coffee or black tea','Fujiコーヒー・紅茶無料券', n('fdrink'))}
     <div style="font-size:.68rem;color:var(--muted);margin-top:.2rem;line-height:1.5">
       Użyj przy następnym zamówieniu (wybierz kupon na ekranie potwierdzenia). / Use it on your next order (choose it on the confirm screen). / 次回のご注文時、確認画面で選んでお使いください。</div>
   </div>`;
