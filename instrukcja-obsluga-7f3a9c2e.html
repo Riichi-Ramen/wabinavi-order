@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.20 · Toruń</div>
+  <div class="ver">System v8.21 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -768,6 +768,62 @@ async function sha256(t) {
 
 <!-- クーポンとポイントの関係 -->
 <section>
+  <h2>🛵 Dostawa <span class="pl">配達の受付とDeligooへの依頼</span></h2>
+  <span class="path">Tablet przy barze / カウンターのタブレット → <code>…/reservations.html</code> → <b>🛵 Dostawy / 配達</b></span>
+
+  <div class="note warn"><b>⚠️ Zasady / ルール</b><br>
+    ・Tylko <b>Toruń</b>. Minimalne zamówienie <b>100 zł</b> (pozycje bez opakowań), dostawa <b>18 zł</b>. Kwoty zmienia właściciel w arkuszu <b>⚙️ 配達設定 / Dostawa</b> (bez wdrażania).<br>
+    ・Płatność: <b>gotówka</b> lub <b>karta</b> u kuriera (kurier ma terminal). Bez dopłaty. <b>Bez pieczątek, kuponów i bonusu rangi.</b><br>
+    ・Przełącznik <b>„受付ON”</b> w tym arkuszu: ON = przyjmujemy zamówienia, OFF = wstrzymane. /<br>
+    <span class="jp">配達区域はトルン市内のみ。最低注文 <b>100 zł</b>（容器代を除く品目合計）・配達料 <b>18 zł</b>。金額はスプレッドシート「⚙️ 配達設定 / Dostawa」で店主が変更（デプロイ不要）。
+    支払いは現金またはカード（配達員のカード端末）で、追加料金なし。スタンプ・クーポン・ランク特典は対象外。
+    同シートの「受付ON」＝ONで受付、OFFで停止。</span></div>
+
+  <h3 style="margin-top:1rem;font-size:.98rem;color:var(--ink)">
+    A. Zamówienie przez telefon <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 電話で受ける</span></h3>
+  <ol>
+    <li>Naciśnij <b>„➕ Wpisz zamówienie dostawy”</b>. Wpisz telefon, imię, ulicę (<b>bez numeru domu</b>), numer domu, mieszkanie/piętro/klatkę/domofon, kod pocztowy, płatność, godzinę. Podpowiedzi adresu pojawiają się po 2 literach ulicy; po 9 cyfrach telefonu — zapisane adresy tego klienta.
+      <span class="pl">「➕ 配達注文を入力」を押す。電話・氏名・通り（<b>番地は入れない</b>）・番地・部屋/階/階段/インターホン・郵便番号・支払い・時間を入力。通りは2文字から候補、電話は9桁で、そのお客様の保存済み住所が出ます。</span></li>
+    <li>Wybierz pozycje z menu i wyślij. Zamówienie jest <b>od razu zatwierdzone</b> i trafia do kuchni jako <b>🛵 DOWÓZ</b>.
+      <span class="pl">メニューから品目を選んで送信。<b>すぐ承認済み</b>になり、キッチンに「🛵 DOWÓZ」で出ます。</span></li>
+  </ol>
+
+  <h3 style="margin-top:1rem;font-size:.98rem;color:var(--ink)">
+    B. Zamówienie od gościa przez stronę <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ お客様がWebで注文したとき</span></h3>
+  <ol>
+    <li>Na liście <b>🛵 Dostawy</b> pojawia się karta ze statusem <b>OCZEKUJE</b> (licznik przy przycisku). <b>Do kuchni jeszcze nie trafia.</b>
+      <span class="pl">「🛵 Dostawy」に「OCZEKUJE（承認待ち）」のカードが出ます（ボタンに件数）。<b>まだキッチンには流れません。</b></span></li>
+    <li><b>Zadzwoń do gościa</b>: sprawdź adres (czy to Toruń), godzinę, płatność. Dopiero potem <b>„✅ 承認”</b>. Jeśli nie można dostarczyć — „❌ 取消” z powodem.
+      <span class="pl"><b>お客様に電話して</b>、住所（トルン市内か）・時間・支払いを確認してから「✅ 承認」。配達できないときは理由を付けて「❌ 取消」。</span></li>
+  </ol>
+
+  <h3 style="margin-top:1rem;font-size:.98rem;color:var(--ink)">
+    C. Zlecenie kuriera w Deligoo <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ Deligoo に依頼する</span></h3>
+  <ol>
+    <li>Na karcie rozwiń <b>„📋 Deligoo — instrukcja / 依頼ガイド”</b> i otwórz <b>panel.deligoo.pl</b> → <b>Nowe zlecenie</b>.
+      <span class="pl">カードの「依頼ガイド」を開き、panel.deligoo.pl で「Nowe zlecenie」を押す。</span></li>
+    <li>Kroki ①–⑤ idą w kolejności ekranów Deligoo. Każde pole ma przycisk <b>📋</b> — skopiuj i wklej (telefon, ulica, numer domu, mieszkanie, piętro, klatka, domofon, kod pocztowy).
+      <span class="pl">①〜⑤は Deligoo の画面の順番です。各項目の「📋」でコピーして貼ります（住所は項目ごとに分かれています）。</span></li>
+    <li>② <b>Rodzaj płatności</b>: wybierz Gotówka lub Karta i wpisz <b>kwotę (przycisk „Kwota” 📋)</b> — to <b>cała kwota do zapłaty przez gościa</b> (pozycje + opakowania + dostawa). Kurier pobiera tę kwotę.
+      <span class="pl">②支払い方法を選び、出てくる金額欄に「Kwota」の📋でコピーした金額を入れる。<b>お客様が払う合計</b>（品目＋容器代＋配達料）で、配達員がこの額を受け取ります。</span></li>
+    <li>③ Czas przygotowania (10–45 min, co 5) i Odbiór/Doręczenie; ④ uwagi (imię jest w <code>Osoba kontaktowa:</code>).
+      <span class="pl">③調理時間（5分刻み）と受取/配達時刻。④備考（氏名は先頭の「Osoba kontaktowa:」に入っています）。</span></li>
+    <li>⑤ Po zleceniu wpisz <b>numer zlecenia (#…)</b>, kuriera i godzinę, naciśnij <b>„🛵 Zapisz / 依頼済み”</b>. Bez numeru nie da się zapisać.
+      <span class="pl">⑤依頼できたら、Deligoo の<b>依頼番号（#…）</b>・配達員・到着予定を入力して「🛵 依頼済み」。番号が空だと保存できません。</span></li>
+    <li>Po dostawie: <b>„✅ 完了”</b>.
+      <span class="pl">配達が終わったら「✅ 完了」。</span></li>
+  </ol>
+
+  <div class="note warn"><b>⚠️ Anulowanie / 取消</b><br>
+    Anulowanie u nas <b>nie anuluje zlecenia w Deligoo</b>. Gdy status to <b>U KURIERA</b>, pojawi się ostrzeżenie z numerem — <b>anuluj też w panelu Deligoo</b> (powód: Klient zrezygnował z zamówienia / Zbyt długi czas oczekiwania na kuriera / Inny). /<br>
+    <span class="jp">こちらで取り消しても Deligoo の依頼は<b>取り消されません</b>。状態が「U KURIERA」のときは番号付きの警告が出るので、<b>Deligoo のパネルでも取り消してください</b>。</span></div>
+
+  <div class="note"><b>🔒 Dane osobowe / 個人情報</b><br>
+    Imię, telefon i adres znikają z rejestru po <b>90 dniach</b> (kwoty zostają). Adresy zapamiętane (książka adresowa) — 90 dni od ostatniego użycia. Na prośbę gościa: przycisk <b>„🗑 Zapomnij adresy tego numeru”</b> na liście dostaw. /<br>
+    <span class="jp">氏名・電話・住所は<b>90日</b>後に台帳から消えます（金額は残る）。記憶した住所（住所録）も最後の利用から90日。お客様から削除の希望があれば、配達一覧の「🗑 この番号の住所を忘れる」で電話番号を入れて削除。</span></div>
+</section>
+
+<section>
   <h2>🎫 Kupon i pieczątka <span class="pl">クーポンとポイントの関係</span></h2>
   <span class="path">Aplikacja → Potwierdzenie zamówienia / 注文確認画面</span>
 
@@ -798,7 +854,7 @@ async function sha256(t) {
       <li>Same napoje = <b>2</b> <span class="jp">／ドリンクだけ＝2pt</span></li>
       <li>Same dodatki lub opakowania = <b>0</b> — aplikacja mówi, że pieczątka nie przysługuje
         <span class="jp">／トッピングや容器だけ＝0pt（アプリは「対象外」の案内を出します）</span></li>
-      <li>Użyty kupon = <b>0</b> <span class="jp">／クーポンを使った来店＝0pt</span></li>
+      <li>Użyty kupon na ramen = <b>0</b> (kupon na napój — normalne punkty) <span class="jp">／ラーメンのクーポンを使った来店＝0pt（ドリンク券は通常どおりポイントが付く）</span></li>
     </ul>
     <b>⚠️ Poproś gościa, by nacisnął pieczątkę PO OSTATNIM zamówieniu.</b>
     Jeśli zrobi to po samym napoju (2 pkt), pieczątka na ten dzień jest już zużyta. /
@@ -816,9 +872,26 @@ async function sha256(t) {
     <span class="jp">ランクは獲得ポイントの合計で決まり、下がりません（8ヶ月ご来店がない場合を除く）。</span></div>
 
   <div class="note warn"><b>⚠️ Najważniejsza zasada / いちばん大事な決まり</b><br>
-    <b>Kupon użyty = brak pieczątki i brak bonusu rangi za tę wizytę.</b> /
-    <span class="jp"><b>クーポンを使った来店は、スタンプ（ポイント）が付きません。</b>
-    クーポンとランクのトッピング特典も併用できません。</span></div>
+    <b>Kupon na ramen (−50% / gratis) użyty = brak pieczątki i brak bonusu rangi za tę wizytę.</b>
+    Wyjątek: kupon na napój (urodzinowy, miesięczny Fuji) — pieczątka jest i bonus rangi działa. /
+    <span class="jp"><b>ラーメンのクーポン（半額・無料）を使った来店は、スタンプ（ポイント）が付きません。</b>
+    クーポンとランクのトッピング特典も併用できません。
+    例外：ドリンク券（誕生月・Fujiの毎月）は、スタンプが付き、ランク特典も使えます。</span></div>
+
+  <div class="note"><b>🎂 Kupony urodzinowe i Fuji (od v98) / 誕生月・Fujiのクーポン（v98〜）</b>
+    <table style="margin-top:.4rem">
+      <tr><th>Kupon <span class="jp">/ 券</span></th><th>Kto <span class="jp">/ 対象</span></th><th>Co daje <span class="jp">/ 内容</span></th><th>Pieczątka · bonus rangi <span class="jp">/ スタンプ・特典</span></th></tr>
+      <tr><td>🎂 bday</td><td>Sakura–Matsu</td><td>1 napój gratis w miesiącu urodzin <span class="jp">／誕生月にドリンク1杯無料</span></td><td>tak · tak <span class="jp">／付く・使える</span></td></tr>
+      <tr><td>🎂 bdayf</td><td>Fuji</td><td>1 ramen + 1 napój gratis w miesiącu urodzin <span class="jp">／誕生月にラーメン1杯＋ドリンク1杯無料</span></td><td>nie · nie <span class="jp">／付かない・使えない</span></td></tr>
+      <tr><td>☕ fdrink</td><td>Fuji</td><td>co miesiąc 2 kupony: kawa lub herbata gratis <span class="jp">／毎月2枚：コーヒー・紅茶が無料</span></td><td>tak · tak <span class="jp">／付く・使える</span></td></tr>
+    </table>
+    ・Kupony wydaje się automatycznie raz dziennie (rano); ważne do końca miesiąca; wygasłe znikają z listy. 1 kupon na zamówienie; jeśli gość ma 2 × fdrink — używa jednego. /
+    <span class="jp">券は毎朝の自動処理で発行されます（誕生月は月内いつでも・1年1枚）。有効期限はその月の末日。期限切れは一覧から消えます。1回の注文につき券は1枚（fdrink を2枚持っていても1枚ずつ）。</span><br>
+    ・Napoje objęte kuponem urodzinowym: napoje w szklance/puszce/kubku (nie: herbaty w czajniczku, desery, butelki, tokkuri). Fuji: tylko kawa i czarna herbata (7 pozycji). Rabat = najdroższy pasujący napój w koszyku. /
+    <span class="jp">対象は1杯提供のドリンク（ポットのお茶・デザート・ボトル・徳利は対象外）。Fujiの毎月券はコーヒー・紅茶の7品のみ。割引は、カート内で最も高い対象ドリンク1杯分です。</span><br>
+    ・Gdy Fuji osiągnie 350 pkt, właściciel dostaje e-mail „Fuji” (przygotuj pamiątkę). /
+    <span class="jp">会員がFuji（350pt）に到達すると、店主に通知メールが届きます（到達時グッズの用意）。</span>
+  </div>
 
   <div class="note"><b>🎁 Bonus rangi (od v97) / ランク特典（v97〜）</b><br>
     Budżet na dodatki (łącznie, na zamówienie): Ume 3 zł / Take 6 zł / Matsu 9 zł / Fuji 12 zł. Ponad budżet — normalna cena.

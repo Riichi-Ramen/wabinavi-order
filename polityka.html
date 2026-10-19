@@ -79,6 +79,7 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
       <li><strong>Program lojalnościowy (karta członkowska):</strong> imię i nazwisko, adres e-mail lub telefon, rok, miesiąc i dzień urodzenia, płeć, język, rodzaj członkostwa, liczba punktów, historia wizyt, kupony.</li>
       <li><strong>Wypożyczanie książek:</strong> numer książki, data wypożyczenia i zwrotu.</li>
       <li><strong>Zamówienia przy stoliku:</strong> zamówione pozycje, kwota, numer stolika.</li>
+      <li><strong>Dostawa:</strong> imię i nazwisko, numer telefonu, adres dostawy (ulica, numer domu i mieszkania, piętro, klatka, kod do domofonu, kod pocztowy), uwagi do zamówienia, zamówione pozycje, kwota, sposób płatności (gotówka lub karta u kuriera).</li>
     </ul>
     <p class="note">Nie zbieramy danych szczególnych kategorii (np. o zdrowiu, poglądach, wyznaniu). Podanie danych jest dobrowolne, ale niezbędne do dokonania rezerwacji lub udziału w programie lojalnościowym.</p>
 
@@ -89,6 +90,8 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
       <tr><th>Program lojalnościowy, punkty, kupony</th><td>art. 6 ust. 1 lit. a — zgoda</td></tr>
       <tr><th>Wiadomości o promocjach i wydarzeniach</th><td>art. 6 ust. 1 lit. a — zgoda (można cofnąć)</td></tr>
       <tr><th>Wypożyczanie książek</th><td>art. 6 ust. 1 lit. f — prawnie uzasadniony interes (zwrot mienia)</td></tr>
+      <tr><th>Realizacja dostawy</th><td>art. 6 ust. 1 lit. b — wykonanie umowy</td></tr>
+      <tr><th>Zapamiętanie adresu na kolejne zamówienia (książka adresowa)</th><td>art. 6 ust. 1 lit. a — zgoda (zaznaczenie pola w formularzu lub zgoda ustna przez telefon; można cofnąć)</td></tr>
       <tr><th>Rozliczenia i księgowość</th><td>art. 6 ust. 1 lit. c — obowiązek prawny</td></tr>
     </table>
 
@@ -96,11 +99,14 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
     <ul>
       <li><strong>Dane członkowskie:</strong> do momentu rezygnacji z członkostwa. Po rezygnacji dane są trwale usuwane z naszego rejestru.</li>
       <li><strong>Rezerwacje:</strong> do 12 miesięcy od daty wizyty.</li>
+      <li><strong>Dostawy:</strong> imię i nazwisko, telefon, adres i uwagi usuwamy z rejestru dostaw i z zamówienia po <strong>90 dniach</strong> od zamówienia. Zostaje kwota i status zamówienia (potrzebne do rozliczeń).</li>
+      <li><strong>Książka adresowa (zapamiętane adresy):</strong> <strong>90 dni</strong> od ostatniego użycia. Na Państwa prośbę (<a href="mailto:wabinavi@gmail.com">wabinavi@gmail.com</a> lub telefonicznie) usuwamy adresy powiązane z Państwa numerem telefonu od razu.</li>
       <li><strong>Dokumenty księgowe:</strong> 5 lat, zgodnie z przepisami podatkowymi.</li>
     </ul>
 
     <h2>5. Komu przekazujemy dane</h2>
     <p>Danych nie sprzedajemy ani nie udostępniamy w celach marketingowych osobom trzecim. Korzystamy z usług Google (Google Workspace, Gmail, Google Sheets, Google Apps Script) jako podmiotu przetwarzającego dane w naszym imieniu. Dane mogą być przetwarzane na serwerach poza EOG na podstawie standardowych klauzul umownych zatwierdzonych przez Komisję Europejską.</p>
+    <p><strong>Dostawa:</strong> w celu realizacji dostawy przekazujemy dane niezbędne do doręczenia (imię, numer telefonu, adres, uwagi, kwotę do pobrania) operatorowi platformy kurierskiej <strong>Deligoo</strong> oraz przydzielonemu kurierowi.</p>
 
     <h2>6. Państwa prawa</h2>
     <ul>
@@ -121,6 +127,7 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
     <h2>8. Pliki cookie i pamięć przeglądarki</h2>
     <p>Nasza aplikacja nie używa plików cookie do śledzenia ani reklam. Korzystamy wyłącznie z pamięci lokalnej przeglądarki, aby zapamiętać zawartość koszyka i wybrany język. Dane te pozostają na Państwa urządzeniu i nie są przez nas odczytywane.</p>
     <p>Jeśli składają Państwo zamówienie przez kod QR przy stoliku i zweryfikują członkostwo, numer telefonu lub adres e-mail użyty do weryfikacji zostaje zapisany <b>wyłącznie w pamięci Państwa własnego urządzenia</b> przez <b>90 dni</b>, aby nie trzeba było wpisywać go przy kolejnej wizycie. Dane te nie są nigdzie przesyłane ani odczytywane przez nas. Można je usunąć w każdej chwili przyciskiem „🔄 Użyj innego" na ekranie weryfikacji albo czyszcząc dane przeglądarki. Na tabletach obsługi żadne dane kontaktowe gości nie są zapamiętywane.</p>
+    <p>Jeśli zamawiają Państwo dostawę przez formularz na stronie i zamówienie zostanie wysłane, ostatnie adresy (do 5) wraz z numerem telefonu i imieniem zostają zapisane <b>wyłącznie w pamięci Państwa własnego urządzenia</b> (klucz <code>wabi_dostawa_addr</code>) przez <b>90 dni</b>, aby ułatwić kolejne zamówienie. Można je usunąć przyciskiem „🗑 Usuń adres z tego urządzenia” w formularzu dostawy albo czyszcząc dane przeglądarki.</p>
 
     <h2>9. Kod QR karty członkowskiej</h2>
     <p>Kod QR na karcie zawiera wyłącznie numer członkowski. Nie zawiera imienia, adresu e-mail, numeru telefonu ani żadnych innych danych osobowych.</p>
@@ -144,6 +151,7 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
       <li><strong>Loyalty programme (membership card):</strong> name, e-mail address or phone number, year, month and day of birth, gender, language, membership type, points balance, visit history, coupons.</li>
       <li><strong>Book lending:</strong> book number, borrow and return dates.</li>
       <li><strong>Table orders:</strong> items ordered, amount, table number.</li>
+      <li><strong>Delivery:</strong> name, phone number, delivery address (street, building and flat number, floor, staircase, intercom code, postal code), order notes, items ordered, amount, payment method (cash or card to the courier).</li>
     </ul>
     <p class="note">We do not collect special categories of data (such as health, beliefs or religion). Providing your data is voluntary, but necessary to make a reservation or join the loyalty programme.</p>
 
@@ -154,6 +162,8 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
       <tr><th>Loyalty programme, points, coupons</th><td>Art. 6(1)(a) — consent</td></tr>
       <tr><th>News about promotions and events</th><td>Art. 6(1)(a) — consent (may be withdrawn)</td></tr>
       <tr><th>Book lending</th><td>Art. 6(1)(f) — legitimate interest (return of property)</td></tr>
+      <tr><th>Carrying out a delivery</th><td>Art. 6(1)(b) — performance of a contract</td></tr>
+      <tr><th>Remembering your address for future orders (address book)</th><td>Art. 6(1)(a) — consent (ticking the box in the form, or verbal consent by phone; may be withdrawn)</td></tr>
       <tr><th>Accounting and tax records</th><td>Art. 6(1)(c) — legal obligation</td></tr>
     </table>
 
@@ -161,11 +171,14 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
     <ul>
       <li><strong>Membership data:</strong> until you cancel your membership. On cancellation, your data is permanently deleted from our register.</li>
       <li><strong>Reservations:</strong> up to 12 months after the date of the visit.</li>
+      <li><strong>Deliveries:</strong> name, phone, address and notes are removed from the delivery register and the order record <strong>90 days</strong> after the order. The amount and status of the order remain (needed for accounting).</li>
+      <li><strong>Address book (remembered addresses):</strong> <strong>90 days</strong> after last use. On request (<a href="mailto:wabinavi@gmail.com">wabinavi@gmail.com</a> or by phone) we delete the addresses linked to your phone number immediately.</li>
       <li><strong>Accounting records:</strong> 5 years, as required by Polish tax law.</li>
     </ul>
 
     <h2>5. Who we share data with</h2>
     <p>We do not sell your data or share it with third parties for marketing. We use Google services (Google Workspace, Gmail, Google Sheets, Google Apps Script) as a processor acting on our behalf. Data may be processed on servers outside the EEA under standard contractual clauses approved by the European Commission.</p>
+    <p><strong>Delivery:</strong> to carry out a delivery we pass the data needed for it (name, phone number, address, notes, amount to be collected) to the operator of the courier platform <strong>Deligoo</strong> and to the assigned courier.</p>
 
     <h2>6. Your rights</h2>
     <ul>
@@ -186,6 +199,7 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
     <h2>8. Cookies and browser storage</h2>
     <p>Our app does not use cookies for tracking or advertising. We only use your browser's local storage to remember your basket contents and language choice. This stays on your device and is not read by us.</p>
     <p>If you order via the QR code at your table and verify your membership, the phone number or email address used for verification is stored <b>only in your own device's storage</b> for <b>90 days</b>, so you do not have to type it again on your next visit. It is never transmitted anywhere or read by us. You can delete it at any time with the “🔄 Use another” button on the verification screen, or by clearing your browser data. No guest contact details are ever stored on our staff tablets.</p>
+    <p>If you order a delivery through the form on our site and the order is sent, your last addresses (up to 5) with your phone number and name are stored <b>only in your own device's storage</b> (key <code>wabi_dostawa_addr</code>) for <b>90 days</b>, to make your next order easier. You can delete them with the “🗑 Forget this address” button in the delivery form, or by clearing your browser data.</p>
 
     <h2>9. Membership QR code</h2>
     <p>The QR code on your membership card contains only your membership number. It does not contain your name, e-mail address, phone number or any other personal data.</p>
@@ -209,6 +223,7 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
       <li><strong>ポイントプログラム（会員カード）：</strong>氏名、メールアドレスまたは電話番号、生年・誕生月・誕生日、性別、言語、会員種別、累計ポイント、来店履歴、クーポン。</li>
       <li><strong>書籍の貸出：</strong>書籍番号、貸出日、返却日。</li>
       <li><strong>ご注文：</strong>注文内容、金額、テーブル番号。</li>
+      <li><strong>配達のご注文：</strong>氏名、電話番号、配達先の住所（通り・番地・部屋番号・階・階段・インターホンのコード・郵便番号）、備考、注文内容、金額、お支払い方法（配達員への現金またはカード）。</li>
     </ul>
     <p class="note">健康・信条・宗教などの特別な種類の情報は取得しません。情報のご提供は任意ですが、ご予約およびポイントプログラムのご利用には必要です。</p>
 
@@ -219,6 +234,8 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
       <tr><th>ポイント・クーポンの管理</th><td>第6条1項(a) — 同意</td></tr>
       <tr><th>キャンペーン・イベントのご案内</th><td>第6条1項(a) — 同意（撤回可能）</td></tr>
       <tr><th>書籍の貸出</th><td>第6条1項(f) — 正当な利益（返却の確認）</td></tr>
+      <tr><th>配達の実施</th><td>第6条1項(b) — 契約の履行</td></tr>
+      <tr><th>次回以降のご注文のための住所の記憶（住所録）</th><td>第6条1項(a) — 同意（フォームのチェック、または電話での口頭の同意。撤回可能）</td></tr>
       <tr><th>会計・税務</th><td>第6条1項(c) — 法的義務</td></tr>
     </table>
 
@@ -226,11 +243,14 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
     <ul>
       <li><strong>会員情報：</strong>退会されるまで。退会時に台帳から完全に削除します。</li>
       <li><strong>ご予約：</strong>来店日から12か月。</li>
+      <li><strong>配達：</strong>氏名・電話番号・住所・備考は、ご注文から<strong>90日</strong>後に、配達の台帳と注文記録から削除します。金額と状態は、会計のために残ります。</li>
+      <li><strong>住所録（記憶した住所）：</strong>最後にご利用いただいた日から<strong>90日</strong>。ご希望（<a href="mailto:wabinavi@gmail.com">wabinavi@gmail.com</a> または電話）があれば、電話番号に結びついた住所をすぐに削除します。</li>
       <li><strong>会計帳簿：</strong>ポーランドの税法に基づき5年間。</li>
     </ul>
 
     <h2>5. 第三者への提供</h2>
     <p>お客様の情報を販売することはなく、営業目的で第三者に提供することもありません。当店は Google のサービス（Google Workspace、Gmail、スプレッドシート、Apps Script）を、当店に代わって処理を行う事業者として利用しています。欧州経済領域外のサーバーで処理される場合がありますが、欧州委員会が承認した標準契約条項に基づいています。</p>
+    <p><strong>配達：</strong>配達を行うために、配達に必要な情報（氏名・電話番号・住所・備考・受け取る金額）を、配達プラットフォームの運営会社<strong>Deligoo</strong>と、担当の配達員に提供します。</p>
 
     <h2>6. お客様の権利</h2>
     <ul>
@@ -251,13 +271,14 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:1.6rem}
     <h2>8. Cookie とブラウザの保存領域</h2>
     <p>当アプリは、追跡や広告のための Cookie を使用していません。カートの内容と選択された言語を記憶するために、ブラウザのローカル保存領域のみを利用しています。これらはお客様の端末に保存され、当店が読み取ることはありません。</p>
     <p>テーブルのQRコードからご注文いただき、会員照合をされた場合、照合に使われた電話番号またはメールアドレスを、次回の入力を省くために<b>お客様ご自身の端末内にのみ</b><b>90日間</b>保存します。この情報が外部に送信されることや、当店が読み取ることはありません。照合画面の「🔄 別の番号を使う」を押すか、ブラウザのデータを消去すれば、いつでも削除できます。なお、店のタブレットにお客様の連絡先が保存されることはありません。</p>
+    <p>サイトの配達フォームからご注文を送信された場合、直近の住所（最大5件）と電話番号・氏名を、次回のご注文を楽にするために<b>お客様ご自身の端末内にのみ</b>（キー <code>wabi_dostawa_addr</code>）<b>90日間</b>保存します。配達フォームの「🗑 この端末の住所を消す」ボタンを押すか、ブラウザのデータを消去すれば、削除できます。</p>
 
     <h2>9. 会員QRコードについて</h2>
     <p>会員カードのQRコードには会員番号のみが含まれます。氏名・メールアドレス・電話番号その他の個人情報は含まれていません。</p>
   </section>
 
   <p class="updated">
-    Ostatnia aktualizacja / Last updated / 最終更新：2026-09-07
+    Ostatnia aktualizacja / Last updated / 最終更新：2026-10-19
   </p>
 
   <footer>
