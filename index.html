@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v98-20261017</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v99-20261019</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -709,6 +709,33 @@ body.show-config .config-bar{display:flex}
     <div class="gate-jp">
       テーブルに設置されたQRコードを読み取ってアクセスしてください。
     </div>
+  </div>
+</div>
+
+<!-- 2026-10-19：Deligoo と同じ分け方で受け、住所の取り違えを防ぐ配達入口。 -->
+<div id="delivery-screen" style="display:none;min-height:100vh;padding:1rem;background:#f7f1e8">
+  <div style="max-width:680px;margin:auto;background:#fff;padding:1rem;border-radius:14px">
+    <h2>🛵 Dostawa / Delivery / 配達</h2>
+    <div id="delivery-settings-note" style="padding:.7rem;background:#fff3cd;border-radius:8px;margin-bottom:.8rem">Ładowanie… / Loading… / 読み込み中…</div>
+    <label>Numer telefonu / Phone / 電話<input id="d-phone" type="tel" inputmode="tel" oninput="deliverySuggest()"></label>
+    <label>Imię / Name / 氏名<input id="d-name"></label>
+    <label>Miasto / City / 市<input id="d-city" value="Toruń" readonly></label>
+    <small>Dostawa tylko w Toruniu / Toruń only / 配達はトルン市内のみ</small>
+    <label>Ulica (bez numeru) / Street (no building number) / 通り（番地なし）<input id="d-street" autocomplete="off" oninput="deliverySuggest()" onfocus="deliverySuggest()"></label><div id="d-suggest" style="display:none;border:1px solid #d9c9b0;border-radius:8px;background:#fff;margin:.2rem 0;overflow:hidden"></div>
+    <label>Numer domu / Building / 番地<input id="d-house"></label>
+    <label>Numer mieszkania / Flat / 部屋<input id="d-flat"></label>
+    <label>Piętro / Floor / 階<input id="d-floor"></label>
+    <label>Klatka / Staircase / 階段<input id="d-staircase"></label>
+    <label>Kod do domofonu / Intercom / インターホン<input id="d-intercom"></label>
+    <label>Kod pocztowy / Postal code / 郵便番号<input id="d-postcode" placeholder="87-100"></label>
+    <fieldset><legend>Płatność / Payment / 支払い</legend><label><input type="radio" name="d-pay" value="Gotówka"> Gotówka / Cash / 現金</label> <label><input type="radio" name="d-pay" value="Karta"> Karta / Card / カード</label></fieldset>
+    <label>Reszta z (opcjonalnie) / Change for / お釣り用紙幣<input id="d-change" inputmode="decimal"></label>
+    <label>Czas / Time / 希望時間<select id="d-time"><option value="ASAP">ASAP</option></select></label>
+    <label>Uwagi / Notes / 備考<textarea id="d-memo"></textarea></label>
+    <div><button type="button" onclick="deliveryPreset('Proszę o kontakt telefoniczny przed dostawą')">📞 Kontakt / Call / 電話</button> <button type="button" onclick="deliveryPreset('Nie używać domofonu')">🔕 Domofon / Intercom / 呼出不要</button> <button type="button" onclick="deliveryPreset('Dostawa bezkontaktowa')">🚪 Bezkontaktowo / Contactless / 非接触</button></div>
+    <label id="d-rodo-wrap"><input id="d-rodo" type="checkbox"> Zgoda RODO / Privacy consent / 個人情報取扱いに同意 — <a href="polityka.html" target="_blank">Polityka</a></label>
+    <button class="start-btn" onclick="startDeliveryOrder()">🍜 Wybierz menu / Choose menu / メニューを選ぶ</button>
+    <button type="button" onclick="deliveryForgetLocal()">🗑 Usuń adres z tego urządzenia / Forget this address / この端末の住所を消す</button>
   </div>
 </div>
 
@@ -744,7 +771,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER / 注文を始める</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v98-20261017</div>
+    <div class="ver-tag">v99-20261019</div>
   </div>
 </div>
 
@@ -1636,10 +1663,18 @@ let memberName    = "";
 let memberInfo    = Object.create(null);
 let midTab    = "email";
 let coseatMembers = []; // 同席会員リスト
+let deliveryMode = false;
+let deliveryStaffMode = false;
+let deliverySettings = null;
+let deliveryForm = null;
+let deliveryStreets = [];   // 公開の通り名リスト（個人情報なし）
+let deliveryBook = [];      // 係員のみ：住所録の全行
 
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   urlTable = params.get('table') || '';
+  deliveryMode = params.get('dostawa') === '1';
+  deliveryStaffMode = deliveryMode && params.get('staff') === '1';
   // 🔄 卓のリセットボタンは従業員端末だけに出す。
   //    ?table= が付いていればテーブルQR経由＝客のスマホ。
   try {
@@ -1651,6 +1686,13 @@ window.addEventListener('DOMContentLoaded', () => {
   } catch (e) {}
 
   // ── QR必須チェック：tableパラメータがない/不正な場合はゲート画面を表示 ──
+  if (deliveryMode) {
+    document.getElementById('qr-gate-screen').style.display = 'none';
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('delivery-screen').style.display = 'block';
+    initDeliveryForm();
+    return;
+  }
   if (!urlTable || +urlTable < 1 || +urlTable > 14) {
     document.getElementById('qr-gate-screen').style.display = 'flex';
     document.getElementById('welcome-screen').style.display = 'none';
@@ -2984,6 +3026,10 @@ function dismissRiceOffer() {
 
 // v41 ⑤: 持ち帰りグループで選んだ商品は、対象カテゴリなら自動で「持ち帰り」
 function defaultServeFor(id) {
+  if (deliveryMode) {
+    const cat = findCatOfItem(id);
+    if (cat && SERVE_ELIGIBLE.includes(cat.id)) return 'wynos';
+  }
   if (currentGroupIndex >= 0 && groupTakeaway[currentGroupIndex]) {
     const cat = findCatOfItem(id);
     if (cat && SERVE_ELIGIBLE.includes(cat.id)) return 'wynos';
@@ -3890,6 +3936,8 @@ function renderSplitSummary() {
 // ══ 🍚 ライスセット割：ラーメンと一緒ならライス12zł→6zł ══
 const RICE_IDS = ['o10', 'a16', 'd_6d'];
 function computeRiceSetDiscount() {
+  // 2026-10-19：配達ではライスセット割を使わない（サーバーの配達合計に含まれず、画面と請求額がずれるため）。
+  if (deliveryMode) return { count: 0, discount: 0, alloc: {} };
   let ramenUnits = 0, riceUnits = 0;
   for (const id in cart) {
     if ((findCatOfItem(id) || {}).id === 'ramen') ramenUnits += cart[id].qty || 1;
@@ -4522,6 +4570,21 @@ function openConfirm() {
   const confTotalEl = document.getElementById('conf-total');
   confTotalEl.dataset.base = total;
   confTotalEl.textContent = total + ' zł';
+  // 2026-10-19：配達は、最低金額の確認・配達料・支払い額を確認画面に出す（金額の正本はサーバー）。
+  const oldDelivery = document.getElementById('delivery-confirm-line');
+  if (oldDelivery) oldDelivery.remove();
+  if (deliveryMode && deliverySettings) {
+    const fee = Number(deliverySettings.deliveryFee) || 0, min = Number(deliverySettings.minOrder) || 0;
+    let base = 0; ids.forEach(id => { base += confLineTotal(id) - serveFee(id, cart[id]); });
+    const short = Math.max(0, min - base);
+    confTotalEl.parentNode.insertAdjacentHTML('afterend',
+      `<div id="delivery-confirm-line" style="margin:.5rem 0;padding:.7rem;border-radius:8px;background:#fff3cd;font-size:.85rem;line-height:1.6">
+        🛵 Dostawa / Delivery / 配達料: <b>+${fee} zł</b><br>
+        💳 Do zapłaty (${deliveryForm.payment}) / To pay / お支払い: <b>${total + fee} zł</b><br>
+        ${short > 0 ? `<b style="color:#c0392b">⚠️ Minimalne zamówienie ${min} zł (bez opakowań) — brakuje ${short} zł / Minimum order ${min} zł (excl. containers) — ${short} zł short / 最低注文金額 ${min} zł（容器代を除く）まであと ${short} zł</b>` : `Minimum ${min} zł ✔`}
+      </div>`);
+    document.getElementById('btn-order').disabled = short > 0;
+  }
   const oldDLine = document.getElementById('coupon-discount-line');
   if (oldDLine) oldDLine.style.display = 'none';
   document.getElementById('preset-list').innerHTML =
@@ -4770,6 +4833,7 @@ function stampPreview_() {
   return { total, parts, couponOrders, normalOrders };
 }
 function stampPreviewHtml_() {
+  if (deliveryMode) return '';   // 2026-10-19：配達はスタンプなし
   const p = stampPreview_();
   const link = `<a href="stamp.html" style="display:inline-block;margin-top:.5rem;padding:.45rem .9rem;border-radius:20px;
       background:var(--accent);color:#fff;text-decoration:none;font-size:.78rem;font-weight:700">
@@ -5000,8 +5064,12 @@ async function placeOrder() {
         method:'POST', mode:'cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body: JSON.stringify({
+          action: deliveryMode ? 'deliveryOrder' : 'order',
           orderId, timestamp:new Date().toISOString(),
-          table:tableNum, guests:guestNum, uwagi, total, items,
+          table:tableNum, guests:guestNum, uwagi, items,
+          total: deliveryMode ? total + (Number(deliverySettings && deliverySettings.deliveryFee) || 0) : total,
+          packages: deliveryMode ? items.reduce((n, i) => n + (i.serveMode === 'wynos' ? (Number(i.qty) || 1) : 0), 0) : 0,
+          hasDrinks: deliveryMode ? ids.some(id => ['napoje','alkohole'].indexOf((findCatOfItem(id) || {}).id) >= 0) : false,
           isMember, memberName: isMember?memberName:"",
           memberContact: isMember?memberContact:"",
           memberBirthYear:  isMember?(memberInfo.birthYear ||""):"",
@@ -5021,7 +5089,18 @@ async function placeOrder() {
           rankPerkHalfNoodle: perkCalc ? perkCalc.halfUsed : 0,
           rankPerkRank: perkCalc ? perkCalc.rank : "",
           rankPerkDetail: perkCalc ? perkCalc.names.join(", ") : "",
-          coseatMembers: coseatMembers
+          coseatMembers: deliveryMode ? [] : coseatMembers,
+          name: deliveryMode ? deliveryForm.name : '',
+          phone: deliveryMode ? deliveryForm.phone : '',
+          city: deliveryMode ? 'Toruń' : '', street: deliveryMode ? deliveryForm.street : '',
+          house: deliveryMode ? deliveryForm.house : '', flat: deliveryMode ? deliveryForm.flat : '',
+          floor: deliveryMode ? deliveryForm.floor : '', staircase: deliveryMode ? deliveryForm.staircase : '',
+          intercom: deliveryMode ? deliveryForm.intercom : '', postcode: deliveryMode ? deliveryForm.postcode : '',
+          payment: deliveryMode ? deliveryForm.payment : '', changeFor: deliveryMode ? deliveryForm.changeFor : '',
+          desiredTime: deliveryMode ? deliveryForm.desiredTime : '', memo: deliveryMode ? deliveryForm.memo : '',
+          rodo: deliveryMode ? deliveryForm.rodo : false,
+          password: deliveryMode && deliveryStaffMode ? (localStorage.getItem('wabi_staff_pw') || '') : '',
+          website: ''
         })
       });
       if (!response.ok) throw new Error('NoResponse');
@@ -5065,6 +5144,11 @@ async function placeOrder() {
 
   // 送信成功 → 使用クーポンを消し込み、カートを空にして完了画面へ
   pendingOrder = null;
+  if (deliveryMode && res && res.status === 'ok') deliverySaveLocalAddress();
+  if (deliveryMode && res && res.staffAuth === 'wrong') {
+    try { localStorage.removeItem('wabi_staff_pw'); } catch (e) {}
+    deliveryStaffMode = false;
+  }
   // v48: この注文の客別内訳を残す。会計時に卓の全注文をまたいで合算するため。
   const snap = previousSnap || snapOrder_(total);
   // ※ 客別内訳はクーポン適用後の金額で持たせる必要があるため、
@@ -5131,7 +5215,11 @@ async function placeOrder() {
   }
 
   const memberDiv = document.getElementById('member-divider-block');
-  if (isMember) {
+  if (deliveryMode) {
+    const staffIn = deliveryStaffMode;
+    memberDiv.innerHTML = `<div style="margin-top:1rem;padding:.9rem;border-radius:10px;background:rgba(255,252,245,0.9);text-align:center;line-height:1.7">
+      <strong style="color:var(--accent)">${staffIn ? 'Zarejestrowano / Registered / 登録しました' : 'Przyjęliśmy zamówienie. Zadzwonimy, aby potwierdzić. / We have received your order and will call to confirm. / ご注文を受け付けました。お電話で確認してから確定します。'}</strong></div>`;
+  } else if (isMember) {
     memberDiv.innerHTML = `
       <div style="margin-top:1.5rem;border-top:1px solid rgba(192,57,43,0.2);padding-top:1.5rem;text-align:center">
         <div style="font-size:1.5rem;margin-bottom:.4rem">⭐</div>
@@ -5989,6 +6077,77 @@ function getGasUrl()    { return DEFAULT_GAS_URL; }   // 2026-09-20：端末ご�
 function saveGasUrl()   { /* 廃止（D7）。設定欄はURLの表示だけ */ }
 
 function testGasUrl()   { showToast("🔒 Adres serwera jest stały / Server URL is fixed / 送り先は固定です",false); }
+
+// 2026-10-19：通り候補は個人情報を含まない公開リストだけを一度取得し、以後は端末内で絞る。
+function deliveryFold(v) {
+  return String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ł/g,'l')
+    .replace(/^\s*(ul\.|al\.|pl\.|os\.)\s*/,'').trim();
+}
+function deliveryStreetMatches(street, q) {
+  const needle = deliveryFold(q); if (needle.length < 2) return false;
+  return deliveryFold(street).split(/\s+/).some(w => w.indexOf(needle) === 0);
+}
+async function initDeliveryForm() {
+  const gas = getGasUrl();
+  try {
+    const [sr, ar] = await Promise.all([
+      fetch(gas + '?action=getDeliverySettings').then(r => r.json()),
+      fetch(gas + '?action=getDeliveryStreets').then(r => r.json())
+    ]);
+    deliverySettings = sr;
+    document.getElementById('delivery-settings-note').textContent = sr.enabled
+      ? `Toruń · minimum ${sr.minOrder} zł · dostawa ${sr.deliveryFee} zł / minimum order · delivery fee / 最低注文・配達料`
+      : 'Dostawa wyłączona / Delivery unavailable / 配達受付停止中';
+    deliveryStreets = ar.streets || [];
+    if (deliveryStaffMode) {
+      try { const b = await fetch(gas + '?action=getAddressBook&password=' + encodeURIComponent(localStorage.getItem('wabi_staff_pw') || '')).then(r => r.json()); if (b.status === 'ok') deliveryBook = b.addresses || []; } catch (e) {}
+    }
+  } catch (e) { document.getElementById('delivery-settings-note').textContent='Nie udało się pobrać ustawień / Settings unavailable / 設定を取得できません'; }
+  const sel=document.getElementById('d-time'); for(let h=13;h<=22;h++)for(const m of ['00','30'])sel.insertAdjacentHTML('beforeend',`<option value="${String(h).padStart(2,'0')}:${m}">${String(h).padStart(2,'0')}:${m}</option>`);
+  deliveryLoadLocalAddress();
+}
+function deliveryPreset(v) { const el=document.getElementById('d-memo'); el.value += (el.value?'\n':'')+v; }
+function startDeliveryOrder() {
+  const val=id=>document.getElementById(id).value.trim(), pay=document.querySelector('input[name="d-pay"]:checked');
+  deliveryForm={phone:val('d-phone'),name:val('d-name'),street:val('d-street'),house:val('d-house'),flat:val('d-flat'),floor:val('d-floor'),staircase:val('d-staircase'),intercom:val('d-intercom'),postcode:val('d-postcode'),payment:pay?pay.value:'',changeFor:val('d-change'),desiredTime:val('d-time')||'ASAP',memo:val('d-memo'),rodo:deliveryStaffMode||document.getElementById('d-rodo').checked};
+  if (!deliverySettings || !deliverySettings.enabled) return showToast('Dostawa wyłączona / Delivery unavailable / 配達受付停止中');
+  if (!/^\d{9}$/.test(deliveryForm.phone.replace(/\D/g,'')) || !deliveryForm.name || !deliveryForm.street || !deliveryForm.house || !/^\d{2}-\d{3}$/.test(deliveryForm.postcode) || !deliveryForm.payment || !deliveryForm.rodo) return showToast('Uzupełnij wymagane pola / Complete required fields / 必須項目を入力してください');
+  if (/\s\d+[a-z]?\s*$/i.test(deliveryForm.street)) return showToast('Ulica bez numeru / Street without building number / 通りには番地を含めないでください');
+  tableNum='DOSTAWA'; guestNum='1'; isMember=false; memberContact=''; memberName='';
+  document.getElementById('delivery-screen').style.display='none';
+  orderModeDecided=true; launchMenuReal();
+  document.getElementById('top-table-chip').textContent='🛵 DOWÓZ · '+deliveryForm.desiredTime;
+}
+function deliveryLoadLocalAddress() { try { const a=JSON.parse(localStorage.getItem('wabi_dostawa_addr')||'[]').filter(x=>Date.now()-x.at<90*86400000);if(a[0]){const x=a[0];for(const k of ['phone','name','street','house','flat','floor','staircase','intercom','postcode']){const e=document.getElementById('d-'+k);if(e)e.value=x[k]||'';}} } catch(e){} }
+function deliverySaveLocalAddress() { if(!deliveryForm)return;try{let a=JSON.parse(localStorage.getItem('wabi_dostawa_addr')||'[]');const key=[deliveryForm.phone,deliveryForm.street,deliveryForm.house,deliveryForm.flat].map(deliveryFold).join('|');a=a.filter(x=>[x.phone,x.street,x.house,x.flat].map(deliveryFold).join('|')!==key&&Date.now()-x.at<90*86400000);a.unshift(Object.assign({at:Date.now()},deliveryForm));localStorage.setItem('wabi_dostawa_addr',JSON.stringify(a.slice(0,5)));}catch(e){} }
+// 2026-10-19：住所の候補。通りの欄に2文字入れたら最大6件。単語の頭で一致、大文字小文字・ポーランド語の記号は無視。
+//   順番：この端末の記憶／（係員）住所録の同じ電話番号 → 住所録・通り名。候補は補助で、自由に打ち込める。
+function deliveryLocalAddresses() { try { return JSON.parse(localStorage.getItem('wabi_dostawa_addr') || '[]').filter(x => Date.now() - x.at < 90 * 86400000); } catch (e) { return []; } }
+function deliveryFill(a) {
+  for (const k of ['phone','name','street','house','flat','floor','staircase','intercom','postcode']) {
+    const e = document.getElementById('d-' + k); if (e && a[k] !== undefined && a[k] !== '') e.value = a[k];
+  }
+  document.getElementById('d-suggest').style.display = 'none';
+}
+function deliverySuggest() {
+  const box = document.getElementById('d-suggest'); if (!box) return;
+  const hide = () => { box.innerHTML = ''; box.style.display = 'none'; };
+  const q = document.getElementById('d-street').value, phone = document.getElementById('d-phone').value.replace(/\D/g, '').slice(-9);
+  const out = [], seen = {};
+  const push = (a, label) => { const k = [a.street, a.house, a.flat].map(deliveryFold).join('|'); if (seen[k]) return; seen[k] = 1; out.push({ a, label }); };
+  if (deliveryStaffMode && phone.length === 9) deliveryBook.filter(x => String(x.phone).replace(/\D/g, '') === phone).forEach(x => push(x, '📞'));
+  if (deliveryFold(q).length >= 2) {
+    deliveryLocalAddresses().filter(x => deliveryStreetMatches(x.street, q)).forEach(x => push(x, '📱'));
+    deliveryBook.filter(x => deliveryStreetMatches(x.street, q)).forEach(x => push(x, '📖'));
+    deliveryStreets.filter(x => deliveryStreetMatches(x, q)).forEach(x => push({ street: x, house: '', flat: '' }, ''));
+  } else if (!out.length) { hide(); return; }
+  const list = out.slice(0, 6);
+  if (!list.length) { hide(); return; }
+  box.innerHTML = list.map((o, i) => `<div data-i="${i}" style="padding:.55rem .7rem;border-bottom:1px solid #eee;cursor:pointer">${o.label} ${String([o.a.street, o.a.house, o.a.flat ? ('/' + o.a.flat) : ''].join(' ')).replace(/[<>&]/g, '')}</div>`).join('');
+  box.style.display = 'block';
+  box.querySelectorAll('div').forEach(d => d.onclick = () => deliveryFill(list[Number(d.dataset.i)].a));
+}
+function deliveryForgetLocal() { try{localStorage.removeItem('wabi_dostawa_addr');}catch(e){};['d-phone','d-name','d-street','d-house','d-flat','d-floor','d-staircase','d-intercom','d-postcode'].forEach(id=>document.getElementById(id).value=''); }
 
 function showToast(msg, isErr=true) {
   const el = document.getElementById('error-toast');

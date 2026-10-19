@@ -643,7 +643,7 @@ function cardHtml(o, idx) {
     <div class="swipe-hint">✅ Gotowe / 完了</div>
     <div class="c-head">
       <div>
-        <div class="c-table">🪑 ${o.table || '?'}<span class="c-guests">👥 ${
+        <div class="c-table">${o.isDelivery ? ('🛵 DOWÓZ ' + (o.deliveryTime || '')) : ('🪑 ' + (o.table || '?'))}<span class="c-guests">${o.isDelivery ? '' : '👥 '}${
           ((String(o.guests || '').match(/\d+/) || ['?'])[0])} os.</span></div>
         <div class="c-sub">🕐 ${esc(o.hhmm)} przyjęto / 受付${member}<br>${esc(o.orderId)}</div>
       </div>

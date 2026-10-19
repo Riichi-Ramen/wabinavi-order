@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- reservations.html ・ v1.4a-device-20261017 -->
+<!-- reservations.html ・ v1.5-dostawa-20261019 -->
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
@@ -162,6 +162,7 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
     📞 Rezerwacja przez telefon
     <small>電話で受けた予約をここから登録</small>
   </button>
+  <button class="tel-open" onclick="openDeliveries()">🛵 Dostawy / 配達 <strong id="delivery-badge"></strong></button>
   <div class="tabs">
     <button class="tab active" id="tab-today" onclick="setRange('today')">📅 Dziś / 今日</button>
     <button class="tab" id="tab-upcoming" onclick="setRange('upcoming')">🔜 Nadchodzące / 今後</button>
@@ -172,6 +173,13 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
     <button class="refresh" onclick="load()">🔄 Odśwież / 更新</button>
   </div>
   <div id="list-area"><div class="spinner"></div></div>
+</div>
+
+<div id="delivery-panel" style="display:none;width:100%;max-width:680px;flex-direction:column;align-items:center">
+  <button class="back-link" onclick="closeDeliveries()">← Wróć / 一覧へ戻る</button>
+  <a class="tel-open" href="index.html?dostawa=1&staff=1" target="_blank">➕ Wpisz zamówienie dostawy / 配達注文を入力</a>
+  <div id="delivery-list" style="width:100%"><div class="spinner"></div></div>
+  <button class="tel-open" onclick="forgetDeliveryAddress()">🗑 Zapomnij adresy tego numeru / この番号の住所を忘れる</button>
 </div>
 
 <!-- ══════════ 📞 電話予約フォーム（v8.3） ══════════ -->
@@ -862,6 +870,21 @@ function showDone(d, p){
 }
 
 // 登録済みの端末は入力画面なしで開く。解除した直後は、その旨を出して入力画面に戻す。
+async function openDeliveries(){
+  document.getElementById('panel').style.display='none'; document.getElementById('delivery-panel').style.display='flex';
+  const box=document.getElementById('delivery-list');box.innerHTML='<div class="spinner"></div>';
+  try{const d=await(await fetch(GAS_URL+'?action=getDeliveries&password='+encodeURIComponent(PW)+'&range=today')).json();if(d.status==='unauthorized')throw new Error(d.message||'auth');document.getElementById('delivery-badge').textContent=d.pending?'('+d.pending+')':'';box.innerHTML=(d.deliveries||[]).map(deliveryCard).join('')||'<p class="empty">Brak / なし</p>';}catch(e){box.innerHTML='<p class="empty">⚠️ '+esc(e.message)+'</p>';}
+}
+function closeDeliveries(){document.getElementById('delivery-panel').style.display='none';document.getElementById('panel').style.display='flex';load();}
+function copyDelivery(v){navigator.clipboard.writeText(String(v||''));}
+function deliveryCard(d){const addr=[d.street,d.house,d.flat].filter(Boolean).join(' '),notes=['Osoba kontaktowa: '+d.name,d.memo,d.changeFor?('Reszta z '+d.changeFor+' zł'):''].filter(Boolean).join('\n');return `<div class="card"><b>🛵 ${esc(d.desiredTime)} · ${esc(d.state)}</b><br>👤 ${esc(d.name)} · <a href="tel:${esc(d.phone)}">${esc(d.phone)}</a><br><a target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(addr+', Toruń')}">${esc(addr)}</a><br>${esc(d.items)}<br><b>${esc(d.total)} zł · ${esc(d.payment)}</b><details><summary>📋 Deligoo — instrukcja / 依頼ガイド</summary><p>🔗 <a href="https://panel.deligoo.pl/" target="_blank">Panel Deligoo — Nowe zlecenie</a></p><b>① Dane klienta</b><br>${copyBtn('Numer telefonu',d.phone)}${copyBtn('Ulica',d.street)}${copyBtn('Numer domu',d.house)}${copyBtn('Numer mieszkania',d.flat)}${copyBtn('Piętro',d.floor)}${copyBtn('Klatka',d.staircase)}${copyBtn('Kod do domofonu',d.intercom)}${copyBtn('Kod pocztowy',d.postcode)}<br><b>② Rodzaj płatności</b><br>${esc(d.payment)} → ${copyBtn('Kwota',d.total)}<br>Opakowanie własne ×${esc(d.packages)} / Napoje: ${esc(d.drinks)}<br><b>③ Czas realizacji</b><br>Czas przygotowania: ${esc(d.cooking)} min / ${d.desiredTime==='ASAP'?'Odbiór':'Doręczenie'} ${esc(d.desiredTime)}<br><b>④ Uwagi</b>${copyBtn('Uwagi',notes)}<br><b>⑤ Rezultat</b><br><input id="req-${esc(d.orderId)}" placeholder="Numer zlecenia"><input id="cour-${esc(d.orderId)}" placeholder="Kurier"><input id="eta-${esc(d.orderId)}" placeholder="HH:mm"><button onclick="deliveryCourier('${esc(d.orderId)}')">🛵 Zapisz / 依頼済み</button></details><div><button onclick="deliveryOp('${esc(d.orderId)}','approve')">✅ 承認</button><button onclick="deliveryOp('${esc(d.orderId)}','done')">✅ 完了</button><button onclick="deliveryCancel('${esc(d.orderId)}','${esc(d.state)}','${esc(d.requestNo)}')">❌ 取消</button></div></div>`;}
+function copyBtn(label,v){return `<button class="mini" onclick='copyDelivery(${JSON.stringify(String(v||''))})'>📋 ${esc(label)}: ${esc(v||'—')}</button> `;}
+async function deliveryPost(o){o.action='deliveryUpdate';o.password=PW;const d=await(await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o)})).json();if(d.status!=='ok')alert(d.message||d.status);else openDeliveries();}
+function deliveryOp(id,op){deliveryPost({orderId:id,op:op});}
+function deliveryCourier(id){if(!document.getElementById('req-'+id).value.trim()){alert('Wpisz numer zlecenia z Deligoo (#…) / Enter the Deligoo request number / Deligooの依頼番号を入力してください');return;}deliveryPost({orderId:id,op:'courier',requestNo:document.getElementById('req-'+id).value,courier:document.getElementById('cour-'+id).value,eta:document.getElementById('eta-'+id).value});}
+function deliveryCancel(id,state,no){if(state==='U KURIERA')alert('⚠️ Anuluj także w panelu Deligoo #'+no+' / Deligoo側でも取り消してください #'+no);const reason=prompt('Klient zrezygnował z zamówienia / Zbyt długi czas oczekiwania na kuriera / Inny');if(reason)deliveryPost({orderId:id,op:'cancel',reason:reason});}
+function forgetDeliveryAddress(){const p=prompt('Numer telefonu / 電話番号');if(p)deliveryPost({op:'forget',phone:p});}
+
 if (DEVICE_RELEASED){
   showLoginErr('✅ Urządzenie wylogowane / この端末の登録を解除しました', true);
 } else if (PW){
