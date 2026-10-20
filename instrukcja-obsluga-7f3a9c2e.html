@@ -117,7 +117,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.21 · Toruń</div>
+  <div class="ver">System v8.22 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -1104,6 +1104,48 @@ async function sha256(t) {
     <span class="jp"><b>「✅ 完了」は、料理が実際に出ていく時だけ押す。</b>
     押した瞬間にカードが画面から消えるため、早く押すと注文が見えなくなり、
     お客様をお待たせすることになります。</span></div>
+</section>
+
+<!-- 6b. HP（wabinavi.com） -->
+<section>
+  <h2>🌐 Strona WWW wabinavi.com <span class="pl">HP（ホームページ）の運用</span></h2>
+  <span class="path">wabinavi.com ・ menu.html ・ gallery.html ・ index.html</span>
+
+  <p style="font-size:.86rem;margin-top:.3rem">
+    <b>Aplikacja przy stoliku i strona WWW to jedna całość.</b> To samo menu, te same ceny,
+    te same zdjęcia — zmieniasz raz w arkuszu. /
+    <span class="jp"><b>テーブルの注文アプリとHPは一体運用</b>です。メニュー・価格・売り切れ・写真は、
+    スプレッドシートで1回変えれば両方に反映されます。</span></p>
+
+  <table>
+    <tr><th>Co / <span class="jp">何を</span></th><th>Jak / <span class="jp">どうする</span></th></tr>
+    <tr><td>Menu, ceny, wyprzedane <span class="jp">/ メニュー・価格・売り切れ</span></td>
+        <td>Arkusz (jak wyżej) → strona <code>menu.html</code> odświeża się sama w 1 min
+          <span class="jp">/ 上の手順どおり。HPのメニュー頁は1分以内に自動更新</span></td></tr>
+    <tr><td>Zdjęcia dań <span class="jp">/ 料理写真</span></td>
+        <td>Wyślij e-mailem (jak wyżej) — pojawią się w aplikacji i w menu na stronie
+          <span class="jp">/ メール送信（上の手順）。注文アプリとHPのメニュー頁の両方に出る</span></td></tr>
+    <tr><td>Galeria <code>gallery.html</code> i strona główna <span class="jp">/ ギャラリーとトップ頁</span></td>
+        <td><b>Tylko właściciel</b> — to pliki na GitHubie, nie arkusz. Podpisy zdjęć w galerii
+          pochodzą z ID dań w menu (np. <code>r4</code> = Wabi Navi)
+          <span class="jp">/ <b>店主のみ</b>。スプレッドシートではなくGitHub上のファイル。
+          ギャラリーの料理名は商品ID（例 <code>r4</code>＝Wabi Navi）から付けています</span></td></tr>
+    <tr><td>Zmiana się nie pokazuje <span class="jp">/ 変更が出ない</span></td>
+        <td>Poczekaj 1–2 min, potem <kbd>Ctrl+Shift+R</kbd>
+          <span class="jp">/ 1〜2分待って強制再読込</span></td></tr>
+  </table>
+
+  <div class="note"><b>📌 Czego NIE ma na stronie / HPに載せないもの</b><br>
+    <span class="jp">・会員・ポイント・スタンプ（制度開始までHPでは非表示）<br>
+    ・寿司（準備中のため「Wkrótce / Coming soon / 準備中」の表示のみ）<br>
+    ・店の連絡先は <b>wabinavi@gmail.com</b> のみ（他のアドレスは載せない）<br>
+    ・販売していない商品名（メニューシートにある商品だけを載せる）</span></div>
+
+  <div class="note warn"><b>⚠️ Dla właściciela / 店主へ：</b>
+    Ta instrukcja jest <b>jedynym wspólnym wzorem</b> dla aplikacji i strony WWW —
+    poprawiaj ją tylko tutaj (plik w repozytorium wabinavi-order). /
+    <span class="jp">このマニュアルは<b>アプリ運用とHP運用の共通の原本</b>です。
+    直すのはここ（wabinavi-order リポジトリ）だけ。公開サイト側にコピーを置かないこと。</span></div>
 </section>
 
 <!-- 7. こまった時 -->
