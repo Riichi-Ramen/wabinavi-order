@@ -126,6 +126,18 @@ body{
   <small style="color:var(--muted)">Zapomniano urządzenie obsługi i hasło. / This device and saved password were cleared.</small>
 </div>
 
+<!-- 2026-10-21：係員メニューの先頭に「今週のコード」を大きく出す（口頭でお客様に伝えるため）。
+     コードはパスワード確認後にサーバーから届く（このページには書かない・公開しない）。 -->
+<div class="card" id="weekly-code-card" style="padding:1rem;text-align:center;background:#2c1810;border:3px solid #c8a96e">
+  <div style="color:#c8a96e;font-weight:700;font-size:.95rem">🔑 Kod tygodnia / Weekly code / 今週のコード</div>
+  <div id="weekly-code" style="font-size:4rem;font-weight:800;letter-spacing:.25em;margin:.2rem 0 .1rem .25em;color:#ff6b57;line-height:1.1">— — — —</div>
+  <div id="weekly-code-note" style="color:#f1e6d3;font-size:.78rem;line-height:1.6">
+    🔒 Wpisz hasło poniżej, aby zobaczyć / 下の「係員専用パネル」にパスワードを入れると表示されます</div>
+  <div style="color:#c8a96e;font-size:.66rem;margin-top:.4rem;line-height:1.5">
+    Podaj gościowi ustnie, gdy prosi o pieczątkę. Nie publikuj i nie wywieszaj. / スタンプを押したいお客様に口頭で。掲示・SNSはNG。<br>
+    Zmienia się co tydzień (poprzedni kod działa jeszcze tydzień). / 毎週変わります（先週のコードも1週間は有効）。</div>
+</div>
+
 <div class="card" id="admin-menu" style="padding:1rem">
   <div class="staff-title">🧰 Menu obsługi / 係員メニュー</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
@@ -366,6 +378,24 @@ function escStaffHtml_(t) {
   return String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
 
+// 2026-10-21：今週のコードを係員メニュー先頭に表示（getPointPresets の応答に含まれる）
+function showWeeklyCode_(d) {
+  const el = document.getElementById('weekly-code'), note = document.getElementById('weekly-code-note');
+  if (!el) return;
+  if (d && d.status === 'ok' && /^\d{4}$/.test(String(d.stampCode || ''))) {
+    el.textContent = String(d.stampCode);
+    if (note) note.style.display = 'none';
+  } else {
+    el.textContent = '— — — —';
+    if (note) {
+      note.style.display = 'block';
+      note.textContent = (d && d.status === 'unauthorized')
+        ? '⚠️ Hasło nieprawidłowe / パスワードが違います'
+        : '🔒 Wpisz hasło poniżej, aby zobaczyć / 下の「係員専用パネル」にパスワードを入れると表示されます';
+    }
+  }
+}
+
 async function loadStaffPresets() {
   const pw = document.getElementById('staff-password').value;
   if (!pw || !GAS_URL) return;
@@ -374,6 +404,7 @@ async function loadStaffPresets() {
   try {
     const r = await fetch(GAS_URL + '?action=getPointPresets&password=' + encodeURIComponent(pw));
     const d = await r.json();
+    showWeeklyCode_(d);
     if (!d || d.status !== 'ok' || !d.presets || !d.presets.length) {
       if (st) st.textContent = '⚠️ Nie wczytano (hasło / połączenie) — standardowe 3 / Could not load (password / connection) — showing 3 defaults / 読み込めませんでした。標準の3つを表示中';
       return;
