@@ -55,61 +55,7 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
   box-shadow:0 3px 10px rgba(0,0,0,.2)}
 </style>
 <meta name="robots" content="noindex, nofollow, noarchive">
-<script>
-// ══════════════════════════════════════════════════════════════
-//  🔒 かんたんな入口の鍵（係員パスワードとは別物です）
-//
-//  ⚠️ これは「通りすがりを止めるカーテン」であって、金庫ではありません。
-//     予約台帳や会員情報を守っているのは係員パスワードのほうです。
-//     こちらには機密は書かないでください。
-//
-//  合言葉を変えるには：
-//    このページを  instrukcja-obsluga-7f3a9c2e.html?sethash=あたらしいことば
-//    で開くと画面に新しいハッシュが出ます。それを下の MANUAL_HASH に貼り替えて
-//    GitHubへアップロードしてください。
-//  ※ 合言葉そのものは、このファイルにもコミットメッセージにも書かないこと。
-// ══════════════════════════════════════════════════════════════
-const MANUAL_HASH = "03b8e2032fe7239360bb543d9182ab03d4d9023bedf1909f878b607be18bcdf1";
-
-(async function () {
-  const q = new URLSearchParams(location.search);
-
-  // ハッシュ生成モード（合言葉を変えたいとき）
-  const gen = q.get('sethash');
-  if (gen) {
-    const h = await sha256(gen);
-    document.addEventListener('DOMContentLoaded', function () {
-      document.body.innerHTML =
-        '<div style="font-family:monospace;padding:2rem;line-height:2;word-break:break-all">' +
-        '<b>Nowe hasło / 新しい合言葉：</b><br>' + gen +
-        '<br><br><b>MANUAL_HASH に貼る値：</b><br>' + h + '</div>';
-    });
-    return;
-  }
-
-  // すでに通っている端末はそのまま
-  try {
-    if (localStorage.getItem('wabi_manual_ok') === MANUAL_HASH) return;
-  } catch (e) {}
-
-  const input = prompt(
-    'Hasło do instrukcji / Manual password / マニュアルの合言葉');
-  if (input === null) { location.href = 'https://riichi-ramen.github.io/'; return; }
-  const h = await sha256(input.trim());
-  if (h !== MANUAL_HASH) {
-    alert('Nieprawidłowe hasło / Incorrect password / 合言葉が違います');
-    location.href = 'https://riichi-ramen.github.io/';
-    return;
-  }
-  try { localStorage.setItem('wabi_manual_ok', MANUAL_HASH); } catch (e) {}
-})();
-
-async function sha256(t) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
-  return Array.from(new Uint8Array(buf))
-    .map(b => b.toString(16).padStart(2, '0')).join('');
-}
-</script>
+<!-- 2026-10-21（店主の決定）：マニュアルの合言葉（入口の鍵）は廃止。機密は載せないこと。noindex のみ。 -->
 </head>
 <body>
 
@@ -117,7 +63,7 @@ async function sha256(t) {
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.23 · Toruń</div>
+  <div class="ver">System v8.24 · Toruń</div>
 </header>
 
 <div class="intro">
