@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<meta name="wabi-version" content="pos-20261025a">
+<title>🧾 POS転記 — WABI NAVI</title>
+<style>
+:root{
+  --bg:#f3ede4;--panel:#fff;--ink:#241a14;--muted:#7a6a5e;--line:#e2d6c6;
+  --accent:#c0392b;--ok:#2d7a3a;--warn:#e8a317;--rm:#c0392b;--add:#1a6b32;--chg:#8a5a00;
+  --split:#0b5cad;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+
+/* ログイン */
+#lock{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:900;padding:1.5rem}
+.lock-box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:2rem 1.6rem;width:100%;max-width:400px;text-align:center}
+.lock-box h1{font-size:1.15rem;margin-bottom:.3rem}
+.lock-box p{font-size:.8rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.7}
+.lock-box input{width:100%;padding:.85rem;border-radius:10px;border:1.5px solid var(--line);font-size:1.05rem;text-align:center;margin-bottom:.8rem}
+.lock-box button{width:100%;padding:.85rem;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:1rem;font-weight:700}
+#lock-err{display:none;background:#fdecea;border:1px solid var(--accent);color:var(--accent);border-radius:10px;padding:.6rem;font-size:.8rem;margin-bottom:.8rem;line-height:1.6}
+
+/* 上部バー */
+#bar{position:sticky;top:0;z-index:50;background:#2c1810;color:#f4ede4;padding:.5rem .8rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.brand{font-weight:800;font-size:1rem;white-space:nowrap}
+.brand small{display:block;font-size:.62rem;font-weight:400;color:#c8a96e}
+.tab{background:transparent;border:1.5px solid rgba(255,255,255,.3);color:#e8dccb;border-radius:10px;padding:.4rem .85rem;font-size:.85rem;font-weight:700;white-space:nowrap}
+.tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.spacer{flex:1}
+#pulse{width:9px;height:9px;border-radius:50%;background:#2fa15a;opacity:.4}
+#pulse.live{opacity:1;box-shadow:0 0 8px #2fa15a}
+#clock{font-variant-numeric:tabular-nums;font-weight:700}
+
+/* 2分割（広い画面）／1列（狭い画面） */
+#app{display:none}
+#main{display:grid;grid-template-columns:330px 1fr;gap:0;height:calc(100vh - 52px)}
+#list{overflow-y:auto;border-right:1px solid var(--line);padding:.6rem;background:#ebe2d4}
+#detail{overflow-y:auto;padding:1rem 1.2rem 3rem}
+#back{display:none}
+@media (max-width:899px){
+  #main{display:block;height:auto}
+  #list{border-right:none;min-height:calc(100vh - 52px)}
+  #detail{display:none;position:fixed;inset:0;top:52px;background:var(--bg);z-index:40;padding:.8rem .8rem 4rem}
+  body.show-detail #detail{display:block}
+  body.show-detail #list{display:none}
+  #back{display:inline-block}
+  body.show-detail #tab-todo,body.show-detail #tab-done{display:none}
+  #detail{top:48px}
+}
+
+/* 左：注文の一覧 */
+.li{background:var(--panel);border:2px solid transparent;border-radius:12px;padding:.55rem .7rem;margin-bottom:.5rem;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.li.sel{border-color:var(--accent)}
+.li.done{opacity:.55}
+.li-top{display:flex;align-items:baseline;gap:.5rem}
+.li-table{font-size:1.15rem;font-weight:800}
+.li-time{margin-left:auto;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.li-sub{font-size:.76rem;color:var(--muted);margin-top:.15rem;line-height:1.5}
+.badges{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.3rem}
+.bd{font-size:.7rem;font-weight:800;padding:.1rem .45rem;border-radius:6px}
+.bd.split{background:var(--split);color:#fff}
+.bd.note{background:var(--warn);color:#2c1810}
+.bd.rm{background:#fdecea;color:var(--rm)}
+.bd.dlv{background:#2c1810;color:#fff}
+.bd.ok{background:var(--ok);color:#fff}
+.empty{text-align:center;color:var(--muted);padding:3rem 1rem;line-height:1.8}
+
+/* 右：詳細 */
+.d-head{display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;margin-bottom:.2rem}
+.d-table{font-size:2rem;font-weight:900}
+.d-meta{color:var(--muted);font-size:.9rem}
+.d-id{font-size:.7rem;color:var(--muted);margin-bottom:.6rem}
+.flags{display:flex;flex-direction:column;gap:.4rem;margin:.5rem 0 .8rem}
+.flag{border-radius:10px;padding:.6rem .8rem;font-size:1rem;font-weight:700;line-height:1.5}
+.flag.note{background:#fff4d6;border:2px solid var(--warn)}
+.flag.warn{background:#fdecea;border:2px solid var(--accent);color:var(--accent)}
+.flag.split{background:#e4f0fc;border:2px solid var(--split);color:var(--split);font-size:1.15rem}
+
+.it{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:12px;padding:.7rem .9rem;margin-bottom:.7rem}
+.it-top{display:flex;align-items:flex-start;gap:.8rem}
+.it-q{font-size:1.9rem;font-weight:900;min-width:3.2rem;color:var(--accent);line-height:1.1}
+.it-n{flex:1}
+.it-pl{font-size:1.35rem;font-weight:800;line-height:1.25}
+.it-en{font-size:.82rem;color:var(--muted)}
+.it-p{text-align:right;white-space:nowrap}
+.it-p b{font-size:1.25rem;display:block}
+.it-p small{font-size:.72rem;color:var(--muted)}
+.mods{margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem}
+.mod{border-radius:8px;padding:.35rem .6rem;font-size:1rem;line-height:1.5;font-weight:600}
+.mod.rm{background:#fdecea;color:var(--rm)}
+.mod.rm::before{content:'🚫 抜き / BEZ  ';font-weight:800}
+.mod.chg{background:#fff4d6;color:var(--chg)}
+.mod.split{background:var(--split);color:#fff;font-size:1.2rem;font-weight:900;text-align:center}
+.mod .lbl{font-size:.72rem;font-weight:800;display:block;opacity:.8}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.15rem}
+.chip{background:#e3f4e6;color:var(--add);border-radius:7px;padding:.2rem .55rem;font-size:.98rem;font-weight:800}
+.chip i{font-style:normal;font-weight:500;font-size:.78rem;opacity:.85;margin-left:.3rem}
+
+.total{display:flex;justify-content:space-between;align-items:baseline;background:#2c1810;color:#f4ede4;border-radius:12px;padding:.7rem 1rem;margin:.8rem 0}
+.total b{font-size:1.7rem}
+.actions{display:flex;gap:.6rem;flex-wrap:wrap}
+.btn{flex:1;min-width:200px;border:none;border-radius:12px;padding:1rem;font-size:1.05rem;font-weight:800}
+.btn small{display:block;font-size:.72rem;font-weight:500;opacity:.9}
+.btn.go{background:var(--ok);color:#fff}
+.btn.undo{background:#fff;border:2px solid var(--line);color:var(--muted)}
+#toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);background:#2c1810;color:#fff;padding:.6rem 1rem;border-radius:10px;font-size:.9rem;display:none;z-index:999}
+#toast.err{background:var(--accent)}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="lock-box">
+    <h1>🧾 POS転記 / Przepisz do POS</h1>
+    <p>係員パスワード / Hasło obsługi</p>
+    <div id="lock-err"></div>
+    <input type="password" id="pw" placeholder="Hasło / パスワード" autocomplete="off">
+    <button onclick="doLogin()">OK</button>
+  </div>
+</div>
+
+<div id="app">
+  <div id="bar">
+    <button class="tab" id="back" onclick="showList()">← 一覧</button>
+    <div class="brand">🧾 POS転記<small>Przepisz do GASTRO POS</small></div>
+    <button class="tab on" id="tab-todo" onclick="setView('todo')">未入力 / Do wpisania <span id="n-todo"></span></button>
+    <button class="tab" id="tab-done" onclick="setView('done')">入力済み / Wpisane <span id="n-done"></span></button>
+    <div class="spacer"></div>
+    <span id="clock"></span><span id="pulse"></span>
+  </div>
+  <div id="main">
+    <div id="list"></div>
+    <div id="detail"><div class="empty">← 注文を選んでください<br>Wybierz zamówienie</div></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════
+//  🧾 POS転記画面 — GASTRO POS へ商品・トッピング変更を再入力するための表示
+//  注文シートの内容を省略せず、大きく並べる。「POS入力済み」は全端末で共有（注文シートU列）。
+// ════════════════════════════════════════════════════════════════════
+const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec";
+const POLL_MS = 12000;
+let PASSWORD = "", VIEW = "todo", ORDERS = [], SEL = "", timer = null, busy = false;
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const zl = n => (Math.round(Number(n || 0) * 100) / 100).toString().replace('.', ',') + ' zł';
+
+function staffRead_(params){
+  const o = Object.assign({ action:'staffRead' }, params);
+  return fetch(DEFAULT_GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(o) });
+}
+async function fetchQueue(){
+  try {
+    const r = await staffRead_({ read:'getPosQueue', password:PASSWORD, _:Date.now() });
+    return await r.json();
+  } catch(e){ return null; }
+}
+
+// ── ログイン ──
+window.addEventListener('DOMContentLoaded', () => {
+  let saved = ""; try { saved = sessionStorage.getItem('wabi_pos_pw') || ""; } catch(e){}
+  if (saved) { document.getElementById('pw').value = saved; doLogin(true); }
+  document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+});
+async function doLogin(silent){
+  const pw = document.getElementById('pw').value.trim();
+  const err = document.getElementById('lock-err');
+  if (!pw) { if(!silent){ err.textContent='Wpisz hasło / パスワードを入力してください'; err.style.display='block'; } return; }
+  PASSWORD = pw; err.style.display = 'none';
+  const res = await fetchQueue();
+  if (!res || res.status !== 'ok') {
+    err.textContent = (res && res.message) ? res.message : 'Błąd logowania / ログインできませんでした';
+    err.style.display = 'block'; PASSWORD = ''; return;
+  }
+  try { sessionStorage.setItem('wabi_pos_pw', pw); } catch(e){}
+  document.getElementById('lock').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  apply(res);
+  timer = setInterval(poll, POLL_MS);
+  setInterval(() => { const d = new Date(); document.getElementById('clock').textContent =
+    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }, 1000);
+}
+async function poll(){
+  if (busy || document.hidden) return;
+  const res = await fetchQueue();
+  const p = document.getElementById('pulse');
+  p.style.background = res ? '#2fa15a' : '#c0392b'; p.classList.add('live'); setTimeout(() => p.classList.remove('live'), 600);
+  if (res && res.status === 'ok') apply(res);
+}
+function apply(res){ ORDERS = res.orders || []; render(); }
+
+// ── 変更内容（メモ欄）の読み取り ──
+// 括弧の中のカンマでは区切らない（「Jajko (Połowa) ×2（Half-Egg / 味玉（半分））, Kimchi…」対策）
+function splitTop(s){
+  const out = []; let depth = 0, cur = '';
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === '(' || c === '（') depth++;
+    else if (c === ')' || c === '）') depth = Math.max(0, depth - 1);
+    if (c === ',' && depth === 0) { out.push(cur.trim()); cur = ''; continue; }
+    cur += c;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out.filter(Boolean);
+}
+const SPLIT_RE = /Tak,\s*podziel|Yes,\s*split|2杯に分割|2 bowls/i;
+function isSplitMemo(memo){ return SPLIT_RE.test(String(memo || '')); }
+function parseMods(memo){
+  const mods = [];
+  String(memo || '').split('\n').forEach(raw => {
+    let l = raw.trim();
+    if (!l || l === '—') return;
+    if (SPLIT_RE.test(l)) { mods.push({ t:'split' }); return; }
+    let m = l.match(/^🚫\s*POMIŃ:\s*(.*)$/);
+    if (m) { mods.push({ t:'rm', text:m[1] }); return; }
+    m = l.match(/^🔧\s*ZMIANA:\s*(.*)$/);
+    if (m) l = m[1];
+    const k = l.indexOf(': ');
+    if (k > 0 && k < 70) {
+      const lbl = l.slice(0, k), val = l.slice(k + 2);
+      mods.push({ t:'chg', label:lbl, parts: /トッピング|Dodatki|Topping/i.test(lbl) ? splitTop(val) : null, text:val });
+    } else mods.push({ t:'chg', label:'', parts:null, text:l });
+  });
+  return mods;
+}
+// 「Jajko (Połowa) ×2（味玉（半分））」→ 名前 / 日本語
+function chipHtml(a){
+  const m = String(a).match(/^(.*?)\s*（(.*)）\s*(\(\+[^)]*\))?\s*$/);
+  if (!m) return `<span class="chip">${esc(a)}</span>`;
+  return `<span class="chip">${esc(m[1].trim())}${m[3] ? ' ' + esc(m[3]) : ''}<i>${esc(m[2].trim())}</i></span>`;
+}
+function modHtml(md){
+  if (md.t === 'split') return `<div class="mod split">✌️ 2杯に分ける / PODZIEL NA 2 MISKI</div>`;
+  if (md.t === 'rm') return `<div class="mod rm">${esc(md.text)}</div>`;
+  if (md.parts) return `<div class="mod chg"><span class="lbl">${esc(md.label)}</span><div class="chips">${md.parts.map(chipHtml).join('')}</div></div>`;
+  return `<div class="mod chg">${md.label ? `<span class="lbl">${esc(md.label)}</span>` : ''}${esc(md.text)}</div>`;
+}
+
+// 注文メモ（UWAGI）：【…】のタグと自由文に分ける
+function parseUwagi(u){
+  const flags = []; let rest = String(u || '');
+  rest = rest.replace(/【([^】]*)】/g, (_, t) => { flags.push(t.trim()); return ' '; }).trim();
+  return { flags, text: rest };
+}
+function orderInfo(o){
+  const u = parseUwagi(o.uwagi);
+  const split = o.items.reduce((n, it) => n + (isSplitMemo(it.memo) ? it.qty : 0), 0);
+  return { u, split, hasNote: !!(u.text || u.flags.length) };
+}
+
+// ── 描画 ──
+function setView(v){ VIEW = v; SEL = ''; document.getElementById('tab-todo').classList.toggle('on', v==='todo');
+  document.getElementById('tab-done').classList.toggle('on', v==='done'); showList(); render(); }
+function showList(){ document.body.classList.remove('show-detail'); }
+function pick(id){ SEL = id; document.body.classList.add('show-detail'); render(); }
+
+function render(){
+  const todo = ORDERS.filter(o => !o.pos), done = ORDERS.filter(o => o.pos);
+  document.getElementById('n-todo').textContent = todo.length ? '(' + todo.length + ')' : '';
+  document.getElementById('n-done').textContent = done.length ? '(' + done.length + ')' : '';
+  const show = (VIEW === 'todo' ? todo : done.slice().reverse());
+  if (SEL && !show.some(o => o.orderId === SEL)) SEL = '';
+  if (!SEL && show.length && window.innerWidth >= 900) SEL = show[0].orderId;
+
+  const list = document.getElementById('list');
+  list.innerHTML = show.length ? show.map(liHtml).join('')
+    : '<div class="empty">' + (VIEW === 'todo' ? '🍃 未入力の注文はありません<br>Brak zamówień do wpisania' : '入力済みの注文はまだありません') + '</div>';
+
+  const o = show.find(x => x.orderId === SEL);
+  document.getElementById('detail').innerHTML = o ? detailHtml(o)
+    : '<div class="empty">← 注文を選んでください<br>Wybierz zamówienie</div>';
+}
+function tableLabel(o){ return o.isDelivery ? '🛵 DOSTAWA ' + (o.deliveryTime || '') : '🪑 ' + (o.tableTxt || '?'); }
+function liHtml(o){
+  const inf = orderInfo(o);
+  const n = o.items.reduce((s, it) => s + it.qty, 0);
+  const b = [];
+  if (inf.split) b.push(`<span class="bd split">✌️ 2杯に分ける ×${inf.split}</span>`);
+  if (inf.hasNote) b.push(`<span class="bd note">📝 メモあり</span>`);
+  if (o.items.some(it => /POMIŃ/.test(it.memo))) b.push(`<span class="bd rm">🚫 抜きあり</span>`);
+  if (o.pos) b.push(`<span class="bd ok">${esc(o.pos)}</span>`);
+  return `<div class="li${o.orderId === SEL ? ' sel' : ''}${o.pos ? ' done' : ''}" onclick="pick('${esc(o.orderId)}')">
+    <div class="li-top"><span class="li-table">${esc(tableLabel(o))}</span><span class="li-time">${esc(o.hhmm)}</span></div>
+    <div class="li-sub">${n} 品 · ${o.total != null ? zl(o.total) : ''}${o.memberName ? ' · ⭐' + esc(o.memberName) : ''}</div>
+    ${b.length ? `<div class="badges">${b.join('')}</div>` : ''}
+  </div>`;
+}
+function detailHtml(o){
+  const inf = orderInfo(o);
+  const flags = [];
+  if (inf.split) flags.push(`<div class="flag split">✌️ 2杯に分ける指定が ${inf.split} 件あります（器が1つ余分に必要）</div>`);
+  inf.u.flags.forEach(t => flags.push(`<div class="flag ${/DUPLIKAT|重複|KUPON|⚠/.test(t) ? 'warn' : 'note'}">${esc(t)}</div>`));
+  if (inf.u.text) flags.push(`<div class="flag note">📝 ${esc(inf.u.text)}</div>`);
+
+  const items = o.items.map(it => {
+    const mods = parseMods(it.memo).map(modHtml).join('');
+    const extra = Math.round((it.line - it.unit * it.qty) * 100) / 100;
+    return `<div class="it">
+      <div class="it-top">
+        <div class="it-q">×${it.qty}</div>
+        <div class="it-n"><div class="it-pl">${esc(it.namePL)}</div><div class="it-en">${esc(it.nameEN)}</div></div>
+        <div class="it-p"><b>${zl(it.line)}</b><small>${zl(it.unit)} × ${it.qty}${extra ? ' ' + (extra > 0 ? '+' : '−') + zl(Math.abs(extra)) : ''}</small></div>
+      </div>
+      ${mods ? `<div class="mods">${mods}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  const act = o.pos
+    ? `<button class="btn undo" onclick="mark('${esc(o.orderId)}', false)">↩︎ 未入力に戻す<small>Cofnij — jeszcze nie wpisane</small></button>`
+    : `<button class="btn go" onclick="mark('${esc(o.orderId)}', true)">✅ POSに入力した<small>Wpisane do POS — ukryj z listy</small></button>`;
+
+  return `<div class="d-head"><span class="d-table">${esc(tableLabel(o))}</span>
+      <span class="d-meta">🕐 ${esc(o.hhmm)} · 👥 ${esc((String(o.guests).match(/\d+/) || ['?'])[0])} os.${o.memberName ? ' · ⭐ ' + esc(o.memberName) : ''}</span></div>
+    <div class="d-id">${esc(o.orderId)}${o.pos ? ' · ' + esc(o.pos) : ''}</div>
+    ${flags.length ? `<div class="flags">${flags.join('')}</div>` : ''}
+    ${items}
+    <div class="total"><span>RAZEM / 合計</span><b>${o.total != null ? zl(o.total) : '—'}</b></div>
+    <div class="actions">${act}</div>`;
+}
+
+// ── 入力済みの印 ──
+async function mark(orderId, done){
+  busy = true;
+  try {
+    const r = await fetch(DEFAULT_GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'posMark', password:PASSWORD, orderId, done }) });
+    const d = await r.json();
+    if (d.status !== 'ok') { toast(d.message || 'Błąd / エラー', true); busy = false; return; }
+    const o = ORDERS.find(x => x.orderId === orderId); if (o) o.pos = d.pos || '';
+    SEL = ''; showList(); render();
+    toast(done ? '✅ 入力済みにしました' : '↩︎ 未入力に戻しました');
+  } catch(e) { toast('通信エラー / Błąd połączenia', true); }
+  busy = false;
+}
+let _tt = null;
+function toast(msg, err){ const t = document.getElementById('toast'); t.textContent = msg; t.className = err ? 'err' : '';
+  t.style.display = 'block'; clearTimeout(_tt); _tt = setTimeout(() => t.style.display = 'none', 2500); }
+window.addEventListener('resize', () => { if (PASSWORD) render(); });
+</script>
+</body>
+</html>
