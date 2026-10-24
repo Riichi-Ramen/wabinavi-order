@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta name="wabi-version" content="staff-20261021c">
+<meta name="wabi-version" content="staff-20261025a">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — 係員専用 / Obsługa</title>
@@ -242,7 +242,7 @@ body{
   <div style="background:rgba(192,57,43,.07);border-radius:10px;padding:.55rem .7rem;margin:.2rem 0 .8rem;font-size:.72rem;line-height:1.6;color:var(--ink)">
     <b>Co można tu zrobić / What you can do here / このパネルでできること</b><br>
     ① Ręczne dodanie punktów (przyciski poniżej) / Add points manually (buttons below) / ポイントの<b>手動付与</b><br>
-    ② Cofnięcie punktów (−10 / −5) / Undo points (−10 / −5) / 付与の<b>取消</b><br>
+    ② Cofnięcie punktów (takie same wartości jak przyciski dodawania) / Undo points (same amounts as the add buttons) / 付与の<b>取消</b><br>
     ③ Skanowanie QR członka / Scan the member's QR code / <b>会員QRの読み取り</b>で付与<br>
     <span style="color:var(--muted)">Zwykłe pieczątki za zamówienie (ramen 10 · donburi 7 · przystawki 3 · napoje 2 pkt) gość dostaje sam, naciskając pieczątkę — tutaj tylko ręczne dodawanie i cofanie.<br>
     Regular stamps (ramen 10 · donburi 7 · starters 3 · drinks 2 pts) are earned by guests themselves — use this panel only to add or undo points by hand.<br>
@@ -275,10 +275,10 @@ body{
   <button class="btn btn-green" onclick="doStaffAddPoint()" id="staff-add-btn">
     ＋10pt 追加 / Dodaj 10 punktów
   </button>
-  <div style="display:flex;gap:.5rem;margin-top:.5rem">
-    <button class="btn btn-secondary" style="flex:1;margin:0;font-size:.78rem;border-color:rgba(192,57,43,0.4);color:var(--accent)"
+  <div id="staff-undo-box" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem">
+    <button class="btn btn-secondary" style="flex:1 1 40%;margin:0;font-size:.78rem;border-color:rgba(192,57,43,0.4);color:var(--accent)"
       onclick="doStaffRemovePoint(10)">↩️ −10 pkt cofnij / Undo −10 / −10pt取消</button>
-    <button class="btn btn-secondary" style="flex:1;margin:0;font-size:.78rem;border-color:rgba(192,57,43,0.4);color:var(--accent)"
+    <button class="btn btn-secondary" style="flex:1 1 40%;margin:0;font-size:.78rem;border-color:rgba(192,57,43,0.4);color:var(--accent)"
       onclick="doStaffRemovePoint(5)">↩️ −5 pkt cofnij / Undo −5 / −5pt取消</button>
   </div>
   <div id="staff-result" style="margin-top:.8rem;display:none"></div>
@@ -422,6 +422,10 @@ async function loadStaffPresets() {
     box.innerHTML = staffPresets.map(p =>
       '<button class="id-tab" style="flex:1 1 30%" data-pts="' + p.pts + '" onclick="switchStaffPoints(' + p.pts + ')">' +
       '+' + p.pts + 'pt<br><small>' + escStaffHtml_(p.label) + '</small></button>').join('');
+    // 取消ボタンも同じ値で並べ直す（大きい順）
+    const ub = document.getElementById('staff-undo-box');
+    if (ub) ub.innerHTML = staffPresets.slice().sort((a, b) => b.pts - a.pts).map(p =>
+      '<button class="btn btn-secondary" style="flex:1 1 28%;margin:0;font-size:.74rem;border-color:rgba(192,57,43,0.4);color:var(--accent)" onclick="doStaffRemovePoint(' + p.pts + ')">↩️ −' + p.pts + ' pkt<br><small>cofnij / Undo / −' + p.pts + 'pt取消</small></button>').join('');
     // 選択中の値がシートに無ければ、10 があれば10、なければ先頭にする
     const has = v => staffPresets.some(p => p.pts === v);
     switchStaffPoints(has(staffPoints) ? staffPoints : (has(10) ? 10 : staffPresets[0].pts));
@@ -451,14 +455,15 @@ function switchStaffPoints(pts) {
                : '＋' + pts + 'pt 追加 / Dodaj ' + pts + ' punktów';
 }
 
-// ── 係員ポイント取消（-10pt / -5pt） ─────────────────────────────
+// ── 係員ポイント取消（付与ボタンと同じ値） ─────────────────────────────
 async function doStaffRemovePoint(amt) {
   const password = document.getElementById('staff-password').value;
   const email    = document.getElementById('staff-email').value.trim();
   if (!password) { showError('staff-error','Wpisz hasło / Enter the password / パスワードを入力してください'); return; }
   if (!email)    { showError('staff-error','Wpisz e-mail lub telefon / Enter the member e-mail or phone / メールまたは電話番号を入力してください'); return; }
   if (!confirm('↩️ ' + email + ' から -' + amt + 'pt 取り消します。\n' +
-      (amt === 10 ? '（当日付与分のみ・来店履歴も1件削除されます）' : '（クイズ分・ポイントのみ減算）') +
+      (function () { const pr = staffPresets && staffPresets.find(p => p.pts === amt); const v = pr ? pr.visits : (amt === 10 ? 1 : 0);
+        return v > 0 ? '（当日付与分のみ・来店履歴も' + v + '件削除されます）' : '（ポイントのみ減算・来店履歴は変わりません）'; })() +
       '\nよろしいですか？')) return;
 
   try {
