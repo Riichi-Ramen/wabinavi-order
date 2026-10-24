@@ -449,11 +449,18 @@ function lookup(item) {
 }
 
 // ── データ取得 ──────────────────────────────────────────────────
+// 🔒 2026-10-24：係員の読み取りは、パスワードをURLに載せずPOST本文で送る
+function staffRead_(url){
+  const u = new URL(url, location.href);
+  const o = { action:'staffRead', read:u.searchParams.get('action') };
+  u.searchParams.forEach(function(v,k){ if(k!=='action' && k!=='_') o[k]=v; });
+  return fetch(u.origin + u.pathname, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(o) });
+}
 async function fetchKitchen(mode) {
   try {
     const u = gasUrl() + '?action=getKitchen&mode=' + encodeURIComponent(mode) +
               '&password=' + encodeURIComponent(PASSWORD) + '&_=' + Date.now();
-    const r = await fetch(u);
+    const r = await staffRead_(u);
     return await r.json();
   } catch(e) { return null; }
 }

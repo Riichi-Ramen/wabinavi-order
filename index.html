@@ -1501,6 +1501,14 @@ body.show-config .config-bar{display:flex}
 <div id="error-toast"></div>
 
 <script>
+// 🔒 2026-10-24：係員の読み取りは、パスワードをURLに載せずPOST本文で送る
+function staffRead_(url){
+  const u = new URL(url, location.href);
+  const o = { action:'staffRead', read:u.searchParams.get('action') };
+  u.searchParams.forEach(function(v,k){ if(k!=='action' && k!=='_') o[k]=v; });
+  return fetch(u.origin + u.pathname, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(o) });
+}
+
 // ── v41 ④: ラーメン・丼物へ「一人前を2杯に分ける」を一括付与 ────────
 //   MENUはGAS（スプレッドシート）から差し替わるため、literal側だけでなく
 //   applyServerMenu経由のメニューにも同じ処理を通す。
@@ -6100,7 +6108,7 @@ async function initDeliveryForm() {
       : 'Dostawa wyłączona / Delivery unavailable / 配達受付停止中';
     deliveryStreets = ar.streets || [];
     if (deliveryStaffMode) {
-      try { const b = await fetch(gas + '?action=getAddressBook&password=' + encodeURIComponent(localStorage.getItem('wabi_staff_pw') || '')).then(r => r.json()); if (b.status === 'ok') deliveryBook = b.addresses || []; } catch (e) {}
+      try { const b = await staffRead_(gas + '?action=getAddressBook&password=' + encodeURIComponent(localStorage.getItem('wabi_staff_pw') || '')).then(r => r.json()); if (b.status === 'ok') deliveryBook = b.addresses || []; } catch (e) {}
     }
   } catch (e) { document.getElementById('delivery-settings-note').textContent='Nie udało się pobrać ustawień / Settings unavailable / 設定を取得できません'; }
   const sel=document.getElementById('d-time'); for(let h=13;h<=22;h++)for(const m of ['00','30'])sel.insertAdjacentHTML('beforeend',`<option value="${String(h).padStart(2,'0')}:${m}">${String(h).padStart(2,'0')}:${m}</option>`);

@@ -354,7 +354,7 @@ async function load(silentAuth){
   area.innerHTML = '<div class="spinner"></div>';
   try{
     const url = GAS_URL + '?action=getReservations&password=' + encodeURIComponent(PW) + '&range=' + RANGE;
-    const d = await (await fetch(url)).json();
+    const d = await (await staffRead_(url)).json();
     if (d.status === 'unauthorized'){
       LOAD_FAIL = 'auth';
       // ロック中（5回失敗→15分）のメッセージには「prób」「15分」が入る。ロック中は保存値が正しくても弾かれるので消さない。
@@ -585,7 +585,7 @@ async function loadDay(date){
   try{
     const url = GAS_URL + '?action=getReservations&password=' + encodeURIComponent(PW) +
                 '&range=' + date;
-    const d = await (await fetch(url)).json();
+    const d = await (await staffRead_(url)).json();
     const list = (d.reservations || []).filter(r => statusClass(r.status) !== 'grey');
     telDay = list;
     const g = list.reduce((s,r) => s + (parseInt(r.guests,10)||0), 0);
@@ -662,10 +662,17 @@ function syncGuestChips(){
 let STAFF_NAMES = [], staffNamesLoaded = false;
 const STAFF_OTHER = 'その他 / Inne';
 
+// 🔒 2026-10-24：係員の読み取りは、パスワードをURLに載せずPOST本文で送る
+function staffRead_(url){
+  const u = new URL(url, location.href);
+  const o = { action:'staffRead', read:u.searchParams.get('action') };
+  u.searchParams.forEach(function(v,k){ if(k!=='action' && k!=='_') o[k]=v; });
+  return fetch(u.origin + u.pathname, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(o) });
+}
 async function loadStaffNames(){
   try{
     const url = GAS_URL + '?action=getStaffNames&password=' + encodeURIComponent(PW);
-    const d = await (await fetch(url)).json();
+    const d = await (await staffRead_(url)).json();
     STAFF_NAMES = (d && d.status === 'ok' && Array.isArray(d.names)) ? d.names : [];
   }catch(e){ STAFF_NAMES = []; }
   buildStaffSelect();
@@ -747,7 +754,7 @@ async function lookupGuest(q){
   try{
     const url = GAS_URL + '?action=staffGuest&password=' + encodeURIComponent(PW) +
                 '&q=' + encodeURIComponent(q);
-    const d = await (await fetch(url)).json();
+    const d = await (await staffRead_(url)).json();
     if (d.status !== 'ok'){ box.style.display = 'none'; return; }
     if (!d.found){
       box.className = 'guest-info plain';
@@ -873,7 +880,7 @@ function showDone(d, p){
 async function openDeliveries(){
   document.getElementById('panel').style.display='none'; document.getElementById('delivery-panel').style.display='flex';
   const box=document.getElementById('delivery-list');box.innerHTML='<div class="spinner"></div>';
-  try{const d=await(await fetch(GAS_URL+'?action=getDeliveries&password='+encodeURIComponent(PW)+'&range=today')).json();if(d.status==='unauthorized')throw new Error(d.message||'auth');document.getElementById('delivery-badge').textContent=d.pending?'('+d.pending+')':'';box.innerHTML=(d.deliveries||[]).map(deliveryCard).join('')||'<p class="empty">Brak / なし</p>';}catch(e){box.innerHTML='<p class="empty">⚠️ '+esc(e.message)+'</p>';}
+  try{const d=await(await staffRead_(GAS_URL+'?action=getDeliveries&password='+encodeURIComponent(PW)+'&range=today')).json();if(d.status==='unauthorized')throw new Error(d.message||'auth');document.getElementById('delivery-badge').textContent=d.pending?'('+d.pending+')':'';box.innerHTML=(d.deliveries||[]).map(deliveryCard).join('')||'<p class="empty">Brak / なし</p>';}catch(e){box.innerHTML='<p class="empty">⚠️ '+esc(e.message)+'</p>';}
 }
 function closeDeliveries(){document.getElementById('delivery-panel').style.display='none';document.getElementById('panel').style.display='flex';load();}
 function copyDelivery(v){navigator.clipboard.writeText(String(v||''));}
