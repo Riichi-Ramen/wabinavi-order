@@ -63,7 +63,7 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.25 · Toruń</div>
+  <div class="ver">System v8.26 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -1018,10 +1018,10 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
     Co widać na ekranie <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 画面の見かた</span></h3>
   <table>
     <tr><th>Element <span class="jp">/ 要素</span></th><th>Znaczenie <span class="jp">/ 意味</span></th></tr>
-    <tr><td>Górny pasek <span class="jp">/ 上部の集計</span></td>
-        <td>Ile misek którego bulionu, ile 玉 kaedama, ile porcji gyoza i smażonych —
-            <b>gotuj partiami wg tego paska</b>
-          <span class="jp">/ だし別のラーメン杯数・替え玉の玉数・餃子や揚げ物の皿数。<b>この集計を見てまとめて仕込む</b></span></td></tr>
+    <tr><td>Górny pasek <span class="jp">/ 上部の集計（1行）</span></td>
+        <td>Jedna linia: ile misek, ile kaedama, ile porcji gyoza i smażonych.
+            <b>Dotknij — rozwija szczegóły</b> (dotknij ponownie — zwija). <b>Gotuj partiami wg tego paska</b>
+          <span class="jp">/ ラーメン杯数・替え玉・餃子や揚げ物の皿数を1行で表示。<b>タップで詳細が開閉</b>。この集計を見てまとめて仕込む</span></td></tr>
     <tr><td>Duża karta u góry <span class="jp">/ 一番大きいカード</span></td>
         <td>Najstarsze zamówienie — <b>robisz je pierwsze</b>
           <span class="jp">/ 最も古い注文。<b>これから作る</b></span></td></tr>
@@ -1029,12 +1029,17 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
         <td>Ile minut czeka. <b>🟡 10 min</b> — miga na żółto. <b>🔴 20 min</b> — miga na czerwono
           <span class="jp">/ 経過時間。<b>10分で黄色点滅</b>、<b>20分で赤点滅</b></span></td></tr>
     <tr><td>Znaczki przy daniu <span class="jp">/ 品名の横のタグ</span></td>
-        <td>🍜 rodzaj bulionu · 🥡 na wynos · 🍜＋玉 kaedama · ✌️ 2 miski
-          <span class="jp">/ だしの種類・持ち帰り・替え玉の玉数・2器に分け</span></td></tr>
-    <tr><td>Kolory w składnikach <span class="jp">/ 具材の色分け</span></td>
-        <td>Standardowe składniki na szaro, <b>zmiany i dodatki wyróżnione</b>,
-            usunięte przekreślone
-          <span class="jp">/ 既定の具材は灰色、<b>変更・追加は強調</b>、抜きは打ち消し線</span></td></tr>
+        <td>Kaedama 1/2 · ✌️ 2 miski · 📦 NA WYNOS (na dole pozycji)
+          <span class="jp">/ 品の最下行：替え玉・2器に分け・持ち帰り</span></td></tr>
+    <tr><td>BAZA i DODATKI <span class="jp">/ ベースと具材（ラーメン・丼）</span></td>
+        <td><b>BAZA</b> — baza smaku (np. sos sojowy). <b>DODATKI</b> — standardowe dodatki na szaro.
+            <b>➖ czerwone, przekreślone = BEZ</b> (nie dawaj). <b>➕ zielone = DODAJ</b> (dodatkowo, z ilością ×N).
+            <b>Kolor to nie wszystko — czytaj też znaki ➖ ➕.</b>
+          <span class="jp">/ <b>BAZA</b>＝ベースの味。<b>DODATKI</b>＝標準の具材（灰色）。
+            <b>➖赤・打ち消し線＝抜く</b>、<b>➕緑＝追加</b>（個数 ×N）。色だけでなく記号も見る</span></td></tr>
+    <tr><td>🔥 PILNE <span class="jp">/ 至急</span></td>
+        <td>Czerwona ramka i pasek „PILNE · N min”. Karta z pilną pozycją jest <b>na samej górze</b>
+          <span class="jp">/ 赤枠＋「PILNE · N分」の帯。至急の品を含むカードは<b>一番上</b>に来る</span></td></tr>
     <tr><td>📝 Notatka <span class="jp">/ メモ</span></td>
         <td>Życzenie gościa — <b>przeczytaj zawsze</b> (alergie!)
           <span class="jp">/ お客様のご要望。<b>必ず読む</b>（アレルギー！）</span></td></tr>
@@ -1053,10 +1058,32 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
     <tr><td>Całe zamówienie gotowe <span class="jp">/ 注文全体が完成</span></td>
         <td><b>✅ Gotowe — wydać</b> albo <b>przesuń kartę w prawo</b>
           <span class="jp">/「✅ 調理済み・配膳OK」か<b>カードを右にスワイプ</b></span></td></tr>
+    <tr><td>Zaczynam / gotowe całą grupę <span class="jp">/ ラーメンだけ・それ以外だけまとめて</span></td>
+        <td>W karcie są dwie grupy: <b>RAMEN</b> i <b>RESZTA</b>. Przyciski <b>Zaczynam / Gotowe</b> obok nazwy grupy zmieniają
+            <b>wszystkie pozycje tej grupy naraz</b>. Przycisk całej karty i ✓ przy pozycji działają jak dotąd
+          <span class="jp">/ カード内は「RAMEN」と「RESZTA」の2グループ。グループ名の横のボタンで<b>そのグループの全品を一度に</b>更新。
+            カード全体のボタンと品ごとの✓は今までどおり（グループが1つだけのカードには出ない）</span></td></tr>
+    <tr><td>🔥 Pilne — pozycja <span class="jp">/ 至急にする</span></td>
+        <td>Kelner mówi, która pozycja (skarga gościa) → szef kuchni naciska <b>🔥 PILNE</b> przy tej pozycji.
+            Naciśnij ponownie, aby cofnąć. Widać to na wszystkich tabletach po kilku sekundach, a w arkuszu zamówień kolumna <b>PILNE</b> ma czerwone tło
+          <span class="jp">/ ウェイターが品を指定 → シェフがその品の<b>「🔥 PILNE」</b>を押す。もう一度押すと解除。
+            他のタブレットにも数秒で反映。注文シートでは「PILNE」列が赤背景になる</span></td></tr>
+    <tr><td>Większe / mniejsze litery <span class="jp">/ 文字の大きさ</span></td>
+        <td><b>A−</b> / <b>A＋</b> w prawym górnym rogu (3 poziomy; zapamiętane na tym tablecie)
+          <span class="jp">/ 右上の「A−」「A＋」（3段階。この端末に記憶される）</span></td></tr>
     <tr><td>Pomyłka — wróć <span class="jp">/ 間違えて消した</span></td>
         <td>Zakładka <b>📋 Gotowe</b> → <b>↩︎ Cofnij do kuchni</b>
           <span class="jp">/ <b>📋 完了・履歴</b>タブ →「↩︎ キッチンに戻す」</span></td></tr>
   </table>
+
+  <div class="note"><b>🧾 Arkusz zamówień: kolumna „DO KASY" / 注文シートの「DO KASY」列：</b>
+    Po nowym zamówieniu w kolumnie <b>DO KASY</b> pojawia się <b>duży, żółty</b> opis do wpisania w POS
+    (BAZA, DODATKI, ➖ BEZ, ➕ DODAJ, kaedama, 2 miski, na wynos).
+    Gdy zamówienie jest wpisane do POS (<b>✅ POSに入力した</b> w „Do POS" albo wpisanie „✓" w kolumnie POS), opis <b>znika</b> z tej kolumny
+    (kopia zostaje w kolumnie „DO KASY (archiwum)"). Cofnięcie znacznika przywraca opis. /
+    <span class="jp">注文が入ると、注文シートの<b>「DO KASY」列に大きな黄色</b>の文字でPOS入力用の内容（ベース・具材・抜き・追加・替え玉・2器・持ち帰り）が出ます。
+    POSに入力済みにする（「POS転記画面」の「✅ POSに入力した」、またはシートのPOS列に「✓」）と<b>この列は空になり</b>、
+    控えは「DO KASY (archiwum)」列に残ります。印を外すと元に戻ります。</span></div>
 
   <div class="note warn"><b>⚠️ Najważniejsza zasada / いちばん大事なルール：</b>
     <b>„✅ Gotowe" naciskaj dopiero wtedy, gdy danie naprawdę wychodzi na salę.</b>
