@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>🍳 Kuchnia / キッチン — WABI NAVI</title>
+<title>🍳 Kuchnia — WABI NAVI</title>
 <style>
 :root{
   --bg:#14100d;--panel:#1f1a16;--panel2:#292320;--line:rgba(255,255,255,.10);
@@ -13,7 +13,6 @@
 body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;
   min-height:100vh;overscroll-behavior:none}
 
-/* ── ログイン ── */
 #lock{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
   background:var(--bg);z-index:900;padding:1.5rem}
 .lock-box{background:var(--panel);border:1px solid var(--line);border-radius:18px;
@@ -28,7 +27,6 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 #lock-err{display:none;background:rgba(224,67,58,.12);border:1px solid var(--danger);
   color:#ff9b93;border-radius:10px;padding:.6rem;font-size:.8rem;margin-bottom:.8rem;line-height:1.6}
 
-/* ── 上部バー ── */
 #bar{position:sticky;top:0;z-index:100;background:rgba(20,16,13,.96);backdrop-filter:blur(8px);
   border-bottom:1px solid var(--line);padding:.55rem .8rem;display:flex;align-items:center;
   gap:.6rem;flex-wrap:wrap}
@@ -45,7 +43,6 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 #pulse{width:9px;height:9px;border-radius:50%;background:var(--ok);opacity:.35;transition:opacity .2s}
 #pulse.live{opacity:1;box-shadow:0 0 8px var(--ok)}
 
-/* ── まとめ調理パネル ── */
 #agg{padding:.6rem .8rem;display:flex;gap:.55rem;flex-wrap:wrap;align-items:stretch;
   border-bottom:1px solid var(--line);background:var(--panel)}
 .agg-empty{color:var(--muted);font-size:.82rem;padding:.4rem}
@@ -57,7 +54,6 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 .agg-row b{font-size:1.3rem;font-variant-numeric:tabular-nums}
 .agg-grp.hot{border-color:var(--accent)}
 
-/* ── ボード ── */
 #board{padding:.7rem;display:grid;gap:.7rem;
   grid-template-columns:repeat(auto-fill,minmax(290px,1fr));align-items:start}
 .card{background:var(--panel);border:1.5px solid var(--line);border-radius:16px;overflow:hidden;
@@ -94,7 +90,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 .it-n{font-size:.95rem;font-weight:700;line-height:1.35;word-break:break-word}
 .card.lead .it-n{font-size:1.08rem}
 .it-jp{font-size:.72rem;color:var(--muted)}
-/* v1.1: 既定トッピングの一覧と、その変更点を一目で分かるように */
+
 .tp-row{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.3rem}
 .tp{display:inline-flex;align-items:baseline;gap:.2rem;font-size:.72rem;line-height:1.35;
   border-radius:6px;padding:.12rem .4rem;background:rgba(120,180,255,.15);color:#bcdcff}
@@ -121,7 +117,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 .agg-row.sum{border-top:1px solid var(--line);margin-top:.25rem;padding-top:.25rem}
 .agg-row .u{font-size:.66rem;opacity:.8;margin-left:.1rem}
 .it.doing{background:rgba(47,161,90,.12)}
-.it.doing .it-n::after{content:" ● 調理中";font-size:.68rem;color:var(--ok);font-weight:700}
+.doing-label{font-size:.68rem;color:#84dda3;font-weight:700}
 .it-x{width:34px;height:34px;flex-shrink:0;border-radius:9px;border:1.5px solid var(--line);
   background:transparent;color:var(--muted);font-size:1rem;cursor:pointer;font-family:inherit}
 .it-x:active{background:var(--ok);border-color:var(--ok);color:#fff}
@@ -142,31 +138,46 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
   color:#fff;padding:.65rem 1.2rem;border-radius:12px;font-size:.9rem;font-weight:700;
   z-index:800;display:none;box-shadow:0 6px 20px rgba(0,0,0,.4);max-width:92vw;text-align:center}
 #toast.err{background:var(--danger)}
+
+.tp.removed{background:#781f24;color:#fff;text-decoration:line-through;text-decoration-thickness:2px}
+.tp.add{background:#165c30;color:#fff;font-weight:800}
+.tp.base{background:#66501e;color:#fff;font-size:.85rem;border:1px solid #e7c66c}
+.tp-lbl{color:#dfd3c6;font-size:.7rem}
+.it-actions{display:flex;gap:.25rem;flex-wrap:wrap;max-width:80px;justify-content:flex-end}
+.it-urgent{border:1px solid #fa9595;background:#561a1a;color:#fff;border-radius:7px;padding:.3rem;font:inherit;font-size:.65rem;font-weight:700;cursor:pointer}
+.it.urgent{border:3px solid #ff6868;margin:.25rem 0}
+.urgent-band{background:#871e26;color:#fff;padding:.15rem .4rem;border-radius:4px;font-size:.75rem;font-weight:800;margin-bottom:.3rem}
+.group-head{display:flex;align-items:center;gap:.3rem;padding:.4rem 0;font-size:.75rem}
+.group-head .btn{font-size:.7rem;padding:.4rem .2rem}
+#agg{padding:.25rem .8rem;display:block}
+#agg-toggle{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--txt);font:700 .8rem/1.5 system-ui;cursor:pointer;white-space:nowrap;overflow:auto;padding:.2rem 0}
+#agg-details:not([hidden]){display:flex;flex-wrap:wrap;gap:.5rem;padding:.5rem 0}
+.it-b,.c-head>div{min-width:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
 
 <div id="lock">
   <div class="lock-box">
-    <h1>🍳 Kuchnia / キッチン</h1>
-    <p>Wprowadź hasło obsługi.<br>Enter the staff password.<br>係員パスワードを入力してください。</p>
+    <h1>🍳 Kuchnia</h1>
+    <p>Wprowadź hasło obsługi.</p>
     <div id="lock-err"></div>
-    <input type="password" id="pw" placeholder="Hasło / パスワード" autocomplete="current-password">
-    <button onclick="doLogin()">🔓 Otwórz / 開く</button>
+    <input type="password" id="pw" placeholder="Hasło" autocomplete="current-password">
+    <button onclick="doLogin()">🔓 Otwórz</button>
   </div>
 </div>
 
 <div id="app" style="display:none">
   <div id="bar">
-    <div class="brand">🍳 Kuchnia<small>WABI NAVI — キッチン</small></div>
+    <div class="brand">🍳 Kuchnia<small>WABI NAVI · v1.2</small></div>
     <div class="stat">Stoliki<b id="s-tables">0</b></div>
     <div class="stat">Pozycje<b id="s-items">0</b></div>
     <div class="stat" id="s-late-box">Ponad 20 min<b id="s-late">0</b></div>
     <div class="spacer"></div>
-    <div id="pulse"></div>
+    <button class="tab" onclick="setFont(-1)" data-pl="A−"></button><button class="tab" onclick="setFont(1)" data-pl="A＋"></button><div id="pulse"></div>
     <div id="clock">--:--</div>
-    <button class="tab on" id="tab-active" onclick="setView('active')">🍜 W kuchni<br><small>調理中</small></button>
-    <button class="tab" id="tab-history" onclick="setView('history')">📋 Gotowe<br><small>完了・履歴</small></button>
+    <button class="tab on" id="tab-active" onclick="setView('active')">🍜 W kuchni<br></button>
+    <button class="tab" id="tab-history" onclick="setView('history')">📋 Gotowe<br></button>
   </div>
   <div id="agg"></div>
   <div id="board"></div>
@@ -176,219 +187,100 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 <div id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════════════════════════════
-//  🍳 WABI NAVI — Kitchen Display System v1.1
-//  注文アプリ（index.html）が送った注文を、キッチンのタブレットで表示する。
-//  ・卓ごとのカード（先頭は大きく、次の卓以降は小さく同一画面に）
-//  ・まとめ調理用の集計（だし別のラーメン杯数・餃子/唐揚げの皿数）
-//  ・10分で黄色点滅、20分で赤色点滅
-//  ・カードを左にスワイプ＝その卓を「調理済み・配膳OK」にして非表示
-//  ・「完了・履歴」タブで、非表示にしたものを後から確認・差し戻し
-// ════════════════════════════════════════════════════════════════════
+const KDS_GROUP_BUTTONS = true;
 
 const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbztP0245VXY7DRrjOQC9m4tu-DWKcGzPwT0QzBNgxfLxgczmYmQYlP8ErEz4umoJ3FN/exec";
-try { localStorage.removeItem('wabi_gas_url'); } catch (e) {}   // 2026-09-20：端末ごとのGAS URL上書きは廃止（D7）。古い保存値を掃除する
-function gasUrl(){ return DEFAULT_GAS_URL; }   // 2026-09-20：端末ごとの上書きは廃止（D7）
+try { localStorage.removeItem('wabi_gas_url'); } catch (e) {}
+function gasUrl(){ return DEFAULT_GAS_URL; }
 
-const POLL_MS   = 12000;   // 何ミリ秒ごとに注文を取りに行くか
-const WARN_MIN  = 10;      // 黄色点滅（分）
-const LATE_MIN  = 20;      // 赤色点滅（分）
-const LEAD_CNT  = 1;       // 大きく表示する先頭カードの数
+const POLL_MS   = 12000;
+const WARN_MIN  = 10;
+const LATE_MIN  = 20;
+const LEAD_CNT  = 1;
 
-// 2026-09-08：注文シートの表記をポーランド語だけに統一しました。
-//   GAS側（06_Orders.gs / 27_Kitchen.gs）と同じ値を使います。
-//   過去の行に残る旧表記（"GOTOWE / READY" 等）も、
-//   GAS側が正規表現で判定するため問題なく動きます。
 const ST = { NEW:"NOWE", DOING:"W TRAKCIE",
              READY:"GOTOWE", SERVED:"WYDANE" };
 
-// だしベースの表示名（index.html と同じ分類）
-// ラベルはポーランド語を主に。日本語は補助として小さく添える。
 const BROTH = {
-  tori:  { icon:"🐔", pl:"Bulion drobiowy",  short:"Drobiowy",  jp:"鶏だし" },
-  buta:  { icon:"🐖", pl:"Bulion wieprzowy", short:"Wieprzowy", jp:"豚だし" },
-  oferta:{ icon:"⭐", pl:"Oferta specjalna", short:"Specjalne", jp:"特選・うどん/そば" },
-  zimne: { icon:"❄️", pl:"Na zimno",         short:"Zimne",     jp:"冷やし" },
-  inne:  { icon:"🍥", pl:"Inne",             short:"Inne",      jp:"その他" }
+  tori:  { icon:"🐔", pl:"Bulion drobiowy",  short:"Drobiowy" },
+  buta:  { icon:"🐖", pl:"Bulion wieprzowy", short:"Wieprzowy" },
+  oferta:{ icon:"⭐", pl:"Oferta specjalna", short:"Specjalne" },
+  zimne: { icon:"❄️", pl:"Na zimno",         short:"Zimne" },
+  inne:  { icon:"🍥", pl:"Inne",             short:"Inne" }
 };
-// 同時着手したい品のまとめ方（商品IDの先頭で判定）
+
 const AGG_GROUPS = [
-  { key:"ramen",   icon:"🍜", pl:"Ramen — makaron", jp:"ラーメン（麺）", test:it=>it.cat==="ramen" },
-  { key:"gyoza",   icon:"🥟", pl:"Gyoza",           jp:"餃子",           test:it=>/gyoza/i.test(it.name) },
-  { key:"karaage", icon:"🍗", pl:"Smażone",         jp:"揚げ物",
+  { key:"ramen",   icon:"🍜", pl:"Ramen — makaron", test:it=>it.cat==="ramen" },
+  { key:"gyoza",   icon:"🥟", pl:"Gyoza",           test:it=>/gyoza/i.test(it.name) },
+  { key:"karaage", icon:"🍗", pl:"Smażone",
     test:it=>/karaage|tempura|panko|frytk|krewetki w ziemniakach|takoyaki/i.test(it.name) },
-  { key:"don",     icon:"🍚", pl:"Dania z ryżem",   jp:"丼・ごはん",     test:it=>it.cat==="onigiri" },
-  { key:"inne",    icon:"🍽",  pl:"Pozostałe",       jp:"その他",         test:()=>true }
+  { key:"don",     icon:"🍚", pl:"Dania z ryżem",     test:it=>it.cat==="onigiri" },
+  { key:"inne",    icon:"🍽",  pl:"Pozostałe",         test:()=>true }
 ];
 
-// ── 替え玉・取分けの判定 ──────────────────────────────────────
-//   注文アプリはオプションの「選んだ選択肢のラベル」だけをメモ欄に残す。
-//     替え玉  … "Pół porcji / Half 半替え玉 +4 zł" / "Pełna porcja / Full 替え玉 +7 zł"
-//     取分け  … "Tak, podziel! / Yes, split! — polecane dla par i rodzin"
-//   「半替え玉」は「替え玉」を含むので、必ず半を先に判定する。
 function kaedamaBalls(memo) {
   const m = String(memo || '');
-  if (/半替え玉|Pół porcji/i.test(m)) return 0.5;
-  if (/替え玉|Pełna porcja/i.test(m)) return 1;
+  if (/Kaedama (?:1\/2|×0,5)|Pół porcji/i.test(m)) return 0.5;
+  if (/Kaedama|Pełna porcja/i.test(m)) return 1;
   return 0;
 }
 function isSplitBowl(memo) {
-  return /Tak,\s*podziel|2杯に分割|2 bowls/i.test(String(memo || ''));
+  return /Tak,\s*podziel|2 miski/i.test(String(memo || ''));
 }
-function numBall(n) { return (n % 1 === 0) ? String(n) : n.toFixed(1); }
+function numBall(n) { return (n % 1 === 0) ? String(n) : n.toFixed(1).replace('.', ','); }
 
-// ── 具材名のポーランド語→日本語（キッチン表示用の補助）────────────
-const TOP_JP = {
-  'karkówka':'チャーシュー','chashu':'チャーシュー','pork neck':'チャーシュー',
-  'jajko':'たまご','egg':'たまご','kiełki':'もやし','sprouts':'もやし',
-  'kukurydza':'コーン','corn':'コーン','masło':'バター','butter':'バター',
-  'imbir':'しょうが','ginger':'しょうが','por':'ねぎ','leek':'ねぎ',
-  'szpinak':'ほうれん草','spinach':'ほうれん草','wakame':'わかめ','nori':'のり',
-  'menma':'メンマ','naruto':'なると','shiitake':'しいたけ','pak choi':'チンゲン菜',
-  'kimchi':'キムチ','surimi':'カニカマ','sezam':'ごま','sesame':'ごま',
-  'grzyby mun':'きくらげ','kikurage':'きくらげ','kurczak':'鶏肉','chicken':'鶏肉',
-  'mięso mielone':'そぼろ肉','minced pork':'そぼろ肉','mabo':'麻婆豆腐','tofu':'豆腐',
-  'krewetki':'エビ','shrimp':'エビ','cebula':'たまねぎ','onion':'たまねぎ',
-  'ser':'チーズ','cheese':'チーズ','czosnek':'にんにく','garlic':'にんにく',
-  'bambusa':'たけのこ','bamboo':'たけのこ','yuzu':'ゆず','mizuna':'水菜',
-  'pomidor':'トマト','sałata':'レタス','tempura':'天ぷら','inari':'いなり',
-  'mule':'ムール貝','mussels':'ムール貝','nameko':'なめこ','pieczarki':'マッシュルーム',
-  'grzyby słomkowe':'ふくろたけ','straw mushrooms':'ふくろたけ','goma wakame':'ゴマわかめ'
-};
-// メニューの具材欄「Baza: sos sojowy, paitan | Dodatki: …」から
-// たれ・調味料の部分だけを取り出す。Baza が無い商品は空。
-function parseBase(it) {
-  const src = [(it.ingPL || ''), (it.ingEN || '')];
-  for (const txt of src) {
-    for (const seg of String(txt).split('|')) {
-      const m = seg.match(/^\s*(?:Baza|Base|ベース|たれ)\s*[:：]\s*(.+)$/i);
-      if (m) return m[1].split(/,\s*/).map(x => x.trim()).filter(Boolean);
-    }
-  }
-  return [];
+function polish(value) {
+  return String(value == null ? '' : value)
+    .replace(/（[^）]*）/g, '').replace(/[\u3040-\u30ff\u4e00-\u9fff]+/g, '')
+    .replace(/\s*\/\s*(?:Half|Full|Yes, split!|No|Standard)[^,\n]*/g, '')
+    .replace(/Pół porcji/gi, 'Kaedama ×0,5').replace(/Pełna porcja/gi, 'Kaedama ×1')
+    .replace(/Tak,\s*podziel![^\n]*/gi, '2 miski').trim();
 }
-
-const BASE_JP = {
-  'sos sojowy':'醤油','soy sauce':'醤油','shoyu':'醤油',
-  'pasta miso':'味噌だれ','miso':'味噌','paitan':'白湯','hondashi':'和風だし',
-  'konbudashi':'昆布だし','kombu':'昆布だし',
-  'orzechowa pasta chili':'ゴマ辣油だれ','peanut chili paste':'ゴマ辣油だれ',
-  'pasta chili':'チリだれ','chili bean':'豆板醤','toban':'豆板醤',
-  'chili':'チリ','curry':'カレー',
-  'mleko kokosowe':'ココナッツミルク','coconut milk':'ココナッツミルク','kokos':'ココナッツ',
-  'mleko sojowe':'豆乳','soy milk':'豆乳',
-  'sos sezamowy':'ごまだれ','sesame sauce':'ごまだれ',
-  'kabayaki':'蒲焼のタレ','teriyaki':'照り焼きだれ',
-  'wywar z muli':'貝だし','mussel':'貝だし','przegrzebk':'ホタテだし','scallop':'ホタテだし',
-  'solny':'塩だれ','sól':'塩','salt':'塩','yuzu':'ゆず','shio':'塩だれ'
-};
-// 単語の途中で誤って一致しないよう、語の切れ目で照合する。
-//   （例：「Minced pork」の "por" が「ねぎ」と誤判定されるのを防ぐ）
-//   長い語から順に見るので「mięso mielone」が「miso」より先に当たる。
-const WORD = '[0-9a-z\\u0104-\\u017c]';
-function buildMatcher(dict) {
-  const keys = Object.keys(dict).sort((a, b) => b.length - a.length);
-  const res = keys.map(k => ({
-    jp: dict[k],
-    re: new RegExp('(^|[^' + WORD.slice(1, -1) + '])' +
-                   k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
-                   '([^' + WORD.slice(1, -1) + ']|$)', 'i')
-  }));
-  return s => {
-    const t = String(s || '').toLowerCase();
-    for (const r of res) if (r.re.test(t)) return r.jp;
-    return '';
-  };
+function posBar(pos) {
+  const list = key => Array.isArray(pos[key]) ? pos[key] : [];
+  const chips = (key, label, cls) => list(key).length ? `<div class="tp-row"><b class="tp-lbl">${esc(label)}</b>${list(key).map(v => `<span class="tp ${cls}">${esc(polish(v))}</span>`).join('')}</div>` : '';
+  return chips('baza', 'BAZA', 'base') +
+    (list('dodatki').length ? `<div class="tp-row"><b class="tp-lbl">${esc('DODATKI')}</b>${list('dodatki').map(d => {
+      const removed = d.state === 'removed', added = d.state === 'added';
+      return `<span class="tp ${removed ? 'removed' : added ? 'add' : ''}">${esc((removed ? '➖ ' : added ? '➕ ' : '') + polish(d.name) + (Number(d.qty) >= 2 ? ' ×' + Number(d.qty) : ''))}</span>`;
+    }).join('')}</div>` : '') +
+    `<div class="tp-row">${list('tags').concat(list('other')).map(t => `<span class="tp chg">${esc(polish(t).replace(/Kaedama 1\/2/g, 'Kaedama ×0,5'))}</span>`).join('')}</div>`;
 }
-const matchBase = buildMatcher(BASE_JP);
-function baseJp(s) { return matchBase(s) || jpOf(s); }
-
-let matchTop = null;
-function jpOf(s) {
-  if (!matchTop) matchTop = buildMatcher(TOP_JP);
-  return matchTop(s);
+let fontSize = 0, aggOpen = false;
+function setFont(delta) {
+  fontSize = Math.max(0, Math.min(2, fontSize + delta));
+  document.documentElement.style.fontSize = [16,18,20][fontSize] + 'px';
+  try { localStorage.setItem('wabi_kds_fs', String(fontSize)); } catch(e) {}
 }
-function shortName(s) { return String(s || '').split(' / ')[0].trim(); }
-function norm(s) { return String(s || '').toLowerCase().replace(/\s+/g, ''); }
-
-// 注文票のメモを「抜いた具材／足した具材／その他の変更」に分ける
-function parseMemo(memo) {
-  const removed = [], adds = [], other = [];
-  String(memo || '').split('\n').forEach(raw => {
-    const l = raw.trim();
-    if (!l || l === '—') return;
-    if (l.indexOf('🚫') === 0) { removed.push(l.replace(/^🚫[^:]*:\s*/, '').trim()); return; }
-    const t = l.replace(/^🔧[^:]*:\s*/, '').trim();
-    const m = t.match(/トッピング追加:\s*(.+?)\s*\(\+\s*\d+\s*z/);
-    if (m) { m[1].split(/,\s*/).forEach(x => { if (x.trim()) adds.push(x.trim()); }); return; }
-    if (/NA WYNOS|ODBIÓR PRZY KASIE|持ち帰り/i.test(t)) return;   // 別途タグで表示済み
-    if (/Zamiana|交換減額/.test(t)) return;                        // 金額のみ・調理に不要
-    // 1行に複数の変更がまとまって入る。タグで既に出しているものを先に取り除く。
-    //   選択肢は「…, 替え玉, 2杯に分割」の順に並ぶため、末尾から削るのが安全。
-    //   （「Tak, podziel!」のように選択肢自体にカンマを含むものがあるので、
-    //     先に分割してしまうと文章が途中で切れてしまう）
-    let q = t
-      .replace(/Tak,\s*podziel!.*$/i, '')                                  // ✌️2器 のタグで表示済み
-      .replace(/(Pół porcji|Pełna porcja)\s*\/\s*(Half|Full)[^,]*/i, '')   // 🍜＋N玉 のタグで表示済み
-      .replace(/^[\s,]+|[\s,]+$/g, '');
-    if (!q) return;
-    q.split(/,\s*/).forEach(part => {
-      const v = part.trim();
-      if (!v) return;
-      if (/^(Nie|No|Bez|Standard)\b/i.test(v)) return;                     // 既定のまま
-      other.push(v.replace(/\s*[+＋]\s*\d+\s*zł/gi, '').trim());
-    });
-  });
-  return { removed, adds, other };
+function toggleAgg() { aggOpen = !aggOpen; renderAgg(); }
+function urgentTime(o) {
+  const times = o.items.map(i => Number(i.urgentAt)).filter(t => t > 0);
+  return times.length ? Math.min(...times) : Infinity;
 }
-
-// 既定の具材を薄青で並べ、抜いたものに取り消し線、足したものを黄色で表示
-function toppingBar(info, memo) {
-  const p = parseMemo(memo);
-  const base = (info.removable || []);
-  const tare = (info.base || []);
-  if (!base.length && !tare.length && !p.adds.length && !p.other.length && !p.removed.length) return '';
-  // たれ・調味料（ベース）を先に出す
-  const tareHtml = tare.length
-    ? `<div class="tp-row"><span class="tp-lbl">TARE / たれ</span>` +
-      tare.map(b => {
-        const jp = baseJp(b);
-        return `<span class="tp base">${esc(b)}${jp ? `<i>${esc(jp)}</i>` : ''}</span>`;
-      }).join('') + `</div>` : '';
-  const rem = p.removed.map(norm);
-  let html = base.map(b => {
-    const gone = rem.some(r => norm(b).indexOf(r) >= 0 || r.indexOf(norm(b)) >= 0);
-    const jp = jpOf(b);
-    return `<span class="tp${gone ? ' gone' : ''}">${esc(shortName(b))}${jp ? `<i>${esc(jp)}</i>` : ''}</span>`;
-  }).join('');
-  // 既定に無いものを抜いた場合も落とさず出す
-  p.removed.forEach(r => {
-    if (base.some(b => norm(b).indexOf(norm(r)) >= 0 || norm(r).indexOf(norm(b)) >= 0)) return;
-    const jp = jpOf(r);
-    html += `<span class="tp gone">${esc(shortName(r))}${jp ? `<i>${esc(jp)}</i>` : ''}</span>`;
-  });
-  html += p.adds.map(a => {
-    // 「Jajko (Połowa) ×2（味玉（半分））」を 名前 / 日本語 / 個数 に分解して整える
-    const m = String(a).match(/^(.*?)(?:\s*×\s*(\d+))?\s*（(.*)）\s*$/);
-    const nm = m ? m[1].trim() : String(a).trim();
-    const cnt = m && m[2] ? m[2] : '';
-    const jp = m ? m[3].trim() : jpOf(a);
-    return `<span class="tp add">＋ ${esc(nm)}${jp ? `<i>${esc(jp)}</i>` : ''}${cnt ? ' ×' + cnt : ''}</span>`;
-  }).join('');
-  html += p.other.map(o => `<span class="tp chg">${esc(o)}</span>`).join('');
-  const topHtml = html ? `<div class="tp-row"><span class="tp-lbl">TOP / 具材</span>${html}</div>` : '';
-  return tareHtml + topHtml;
+function displayedOrders() {
+  return ORDERS.slice().sort((a,b) => (VIEW === 'active' ? urgentTime(a) - urgentTime(b) : 0) || a.ts - b.ts);
 }
+function handler(code) { return esc(code); }
+function callCode(fn, ...args) { return handler(fn + '(' + args.map(a => JSON.stringify(a)).join(',') + ')'); }
 
 let PASSWORD = "";
 let VIEW = "active";
 let ORDERS = [];
-let MENU_IDX = {};        // 商品ID → {cat, broth, jp}
-let MENU_BY_NAME = {};    // 商品名PL（小文字） → 同上
+let MENU_IDX = {};
+let MENU_BY_NAME = {};
 let timer = null, clockTimer = null, busy = false;
 
-// ── ログイン ────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  try { const n = Number(localStorage.getItem('wabi_kds_fs')); if (Number.isInteger(n) && n >= 0 && n <= 2) fontSize = n; } catch(e) {}
+  setFont(0);
+  document.querySelectorAll('body *:not(script):not(style)').forEach(el => {
+    Array.from(el.childNodes).filter(n => n.nodeType === 3 && n.textContent.trim()).forEach(n => {
+      const template = document.createElement('template');
+      template.innerHTML = esc(n.textContent);
+      n.replaceWith(template.content);
+    });
+  });
+  document.querySelectorAll('[data-pl]').forEach(el => { el.innerHTML = esc(el.dataset.pl); });
   let saved = "";
   try { saved = sessionStorage.getItem('wabi_kds_pw') || ""; } catch(e){}
   if (saved) { document.getElementById('pw').value = saved; doLogin(true); }
@@ -400,13 +292,12 @@ window.addEventListener('DOMContentLoaded', () => {
 async function doLogin(silent) {
   const pw = document.getElementById('pw').value.trim();
   const err = document.getElementById('lock-err');
-  if (!pw) { if(!silent){ err.textContent = "Wpisz hasło / パスワードを入力してください"; err.style.display='block'; } return; }
+  if (!pw) { if(!silent){ err.innerHTML = esc('Wpisz hasło'); err.style.display='block'; } return; }
   PASSWORD = pw;
   err.style.display = 'none';
   const res = await fetchKitchen('active');
   if (!res || res.status === 'unauthorized') {
-    err.innerHTML = (res && res.message) ? res.message
-      : "Błąd logowania / ログインできませんでした";
+    err.innerHTML = esc('Błąd logowania');
     err.style.display = 'block';
     PASSWORD = "";
     return;
@@ -419,7 +310,6 @@ async function doLogin(silent) {
   startTimers();
 }
 
-// ── メニュー索引（だしベース・分類を引くため）────────────────────
 async function loadMenuIndex() {
   try {
     const r = await fetch(gasUrl() + '?action=getMenu');
@@ -427,29 +317,24 @@ async function loadMenuIndex() {
     if (d.status !== 'ok' || !Array.isArray(d.menu)) return;
     MENU_IDX = {}; MENU_BY_NAME = {};
     d.menu.forEach(cat => (cat.items || []).forEach(it => {
-      const rec = { cat: cat.id, broth: it.brothBase || 'inne',
-                    jp: it.nameJP || '', name: it.namePL || '',
-                    removable: (it.removable || []).slice(),   // 既定で載せる具材
-                    base: parseBase(it) };                     // たれ・調味料（ベース）
+      const rec = { cat: cat.id, broth: it.brothBase || 'inne', name: it.namePL || '' };
       MENU_IDX[it.id] = rec;
-      // ⭐おすすめは p_ 接頭辞で複製されるため、元IDでも引けるようにする
+
       if (/^p_/.test(it.id)) MENU_IDX[it.id.replace(/^p_/, '')] = rec;
       if (it.namePL) MENU_BY_NAME[it.namePL.toLowerCase()] = rec;
     }));
     render();
-  } catch(e){ /* メニューが取れなくてもキッチン表示自体は動く */ }
+  } catch(e){  }
 }
 
-// 注文行から商品情報を引く（商品ID優先・なければ商品名で照合）
 function lookup(item) {
+  if (item.cat) return { cat:item.cat, broth:item.brothBase || 'inne' };
   if (item.itemId && MENU_IDX[item.itemId]) return MENU_IDX[item.itemId];
   const clean = (item.namePL || '').replace(/^【[^】]*】\s*/, '').trim().toLowerCase();
   if (MENU_BY_NAME[clean]) return MENU_BY_NAME[clean];
   return { cat:'', broth:'inne', jp:'', name:'' };
 }
 
-// ── データ取得 ──────────────────────────────────────────────────
-// 🔒 2026-10-24：係員の読み取りは、パスワードをURLに載せずPOST本文で送る
 function staffRead_(url){
   const u = new URL(url, location.href);
   const o = { action:'staffRead', read:u.searchParams.get('action') };
@@ -494,8 +379,8 @@ function startTimers() {
 
 function tickClock() {
   const d = new Date();
-  document.getElementById('clock').textContent =
-    ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
+  document.getElementById('clock').innerHTML = esc(
+    ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2));
 }
 
 function setView(v) {
@@ -503,15 +388,13 @@ function setView(v) {
   document.getElementById('tab-active').classList.toggle('on', v === 'active');
   document.getElementById('tab-history').classList.toggle('on', v === 'history');
   document.getElementById('board').innerHTML =
-    '<div style="color:var(--muted);padding:1rem">Ładowanie… / 読み込み中…</div>';
+    '<div style="color:var(--muted);padding:1rem">' + esc('Ładowanie…') + '</div>';
   poll();
 }
 
-// ── 経過時間 ────────────────────────────────────────────────────
 function minutesSince(ts) { return Math.max(0, Math.floor((Date.now() - ts) / 60000)); }
 function fmtElapsed(m) { return m < 60 ? m + "′" : Math.floor(m/60) + "h" + ('0'+(m%60)).slice(-2); }
 
-// ── 描画 ────────────────────────────────────────────────────────
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,
   c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -519,15 +402,14 @@ function render(timeOnly) {
   const board = document.getElementById('board');
   const emptyEl = document.getElementById('empty');
 
-  // ── 統計 ──
   let itemCount = 0, lateCount = 0;
   ORDERS.forEach(o => {
     o.items.forEach(i => { itemCount += (i.qty || 1); });
     if (VIEW === 'active' && minutesSince(o.ts) >= LATE_MIN) lateCount++;
   });
-  document.getElementById('s-tables').textContent = ORDERS.length;
-  document.getElementById('s-items').textContent  = itemCount;
-  document.getElementById('s-late').textContent   = lateCount;
+  document.getElementById('s-tables').innerHTML = esc(ORDERS.length);
+  document.getElementById('s-items').innerHTML = esc(itemCount);
+  document.getElementById('s-late').innerHTML = esc(lateCount);
   document.getElementById('s-late-box').style.borderColor =
     lateCount ? 'var(--danger)' : 'var(--line)';
 
@@ -537,32 +419,30 @@ function render(timeOnly) {
     board.innerHTML = '';
     emptyEl.style.display = 'block';
     emptyEl.innerHTML = VIEW === 'active'
-      ? '🍃<br>Brak zamówień w kuchni<br>No orders in the kitchen<br>調理待ちの注文はありません'
-      : '📋<br>Nic jeszcze nie ukończono dziś<br>Nothing completed yet today<br>本日の完了分はまだありません';
+      ? esc('🍃') + '<br>' + esc('Brak zamówień w kuchni')
+      : esc('📋') + '<br>' + esc('Nic jeszcze nie ukończono dziś');
     return;
   }
   emptyEl.style.display = 'none';
-  board.innerHTML = ORDERS.map((o, i) => cardHtml(o, i)).join('');
+  board.innerHTML = displayedOrders().map((o, i) => cardHtml(o, i)).join('');
   if (VIEW === 'active') ORDERS.forEach(o => attachSwipe(o.orderId));
 }
 
-// ── まとめ調理パネル ────────────────────────────────────────────
 function renderAgg() {
   const el = document.getElementById('agg');
   if (VIEW !== 'active' || !ORDERS.length) { el.innerHTML = ''; el.style.display='none'; return; }
   el.style.display = 'flex';
 
-  const buckets = {};   // groupKey → { label → qty }
-  let bowls = 0;        // ラーメン・うどん等の杯数（＝標準の麺1玉）
-  let extraBalls = 0;   // 替え玉ぶんの玉数（0.5玉単位）
-  let splitBowls = 0;   // 「一人前を2杯に分ける」注文の数（＝器が1つ余分に要る）
+  const buckets = {};
+  let bowls = 0;
+  let extraBalls = 0;
+  let splitBowls = 0;
 
   ORDERS.forEach(o => o.items.forEach(it => {
     const info = lookup(it);
     const name = (it.namePL || '').replace(/^【[^】]*】\s*/, '');
     const q = it.qty || 1;
 
-    // 単品として注文された替え玉（Dodatki の麺）も玉数に足す
     if (it.itemId === 'd_noodle1' || /dodatkowa porcja makaronu/i.test(name)) {
       extraBalls += q; return;
     }
@@ -575,12 +455,12 @@ function renderAgg() {
     let label;
     if (g.key === 'ramen') {
       const b = BROTH[info.broth] || BROTH.inne;
-      label = b.icon + ' ' + b.short + ' / ' + b.jp;
+      label = b.icon + ' ' + b.short;
       bowls      += q;
-      extraBalls += kaedamaBalls(it.memo) * q;
-      if (isSplitBowl(it.memo)) splitBowls += q;
+      extraBalls += kaedamaBalls(it.pos ? (it.pos.tags || []).join(' ') : it.memo) * q;
+      if (isSplitBowl(it.pos ? (it.pos.tags || []).join(' ') : it.memo)) splitBowls += q;
     } else if (g.key === 'inne') {
-      return;                                  // その他はカード側だけで十分
+      return;
     } else {
       label = name.replace(/\s*[—–-]\s*/, ' ').slice(0, 22);
     }
@@ -588,37 +468,36 @@ function renderAgg() {
     buckets[g.key][label] = (buckets[g.key][label] || 0) + q;
   }));
 
-  // 替え玉だけの注文（ラーメン本体が別会計・別注文のとき）でも麺枠を出す
   if (extraBalls > 0 && !buckets.ramen) buckets.ramen = {};
 
   const html = AGG_GROUPS.filter(g => buckets[g.key]).map(g => {
     const b = buckets[g.key];
     let rows = Object.keys(b).sort((x, y) => b[y] - b[x])
-      .map(k => `<div class="agg-row"><span>${esc(k)}</span><b>${b[k]}</b></div>`)
+      .map(k => `<div class="agg-row"><span>${esc(k)}</span><b>${esc(b[k])}</b></div>`)
       .join('');
     let total = Object.values(b).reduce((a, c) => a + c, 0);
 
     if (g.key === 'ramen') {
       if (extraBalls > 0) {
         rows += `<div class="agg-row" style="color:#ffd98a">
-          <span>＋ Kaedama / 替え玉</span><b>${numBall(extraBalls)}<span class="u">玉</span></b></div>`;
+          <span>${esc('＋ Kaedama')}</span><b>${esc(numBall(extraBalls))}</b></div>`;
       }
       if (splitBowls > 0) {
         rows += `<div class="agg-row" style="color:#9fd8ff">
-          <span>✌️ 2 miski / 取分け2器</span><b>${splitBowls}</b></div>`;
+          <span>${esc('✌️ 2 miski')}</span><b>${esc(splitBowls)}</b></div>`;
       }
       total = bowls + extraBalls;
-      rows += `<div class="agg-row sum"><span>🍜 Makaron razem / 麺 合計</span>
-        <b>${numBall(total)}<span class="u">玉</span></b></div>`;
+      rows += `<div class="agg-row sum"><span>${esc('🍜 Makaron razem')}</span>
+        <b>${esc(numBall(total))}</b></div>`;
     }
     return `<div class="agg-grp${total >= 3 ? ' hot' : ''}">
-      <div class="agg-h">${g.icon} ${esc(g.pl)} / ${esc(g.jp)}</div>${rows}</div>`;
+      <div class="agg-h">${esc(g.icon)} ${esc(g.pl)}</div>${rows}</div>`;
   }).join('');
 
-  el.innerHTML = html || '<div class="agg-empty">—</div>';
+  const summary = `🍜 Ramen ${bowls}${buckets.ramen ? ' (' + Object.entries(buckets.ramen).map(([k,v]) => k.replace('🐖 Wieprzowy','Wieprz.').replace('🐔 Drobiowy','Drob.').replace('⭐ Specjalne','Spec.') + ' ' + v).join(' · ') + ')' : ''} · Kaedama ${numBall(extraBalls)} · Makaron razem ${numBall(bowls + extraBalls)}` + AGG_GROUPS.filter(g => g.key !== 'ramen' && buckets[g.key]).map(g => ' · ' + g.icon + ' ' + Object.values(buckets[g.key]).reduce((a,b) => a+b,0)).join('');
+  el.innerHTML = `<button id="agg-toggle" onclick="toggleAgg()" aria-expanded="${aggOpen}">${esc(summary)} ${esc(aggOpen ? '▴' : '▾')}</button><div id="agg-details" ${aggOpen ? '' : 'hidden'}>${html}</div>`;
 }
 
-// ── カード ──────────────────────────────────────────────────────
 function cardHtml(o, idx) {
   const mins = minutesSince(o.ts);
   const cls = [];
@@ -628,33 +507,35 @@ function cardHtml(o, idx) {
     else if (mins >= WARN_MIN) cls.push('warn');
   }
 
-  const items = o.items.map(it => itemHtml(o, it)).join('');
+  const groups = [o.items.filter(it => lookup(it).cat === 'ramen'), o.items.filter(it => lookup(it).cat !== 'ramen')];
+  const grouped = KDS_GROUP_BUTTONS && groups.every(g => g.length) && VIEW === 'active';
+  const items = groups.map((g, index) => (grouped ? `<div class="group-head"><b>${esc(index === 0 ? 'RAMEN' : 'RESZTA')}</b><button class="btn btn-go" onclick="${callCode('markGroup', o.orderId, g.map(i => i.no), ST.DOING)}">${esc('Zaczynam')}</button><button class="btn btn-done" onclick="${callCode('markGroup', o.orderId, g.map(i => i.no), ST.READY)}">${esc('Gotowe')}</button></div>` : '') + g.map(it => itemHtml(o,it)).join('')).join('');
   const note = o.uwagi
-    ? `<div class="c-note">📝 ${esc(o.uwagi)}</div>` : '';
+    ? `<div class="c-note">📝 ${esc(polish(o.uwagi))}</div>` : '';
   const member = o.member && /Członek|Member/i.test(o.member)
-    ? ` · ⭐${esc(o.memberName || 'Członek')}` : '';
+    ? ` · ⭐${esc(polish(o.memberName || 'Członek'))}` : '';
 
   const foot = VIEW === 'active'
     ? `<div class="c-foot">
-         <button class="btn btn-go" onclick="markOrder('${o.orderId}','${ST.DOING}')">
-           👨‍🍳 Zaczynam<small>調理開始</small></button>
-         <button class="btn btn-done" onclick="markOrder('${o.orderId}','${ST.READY}')">
-           ✅ Gotowe — wydać<small>調理済み・配膳OK</small></button>
+         <button class="btn btn-go" onclick="${callCode('markOrder',o.orderId,ST.DOING)}">
+           ${esc('👨‍🍳 Zaczynam')}</button>
+         <button class="btn btn-done" onclick="${callCode('markOrder',o.orderId,ST.READY)}">
+           ${esc('✅ Gotowe — wydać')}</button>
        </div>`
     : `<div class="c-foot">
-         <button class="btn btn-undo" onclick="markOrder('${o.orderId}','${ST.NEW}')">
-           ↩︎ Cofnij do kuchni<small>キッチンに戻す</small></button>
+         <button class="btn btn-undo" onclick="${callCode('markOrder',o.orderId,ST.NEW)}">
+           ${esc('↩︎ Cofnij do kuchni')}</button>
        </div>`;
 
-  return `<div class="card ${cls.join(' ')}" id="card-${o.orderId}" data-oid="${o.orderId}">
-    <div class="swipe-hint">✅ Gotowe / 完了</div>
+  return `<div class="card ${cls.join(' ')}" id="card-${esc(o.orderId)}" data-oid="${esc(o.orderId)}">
+    <div class="swipe-hint">${esc('✅ Gotowe')}</div>
     <div class="c-head">
       <div>
-        <div class="c-table">${o.isDelivery ? ('🛵 DOWÓZ ' + (o.deliveryTime || '')) : ('🪑 ' + (o.table || '?'))}<span class="c-guests">${o.isDelivery ? '' : '👥 '}${
+        <div class="c-table">${esc(o.isDelivery ? ('🛵 DOWÓZ ' + (o.deliveryTime || '')) : ('🪑 ' + (o.table || '?')))}<span class="c-guests">${o.isDelivery ? '' : '👥 '}${
           ((String(o.guests || '').match(/\d+/) || ['?'])[0])} os.</span></div>
-        <div class="c-sub">🕐 ${esc(o.hhmm)} przyjęto / 受付${member}<br>${esc(o.orderId)}</div>
+        <div class="c-sub">🕐 ${esc(o.hhmm)} przyjęto${member}<br>${esc(o.orderId)}</div>
       </div>
-      <div class="c-timer">${VIEW === 'active' ? fmtElapsed(mins) : '✓'}</div>
+      <div class="c-timer">${esc(VIEW === 'active' ? fmtElapsed(mins) : '✓')}</div>
     </div>
     ${note}
     <div class="items">${items}</div>
@@ -663,50 +544,36 @@ function cardHtml(o, idx) {
 }
 
 function itemHtml(o, it) {
-  const info = lookup(it);
-  const name = (it.namePL || '').replace(/^【[^】]*】\s*/, '');
   const payer = (it.namePL || '').match(/^【([^】]*)】/);
   const doing = /W TRAKCIE|IN PROGRESS/i.test(it.status || '');
-
-  let tags = '';
-  if (info.cat === 'ramen') {
-    const b = BROTH[info.broth] || BROTH.inne;
-    tags += `<span class="it-tag tag-broth">${b.icon} ${esc(b.short)}</span>`;
-  }
-  if (/NA WYNOS|ODBIÓR PRZY KASIE|持ち帰り/i.test(it.memo || '')) {
-    tags += `<span class="it-tag tag-wynos">🥡 na wynos</span>`;
-  }
-  const kae = kaedamaBalls(it.memo);
-  if (kae) tags += `<span class="it-tag tag-kae">🍜＋${numBall(kae)}玉</span>`;
-  if (isSplitBowl(it.memo)) tags += `<span class="it-tag tag-split">✌️ 2器</span>`;
-  if (payer) tags += `<span class="it-tag tag-broth">${esc(payer[1])}</span>`;
-
-  // v1.1: ラーメン・丼は「既定の具材＋変更点」を色分けで表示。他は従来どおりメモ表示。
-  const isBowl = info.cat === 'ramen' ||
-    /(^|[^a-z])don($|[^a-z])|rice bowl/i.test(it.nameEN || '') || /丼/.test(info.jp || '');
-  const memo = isBowl
-    ? toppingBar(info, it.memo)
-    : ((it.memo && it.memo !== '—')
-        ? `<div class="it-memo">${it.memo.split('\n').map(l =>
-            /POMIŃ|REMOVE/.test(l) ? `<span class="rm">${esc(l)}</span>` : esc(l)).join('<br>')}</div>`
-        : '');
-
-  const btn = VIEW === 'active'
-    ? `<button class="it-x" onclick="event.stopPropagation();markItem('${o.orderId}',${it.no},'${ST.READY}')"
-         title="Ta pozycja gotowa / この品だけ完了">✓</button>` : '';
-
-  return `<div class="it${doing ? ' doing' : ''}"
-      onclick="markItem('${o.orderId}',${it.no},'${doing ? ST.NEW : ST.DOING}')">
-    <div class="it-q">×${it.qty}</div>
-    <div class="it-b">
-      <div class="it-n">${tags}${esc(name)}</div>
-      <div class="it-jp">${esc(info.jp || it.nameEN || '')}</div>
-      ${memo}
-    </div>${btn}
-  </div>`;
+  const urgent = Number(it.urgentAt) > 0;
+  const memo = it.pos && typeof it.pos === 'object' ? posBar(it.pos) :
+    (it.memo && it.memo !== '—' ? `<div class="it-memo">${esc(polish(it.memo))}</div>` : '');
+  const btn = VIEW === 'active' ? `<div class="it-actions"><button class="it-urgent" aria-pressed="${urgent}" onclick="event.stopPropagation();${callCode('markUrgent',o.orderId,it.no,!urgent)}">${esc('🔥 PILNE')}</button><button class="it-x" onclick="event.stopPropagation();${callCode('markItem',o.orderId,it.no,ST.READY)}" title="${esc('Ta pozycja gotowa')}">${esc('✓')}</button></div>` : '';
+  return `<div class="it${doing ? ' doing' : ''}${urgent ? ' urgent' : ''}" onclick="${callCode('markItem',o.orderId,it.no,doing ? ST.NEW : ST.DOING)}">
+    <div class="it-q">${esc('×' + it.qty)}</div><div class="it-b">
+    ${urgent ? `<div class="urgent-band">${esc('PILNE · ' + minutesSince(it.urgentAt) + ' min')}</div>` : ''}
+    <div class="it-n">${payer ? `<span class="it-tag tag-broth">${esc(polish(payer[1]))}</span>` : ''}${esc(polish((it.namePL || '').replace(/^【[^】]*】\s*/, '')))}${doing ? `<span class="doing-label">${esc(' ● W trakcie')}</span>` : ''}</div>${memo}</div>${btn}</div>`;
+}
+async function markGroup(orderId, itemNos, newStatus) {
+  if (busy || !await sendUpdate({orderId, itemNos, newStatus})) return;
+  const o = ORDERS.find(o => o.orderId === orderId);
+  if (!o) return;
+  if (newStatus === ST.READY) o.items = o.items.filter(i => !itemNos.includes(i.no));
+  else o.items.filter(i => itemNos.includes(i.no)).forEach(i => i.status = newStatus);
+  if (!o.items.length) ORDERS = ORDERS.filter(o => o.orderId !== orderId);
+  render();
+}
+async function markUrgent(orderId, itemNo, on) {
+  if (busy) return;
+  const result = await sendUpdate({orderId, itemNo, op:'urgent', on});
+  if (!result) return;
+  const o = ORDERS.find(o => o.orderId === orderId);
+  const item = o && o.items.find(i => i.no === itemNo);
+  if (item) item.urgentAt = on ? result.urgentAt || Date.now() : null;
+  render();
 }
 
-// ── 状態更新 ────────────────────────────────────────────────────
 async function sendUpdate(payload) {
   busy = true;
   try {
@@ -717,11 +584,11 @@ async function sendUpdate(payload) {
     });
     const d = await r.json();
     busy = false;
-    if (d.status !== 'ok') { toast(d.message || 'Błąd / エラー', true); return false; }
-    return true;
+    if (d.status !== 'ok') { toast('Błąd aktualizacji', true); return false; }
+    return d;
   } catch(e) {
     busy = false;
-    toast('📡 Brak połączenia / 通信エラー', true);
+    toast('📡 Brak połączenia', true);
     return false;
   }
 }
@@ -736,13 +603,13 @@ async function markOrder(orderId, newStatus) {
     ORDERS = ORDERS.filter(o => o.orderId !== orderId);
     setTimeout(render, 160);
     toast(newStatus === ST.READY
-      ? '✅ Wydać / 配膳へ — ' + orderId
-      : '↩︎ Wrócono do kuchni / キッチンに戻しました');
+      ? '✅ Wydać — ' + orderId
+      : '↩︎ Wrócono do kuchni');
   } else {
     const o = ORDERS.find(x => x.orderId === orderId);
     if (o) o.items.forEach(i => i.status = newStatus);
     render();
-    toast('👨‍🍳 W trakcie / 調理開始 — ' + orderId);
+    toast('👨‍🍳 W trakcie — ' + orderId);
   }
 }
 
@@ -761,7 +628,6 @@ async function markItem(orderId, itemNo, newStatus) {
   render();
 }
 
-// ── スワイプ（左に流して完了）──────────────────────────────────
 function attachSwipe(orderId) {
   const el = document.getElementById('card-' + orderId);
   if (!el || el.dataset.sw) return;
@@ -778,7 +644,7 @@ function attachSwipe(orderId) {
     const cx = e.touches[0].clientX, cy = e.touches[0].clientY;
     if (Math.abs(cy - y0) > Math.abs(cx - x0)) { active = false; el.style.transform = ''; return; }
     dx = cx - x0;
-    if (dx > 0) dx = dx * 0.25;                 // 右方向は抵抗をつけて誤操作を防ぐ
+    if (dx > 0) dx = dx * 0.25;
     el.classList.add('swiping');
     el.style.transform = 'translateX(' + dx + 'px)';
     el.style.opacity = String(Math.max(0.35, 1 - Math.abs(dx) / 380));
@@ -795,17 +661,15 @@ function attachSwipe(orderId) {
   el.addEventListener('touchcancel', end, { passive: true });
 }
 
-// ── トースト ────────────────────────────────────────────────────
 function toast(msg, isErr) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
+  t.innerHTML = esc(polish(msg));
   t.className = isErr ? 'err' : '';
   t.style.display = 'block';
   clearTimeout(t._h);
   t._h = setTimeout(() => { t.style.display = 'none'; }, 2600);
 }
 
-// 画面を復帰したら即取得（タブレットのスリープ明け対策）
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && PASSWORD) poll();
 });
