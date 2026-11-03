@@ -435,6 +435,8 @@ body{
 </div>
 
 <script>
+// 2026-11-03：サーバーからの文字列は innerHTML に入れる前にエスケープする
+function escStampHtml_(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 // 🔒 送り先はこのURLだけ（2026-09-20・D7：端末ごとの上書きを廃止。古い値が残ると黙って別のサーバーに繋がり、
 //    店のタブレットに他人のURLを仕込まれる危険もあったため）
 try { localStorage.removeItem('wabi_gas_url'); } catch (e) {}   // 2026-09-20：端末ごとのGAS URL上書きは廃止（D7）。古い保存値を掃除する
@@ -732,7 +734,7 @@ function renderStampResult(res) {
     if (res.rankUp) {
       rankupArea.innerHTML = `<div class="rankup-box">
         <div class="rankup-text">⬆️ Awans rankingowy! / Rank up! / ランクアップ！<br>
-        ${res.rank.icon} ${res.rank.name}<br>
+        ${escStampHtml_(res.rank.icon)} ${escStampHtml_(res.rank.name)}<br>
         <small>Osiągnąłeś/aś poziom ${res.rank.name}! ／ You reached ${res.rank.name}! ／ ${res.rank.name} になりました！</small></div></div>`;
     }
     if (res.member) cardArea.innerHTML = renderCard(res.member);

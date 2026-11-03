@@ -366,7 +366,7 @@ async function doStaffAddPoint() {
     area.style.display = 'block';
     if (res.status === 'ok') {
       area.innerHTML = `<div class="rankup-box"><div class="rankup-text">
-        ✅ ${res.message}<br>${res.rank.icon} ${res.rank.name}
+        ✅ ${escStaffHtml_(res.message)}<br>${escStaffHtml_(res.rank.icon)} ${escStaffHtml_(res.rank.name)}
         ${staffPoints === 20 ? '<br>🍜🍜 ダブルポイント / Podwójne punkty!' : ''}
         ${res.bonus ? '<br>🎉 ボーナス到達！' : ''}
       </div></div>`;
@@ -567,10 +567,10 @@ async function qrStamp(memberId, force, table) {
     maybeSavePw(password, res);
     if (res.status === 'ok') {
       area.innerHTML = `<div class="rankup-box"><div class="rankup-text">
-        ✅ ${res.member.name}（${memberId}）<br>
+        ✅ ${escStaffHtml_(res.member.name)}（${escStaffHtml_(memberId)}）<br>
         ${res.oldPt}pt → <strong>${res.newPt}pt</strong>（+${res.newPt - res.oldPt}）<br>
         ${res.coseat ? '👥 同席救済・係員承認として記録' : '🍜 当日注文を自動確認済み / Zamówienie potwierdzone'}
-        ${res.rankUp ? '<br>🎉 ランクアップ！ ' + res.rank.icon + ' ' + res.rank.name : ''}
+        ${res.rankUp ? '<br>🎉 ランクアップ！ ' + escStaffHtml_(res.rank.icon) + ' ' + escStaffHtml_(res.rank.name) : ''}
         ${res.bonus ? '<br>🎫 クーポン獲得！ / Kupon zdobyty!' : ''}
       </div></div>`;
     } else if (res.status === 'needConfirm') {
@@ -592,7 +592,7 @@ async function qrStamp(memberId, force, table) {
           ✖ キャンセル / Anuluj
         </button></div>`;
     } else {
-      area.innerHTML = `<div class="bonus-box"><div class="bonus-text">❌ ${String(res.message || res.status).replace(/\n/g, '<br>')}</div></div>`;
+      area.innerHTML = `<div class="bonus-box"><div class="bonus-text">❌ ${escStaffHtml_(String(res.message || res.status)).replace(/\n/g, '<br>')}</div></div>`;
     }
   } catch(e) {
     area.innerHTML = '<div class="bonus-box"><div class="bonus-text">📡 通信エラー / Błąd połączenia</div></div>';

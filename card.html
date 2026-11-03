@@ -546,9 +546,9 @@ function renderFullCard(m) {
           Members Club<br>和美なび
         </div>
       </div>
-      <div class="card-name">${m.name}</div>
-      ${m.memberId ? `<div style="font-size:.78rem;opacity:.9;margin-bottom:.2rem;font-weight:600;letter-spacing:.05em">🪪 ${m.memberId}</div>` : ''}
-      <div class="card-email">${m.email}</div>
+      <div class="card-name">${escHtml(m.name)}</div>
+      ${m.memberId ? `<div style="font-size:.78rem;opacity:.9;margin-bottom:.2rem;font-weight:600;letter-spacing:.05em">🪪 ${escHtml(m.memberId)}</div>` : ''}
+      <div class="card-email">${escHtml(m.email)}</div>
        <div class="card-pts-row">
          <span class="card-pts">${cardPt}</span>
          <span class="card-pts-label">/ 100 pt　Karta pieczątek / Stamp card / スタンプカード</span>

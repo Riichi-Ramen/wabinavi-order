@@ -692,7 +692,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v101-20261103</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v102-20261103</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -773,7 +773,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER / 注文を始める</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v101-20261103</div>
+    <div class="ver-tag">v102-20261103</div>
   </div>
 </div>
 
@@ -5282,7 +5282,7 @@ async function loadTrivia() {
       box.style.display = 'block';
     } else if (d.status === 'doneToday' || d.status === 'noMore') {
       box.innerHTML = `<div class="tv-box"><div class="tv-head">🗾 Quiz o Japonii</div>
-        <div class="tv-sub">${d.message || ''}</div></div>`;
+        <div class="tv-sub">${escGroupText(d.message || '')}</div></div>`;
       box.style.display = 'block';
     }
     // off / noOrder / notMember のときは何も出さない
@@ -5334,7 +5334,7 @@ async function tvAnswer(qid, ans) {
     });
     const d = await res.json();
     if (d.status !== 'ok') {
-      area.innerHTML = `<div class="tv-res ng">${d.message || 'Błąd / Error'}</div>`;
+      area.innerHTML = `<div class="tv-res ng">${escGroupText(d.message || 'Błąd / Error')}</div>`;
       return;
     }
     const more = (TV_I + 1 < TV_Q.length) && d.remaining > 0;
@@ -5793,8 +5793,8 @@ async function lookupNipFromApp() {
       checkoutInvoice.name = d.name || '';
       checkoutInvoice.address = d.address || '';
       compEl.innerHTML = `✅ <strong>Znaleziono w rejestrze / 登録確認済み</strong><br>
-        🏢 ${d.name}<br>📍 ${d.address || '—'}<br>
-        <small>Status VAT: ${d.statusVat || '—'} ・ NIP: ${nip}</small><br>
+        🏢 ${escGroupText(d.name)}<br>📍 ${escGroupText(d.address || '—')}<br>
+        <small>Status VAT: ${escGroupText(d.statusVat || '—')} ・ NIP: ${escGroupText(nip)}</small><br>
         <small>Dane zostaną przekazane do kasy / この情報がレジに送信されます</small>`;
       compEl.style.display = 'block';
       document.getElementById('co-confirm-nip').style.display = 'block';
@@ -5946,18 +5946,19 @@ function addCoseat() {
   showToast("✅ 追加しました / Added: " + email, false);
 }
 
-function removeCoseat(email) {
-  coseatMembers = coseatMembers.filter(e => e !== email);
+function removeCoseat(idx) {
+  // 2026-11-03：onclick に文字列を埋め込まず、位置で消す（属性への注入を防ぐ）
+  coseatMembers = coseatMembers.filter((e, i) => i !== idx);
   renderCoseatList();
 }
 
 function renderCoseatList() {
   const list = document.getElementById('coseat-list');
   if (!list) return;
-  list.innerHTML = coseatMembers.map(email => `
+  list.innerHTML = coseatMembers.map((email, ci) => `
     <div class="coseat-chip">
-      <span>👤 ${email}</span>
-      <button class="remove-coseat" onclick="removeCoseat('${email}')">✕</button>
+      <span>👤 ${escGroupText(email)}</span>
+      <button class="remove-coseat" onclick="removeCoseat(${ci})">✕</button>
     </div>`).join('');
 }
 
