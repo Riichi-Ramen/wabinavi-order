@@ -63,7 +63,7 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.27 · Toruń</div>
+  <div class="ver">System v8.28 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -286,6 +286,28 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
     Temat / 件名： <code>foto:promo_lato</code><br>
     Treść / 本文： <i>Letnie Tantan Ramen już w menu! Ostry i kremowy.</i><br>
     Załącznik / 添付： 1 zdjęcie / 写真1枚</div>
+</section>
+
+<!-- 4c. 広告カレンダー（HPの最新情報） -->
+<section>
+  <h2>📣 Kalendarz reklam i Aktualności <span class="pl">広告カレンダーとHPの「最新情報」</span></h2>
+  <span class="path">🍜 Wabi Navi → 📣 Reklama / 広告カレンダー</span>
+  <div class="note">Zatwierdzony wpis trafia na stronę wabinavi.com (sekcja <b>Aktualności</b>) i do e-maila z tekstami na social media. /
+    <span class="jp">承認した行だけが、HPの「Aktualności（最新情報）」欄と、SNS投稿文のメールになります。</span></div>
+  <ol>
+    <li>Otwórz arkusz „広告カレンダー / Kampanie” i wpisz nowy wiersz: data (A), nagłówek PL (D), EN (E), JP (F, opcjonalnie).
+      <span class="pl">シート「広告カレンダー / Kampanie」に1行入力：公開日(A)・PL見出し(D)・EN見出し(E)・JP見出し(F・任意)。</span></li>
+    <li>Nagłówek po polsku <b>sprawdza pracownik</b> — wpisz jego imię w kolumnie H.
+      <span class="pl">ポーランド語の見出しは<b>スタッフが確認</b>し、H列にその人の名前を入れる。</span></li>
+    <li>Właściciel zaznacza ✔ w kolumnie I. Bez H i I nic się nie publikuje.
+      <span class="pl">店主がI列にチェック。HとIが揃わない行は、どこにも出ません。</span></li>
+    <li>Kolumna J pokazuje stan: <b>公開中</b> / <b>待機中</b> (data w przyszłości) / <b>下書き</b> / <b>期限切れ</b> / błąd.
+      <span class="pl">J列に状態が出ます（公開中・待機中・下書き・期限切れ・エラー）。</span></li>
+  </ol>
+  <div class="note warn"><b>⚠️ Zasady / ルール：</b>
+    nie wpisuj cen ani rabatów w nagłówku (system je odrzuci). Zdjęcia gości tylko za zgodą. System <b>nie publikuje</b> na Facebooku, Instagramie, TikToku ani WhatsApp — teksty wklejasz ręcznie. /
+    見出しに<b>価格・割引は書かない</b>（自動で弾かれます）。お客様が写る写真は本人の同意がある場合だけ。FB・IG・TikTok・WhatsAppへの<b>自動投稿はしません</b>（文面を手で貼り付け）。</div>
+  <p style="font-size:.8rem;color:var(--muted);margin-top:.5rem">Pierwsze uruchomienie (właściciel) / 初回設定（店主）：menu „📣 Reklama” → „Utwórz / napraw arkusz”. Włączenie: właściwość skryptu <code>ADS_ENABLED</code> = 1.</p>
 </section>
 
 <!-- 5. 予約確認 -->
@@ -1201,6 +1223,9 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
     <tr><td>⚙️ <b>Ustawienia</b><br><span class="pl">設定</span></td>
         <td>Happy Hour · Quiz · Lekcje ON/OFF · WhatsApp<br>
         <span class="pl">時間帯ボーナス・クイズ・講座公開・WhatsApp</span></td></tr>
+    <tr><td>📣 <b>Reklama</b><br><span class="pl">広告カレンダー</span></td>
+        <td>Utwórz arkusz · Opublikuj na stronie · Wyślij pakiety · Automatyzacja ON/OFF<br>
+        <span class="pl">シート作成・HPに反映・投稿パッケージ送信・自動反映ON/OFF（店主）</span></td></tr>
     <tr><td>📊 <b>Raporty</b><br><span class="pl">分析</span></td>
         <td>Analiza ruchu · <b>📊 特典集計（前月）</b> · Sprawdź zdjęcia · Sprawdź wygasłe punkty<br>
         <span class="pl">客足分析・<b>特典集計（前月）</b>・写真チェック・失効チェック</span></td></tr>
