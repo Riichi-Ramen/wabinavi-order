@@ -63,7 +63,7 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.26 · Toruń</div>
+  <div class="ver">System v8.27 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -1013,6 +1013,14 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
     <b>Nie trzeba nic odświeżać.</b> Ekran zostaw włączony na cały serwis. /
     <span class="jp">卓上アプリからの注文が<b>約12秒ごとに自動で表示</b>されます。
     <b>更新操作は不要</b>。営業中は開いたままにしておいてください。</span></div>
+
+  <div class="note">🔑 <b>Bez hasła na tablecie kuchennym (jednorazowa rejestracja):</b> właściciel otwiera <b>raz</b> na tablecie adres z <b>#k=</b> i hasłem obsługi
+    (<code>kitchen.html#k=…</code>) — urządzenie zapamięta hasło i ekran hasła się już nie pojawi. Link z hasłem trzymaj tylko jako zakładkę na własnym urządzeniu —
+    <b>nie wysyłaj go czatem ani w zrzutach ekranu</b>. Wyrejestrowanie: <b>kitchen.html?staff=0</b> (tablet zapomni hasło). Hasło jest wspólne z staff / books / rezerwacje.<br>
+    <span class="jp">🔑 <b>厨房タブレットはパスワード入力なし（初回1回だけ登録）：</b>オーナーがタブレットで <b>1回だけ</b> 末尾に <b>#k=</b>＋係員パスワードを付けたURL
+    （<code>kitchen.html#k=…</code>）を開くと、端末が記憶し、以後パスワード画面は出ません。パスワード入りのURLは<b>自分の端末のブックマークだけ</b>に置き、
+    チャットやスクリーンショットに出さないこと。解除は <b>kitchen.html?staff=0</b>（保存パスワードが消える）。パスワードは staff／books／予約と共通です。
+    サーバー側の認証は従来どおり有効（5回失敗で15分ロック）。</span></div>
 
   <h3 style="margin-top:1rem;font-size:.98rem;color:var(--ink)">
     Co widać na ekranie <span style="font-weight:400;color:var(--muted);font-size:.8rem">/ 画面の見かた</span></h3>

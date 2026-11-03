@@ -281,8 +281,25 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
   document.querySelectorAll('[data-pl]').forEach(el => { el.innerHTML = esc(el.dataset.pl); });
+  // 2026-11-03：厨房の端末は「一度だけ登録」して、以後はパスワード入力なし。
+  //   サーバー側のパスワード照合は残す（URLを知るだけでは注文は見えない）。
+  //   登録：kitchen.html#k=<パスワード> を一度だけ開く（# 以降はアドレスから消える）／手入力でログインしても保存。
+  //   解除：kitchen.html?staff=0 。保存先は books/staff/reservations と共通のキー wabi_staff_pw。
+  try {
+    const rel = new URLSearchParams(location.search).get('staff') === '0';
+    const km = /(?:^|[#&])k=([^&]*)/.exec(location.hash || '');
+    if (rel) {
+      ['wabi_staff_device', 'wabi_staff_pw', 'wabi_staff_pw_saved'].forEach(k => localStorage.removeItem(k));
+      try { sessionStorage.removeItem('wabi_kds_pw'); } catch (e) {}
+      history.replaceState(null, '', location.pathname);
+    } else if (km && km[1]) {
+      localStorage.setItem('wabi_staff_pw', decodeURIComponent(km[1]));
+      localStorage.setItem('wabi_staff_device', '1');
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  } catch (e) {}
   let saved = "";
-  try { saved = sessionStorage.getItem('wabi_kds_pw') || ""; } catch(e){}
+  try { saved = localStorage.getItem('wabi_staff_pw') || sessionStorage.getItem('wabi_kds_pw') || ""; } catch(e){}
   if (saved) { document.getElementById('pw').value = saved; doLogin(true); }
   document.getElementById('pw').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
@@ -297,12 +314,18 @@ async function doLogin(silent) {
   err.style.display = 'none';
   const res = await fetchKitchen('active');
   if (!res || res.status === 'unauthorized') {
+    // 保存した違うパスワードを残すと、開くたびに失敗が数えられてロック（5回・15分）になる。
+    // その場で消す。ただしロック中の応答・通信エラーのときは消さない。
+    if (res && res.status === 'unauthorized' && !/prób|15|limit|上限/i.test(res.message || '')) {
+      try { localStorage.removeItem('wabi_staff_pw'); sessionStorage.removeItem('wabi_kds_pw'); } catch (e) {}
+      document.getElementById('pw').value = '';
+    }
     err.innerHTML = esc('Błąd logowania');
     err.style.display = 'block';
     PASSWORD = "";
     return;
   }
-  try { sessionStorage.setItem('wabi_kds_pw', pw); } catch(e){}
+  try { localStorage.setItem('wabi_staff_pw', pw); localStorage.setItem('wabi_staff_device', '1'); } catch(e){}
   document.getElementById('lock').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   applyData(res);
