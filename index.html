@@ -690,7 +690,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v99-20261019</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v100-20261103</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -771,7 +771,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER / 注文を始める</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v99-20261019</div>
+    <div class="ver-tag">v100-20261103</div>
   </div>
 </div>
 
@@ -1680,7 +1680,8 @@ let deliveryBook = [];      // 係員のみ：住所録の全行
 
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
-  urlTable = params.get('table') || '';
+  // 2026-11-03 セキュリティ：?table= は1〜2桁の数字だけ受け付ける（細工したリンクでの任意スクリプト実行を防ぐ）。
+  { const rawTable = params.get('table') || ''; urlTable = /^\d{1,2}$/.test(rawTable) ? rawTable : ''; }
   deliveryMode = params.get('dostawa') === '1';
   deliveryStaffMode = deliveryMode && params.get('staff') === '1';
   // 🔄 卓のリセットボタンは従業員端末だけに出す。
