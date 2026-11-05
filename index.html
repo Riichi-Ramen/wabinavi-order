@@ -576,6 +576,18 @@ textarea.uwagi-ta:focus{outline:none;border-color:var(--accent)}
 .clear-btn:hover{background:rgba(255,255,255,.3)}
 .clear-lbl{font-size:.78rem;font-weight:700;text-align:left;white-space:nowrap}
 .clear-lbl small{display:block;font-size:.6rem;font-weight:400;opacity:.85}
+/* 狭い画面（スマホ縦）で上部バーが横にはみ出しカートが画面外になる問題の修正（v103）。
+   中身を縮めて1行に収める。ボタンの title は残す。 */
+@media(max-width:480px){
+  .top-bar{padding:.55rem .6rem;gap:.35rem}
+  .top-bar>img{height:30px!important;flex:0 0 auto}
+  .top-bar>*{min-width:0}
+  .table-chip{flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;font-size:.7rem;padding:.2rem .45rem}
+  .clear-btn{margin-right:0;padding:.34rem .5rem;flex:0 0 auto}
+  .clear-lbl{display:none}
+  .cart-btn{padding:.5rem .65rem;font-size:.8rem;flex:0 0 auto}
+  .cart-en{display:none}
+}
 .solo-choices{display:flex;flex-direction:column;gap:.7rem;margin-bottom:1.1rem}
 .solo-btn{width:100%;padding:.95rem .7rem;border-radius:14px;cursor:pointer;
   border:2px solid rgba(120,100,80,.28);background:rgba(255,252,248,.95);
@@ -692,7 +704,7 @@ body.show-config .config-bar{display:flex}
 </style>
 </head>
 <body>
-<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v102-20261103</div>
+<div id="app-version" style="position:fixed;right:8px;font-size:10px;color:rgba(120,90,70,.55);z-index:999;pointer-events:none;bottom:calc(4px + env(safe-area-inset-bottom, 0px))">v103-20261105</div>
 
 <!-- 画像読み込み失敗時に使う共通プレースホルダー（非表示テンプレート） -->
 <template id="ph-template"><div class="placeholder-img"><div class="ph-icon">🍜</div><div style="opacity:.45;font-size:.72rem">Zdjęcie wkrótce / Photo coming soon</div></div></template>
@@ -773,7 +785,7 @@ body.show-config .config-bar{display:flex}
       <small style="font-weight:400;font-size:.8rem">START ORDER / 注文を始める</small>
     </button>
     <!-- 版表記。画面下端はスマホのブラウザバーに隠れるため、ここにも出す -->
-    <div class="ver-tag">v102-20261103</div>
+    <div class="ver-tag">v103-20261105</div>
   </div>
 </div>
 
@@ -1310,7 +1322,7 @@ body.show-config .config-bar{display:flex}
             title="Zacznij od nowa / Start over / 注文を最初からやり直す">🧹
       <span class="clear-lbl">Zacznij od nowa<small>Start over ・ やり直す</small></span></button>
     <button class="cart-btn" id="cart-btn" onclick="openConfirm()">
-      🛒 Koszyk / Cart
+      🛒 Koszyk<span class="cart-en"> / Cart</span>
       <span class="cart-badge" id="cart-badge"></span>
     </button>
   </div>
