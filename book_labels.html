@@ -120,7 +120,7 @@ select,input[type=text]{font-family:inherit;font-size:.9rem;padding:.5rem .6rem;
     <div class="picker" id="picker">Ładowanie… / 読み込み中…</div>
     <div class="hint">
       ・<b>小型QR＋略称（おすすめ）</b>：QRは約14mm（65面は約13mm）。右に略称タイトル、その下に管理番号が入ります。<br>
-      ・略称は自動で作ります（英字が主体。巻数は「#12」、副題・かっこ書き・長い和文は省略。和文だけの本は先頭2〜3文字のみ）。同じ略称の本は管理番号で見分けられます。<br>
+      ・略称は自動で作ります（英字が主体。巻数は「#12」、副題・かっこ書き・長い和文は省略。和文だけの本は著者の英字名）。同じ略称の本は管理番号で見分けられます。<br>
       ・略称の手直しはこの端末のブラウザに保存されます（別の端末には引き継がれません）。<br>
       ・シール台紙は A4「4×10面（48.5×25.4mm）」「5×13面（38.1×21.2mm）」「3×8面（70×37mm）」に対応。<br>
       ・印刷ダイアログでは<b>「余白：なし／既定」「倍率100%」</b>にしてください（縮小すると位置がずれます）。<br>
@@ -145,7 +145,7 @@ let BOOKS = [];
 /* ───────── 略称タイトル ─────────
    幅の数え方：半角=1、全角（日本語）=2。maxUnits を超える分は「…」で省略。
    ・末尾の「12巻」「(3巻)」は「#12」に直して残す（マンガは巻数が命）
-   ・英字が主体なら和文は3文字以内の語だけ残す。和文だけの本は先頭2〜3文字＋「…」（ポーランド人従業員向け・2026-11-06）
+   ・英字が主体なら和文は3文字以内の語だけ残す。和文だけの本は著者の英字名（無ければ先頭3文字＋「…」）（ポーランド人従業員向け・2026-11-06）
    ・「A / B」の併記は前半だけ（Spice & Wolf / 狼と香辛料 → Spice & Wolf）
    ・末尾のかっこ書きは省く（版・日本語併記など）。管理番号が同じ本を見分ける
    ・「:」「|」以降の副題は、手前が十分長い（10以上）ときだけ省く */
@@ -169,7 +169,16 @@ function clipUnits(s, max){
   return out.replace(/[\s:;,\-–|\/&]+$/, '') + '…';
 }
 const JP_RUN = /[\u3000-\u30FF\u3400-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF]+/g;
-function autoAbbr(title, max){
+// 和文だけの本用：著者欄「日本語 / English」の英字側の最初の1名（不明・空なら ''）
+function authorEn(author){
+  const a = String(author || '');
+  const i = a.indexOf(' / ');
+  if (i < 0) return '';
+  let n = a.slice(i + 3).split(/[,、;]/)[0].replace(/\s*[（(][^)）]*[)）]/g, '').trim();
+  if (!/[A-Za-z\u00C0-\u024F]{3,}/.test(n) || /^(unknown|nieznany)/i.test(n)) return '';
+  return n;
+}
+function autoAbbr(title, max, author){
   let t = String(title || '').replace(/\s+/g, ' ').trim();
   let vol = '';
   const m = t.match(/[（(]?\s*(\d+)\s*巻\s*[)）]?\s*$/);
@@ -187,16 +196,22 @@ function autoAbbr(title, max){
          .replace(/[『』「」（）]/g, '').replace(/\s+/g, ' ')
          .replace(/^[\s:;,|\-–\/]+|[\s:;,|\-–\/]+$/g, '').trim();
   }
-  // 和文だけの本：先頭の2〜3文字＋「…」（約3文字ぶん）
-  const budget = latin ? max - (vol ? wUnits(vol) + 1 : 0)
-                       : 7 - (vol ? wUnits(vol) + 1 : 0);
+  // 和文だけの本：著者の英字名（ポーランド人従業員が読める）。著者が不明なら先頭3文字＋「…」
+  let useLatin = latin;
+  // 和文まじりでも、残った英字が5文字以下（例「私がUZUを…」→UZU）なら著者名のほうが分かりやすい
+  const hadJp = JP_RUN.test(String(title || '')); JP_RUN.lastIndex = 0;
+  const weak = latin && hadJp && (t.match(/[A-Za-z\u00C0-\u024F]/g) || []).length <= 5 && authorEn(author);
+  if (weak) { t = authorEn(author); }
+  else if (!latin) { const an = authorEn(author); if (an) { t = an; useLatin = true; } }
+  const budget = useLatin ? max - (vol ? wUnits(vol) + 1 : 0)
+                          : 7 - (vol ? wUnits(vol) + 1 : 0);
   return clipUnits(t, budget) + (vol ? ' ' + vol : '');
 }
 // 現在選択中のサイズ向けの略称（手直しがあればそれを優先）
 function abbrFor(b, size){
   const o = ABBR_OVR[b.id];
   if (typeof o === 'string' && o.trim()) return o.trim();
-  return autoAbbr(b.title, ABBR_MAX[size] || ABBR_MAX['40s']);
+  return autoAbbr(b.title, ABBR_MAX[size] || ABBR_MAX['40s'], b.author);
 }
 
 async function load(){
@@ -238,7 +253,7 @@ function onAbbrInput(inp){
   if (!b) return;
   const size = document.getElementById('size').value;
   const v = inp.value.trim();
-  if (!v || v === autoAbbr(b.title, ABBR_MAX[size] || ABBR_MAX['40s'])) { delete ABBR_OVR[id]; inp.classList.remove('edited'); }
+  if (!v || v === autoAbbr(b.title, ABBR_MAX[size] || ABBR_MAX['40s'], b.author)) { delete ABBR_OVR[id]; inp.classList.remove('edited'); }
   else { ABBR_OVR[id] = v; inp.classList.add('edited'); }
   saveOvr();
   clearTimeout(abbrTimer); abbrTimer = setTimeout(build, 200);
