@@ -3479,6 +3479,11 @@ function bkCountText(list) {
   return `${list.length} · ✓${free}`;
 }
 
+function bkDatePl(d) {
+  const m = String(d || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : '—';
+}
+
 function bkCard(b) {
   const card = bkEl('div', 'bk-card' + (b.lent ? ' lent' : ''));
   const row = bkEl('div', 'bk-row');
@@ -3503,11 +3508,13 @@ function bkCard(b) {
   if (b.lent) {
     const d = bkEl('div', null, null);
     d.style.cssText = 'font-size:.72rem;color:#b9640f;margin-top:.5rem';
-    d.appendChild(document.createTextNode('🔙 返却予定 → '));
+    d.appendChild(document.createTextNode('🔙 返却予定日 '));
     d.appendChild(bkEl('strong', null, b.dueDate || '—'));
-    d.appendChild(document.createTextNode(' から貸出可能'));
+    d.appendChild(document.createTextNode('（返却され次第、貸出できます）'));
     d.appendChild(document.createElement('br'));
-    d.appendChild(bkEl('small', null, 'Dostępna od / Available from: ' + (b.dueDate || '—')));
+    d.appendChild(bkEl('small', null, 'Planowany zwrot: ' + bkDatePl(b.dueDate) + ' — dostępna po zwrocie'));
+    d.appendChild(document.createElement('br'));
+    d.appendChild(bkEl('small', null, 'Due back: ' + (b.dueDate || '—') + ' — available once returned'));
     card.appendChild(d);
   } else {
     const btn = bkEl('button', 'bk-btn', '📚 借りる / Wypożycz / Borrow');
@@ -3590,9 +3597,10 @@ function openBookInfo(id) {
   }
   const st = document.getElementById('bi-status');
   st.textContent = b.lent
-    ? `貸出中 / Wypożyczona — ${b.dueDate || '—'} から貸出可能 / available from ${b.dueDate || '—'}`
+    ? `貸出中 / Wypożyczona\n返却予定日 ${b.dueDate || '—'}（返却され次第、貸出できます）\nPlanowany zwrot: ${bkDatePl(b.dueDate)} — dostępna po zwrocie\nDue back: ${b.dueDate || '—'} — available once returned`
     : '在庫あり / Dostępna / Available';
   st.style.color = b.lent ? '#b9640f' : '#2d7a3a';
+  st.style.whiteSpace = 'pre-line';
   const btn = document.getElementById('bi-borrow');
   if (b.lent) { btn.style.display = 'none'; btn.onclick = null; }
   else {
