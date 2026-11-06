@@ -485,6 +485,8 @@ async function doReturn(b){
   if (r.pointsGranted) {
     pts = `<b>⭐ +${r.points} pkt dodane / ポイント +${r.points} 付与しました</b>`
         + (r.pointMember ? ` (${esc(r.pointMember)})` : '') + ` — ${esc(String(r.totalPoints))} pkt`;
+  } else if (r.pointsSameDay) {
+    pts = `⭐ Zwrot w dniu wypożyczenia — bez punktów / 貸出当日の返却のため、ポイントは付きません`;
   } else if (r.pointsAlready) {
     pts = `⭐ Punkty za zwrot już dziś przyznane / 本日分の返却ポイントは付与済みです`;
   } else {
