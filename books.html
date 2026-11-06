@@ -475,12 +475,22 @@ async function doReturn(b){
   if (r.status !== 'ok') { showErr(r.message || 'Błąd'); return; }
   stopCam();
   document.getElementById('scan-card').classList.add('hidden');
-  const gift = r.lateDays > 0
-    ? `<div class="gift">🎁 Zwrot po terminie (${r.lateDays} dni) — <b>wręcz drobny upominek</b>
-        i podziękuj za przyniesienie.<br>
-        期限超過（${r.lateDays}日）。<b>サービス品をお渡しし</b>、お礼を伝えてください。</div>`
-    : `<div class="gift">🎁 Zwrot w terminie — zaproponuj kolejną książkę!<br>
-        期限内の返却です。次の1冊をおすすめしましょう。</div>`;
+  // ⭐ 返却ポイント（2pt・同じ会員は1日1回）の結果を係員に見せる
+  const hint = r.lateDays > 0
+    ? `Zwrot po terminie (${r.lateDays} dni) — podziękuj za przyniesienie, bez uwag.<br>
+       期限超過（${r.lateDays}日）。お礼を伝えてください。小言・料金はなし。`
+    : `Zwrot w terminie — zaproponuj kolejną książkę!<br>
+       期限内の返却です。次の1冊をおすすめしましょう。`;
+  let pts;
+  if (r.pointsGranted) {
+    pts = `<b>⭐ +${r.points} pkt dodane / ポイント +${r.points} 付与しました</b>`
+        + (r.pointMember ? ` (${esc(r.pointMember)})` : '') + ` — ${esc(String(r.totalPoints))} pkt`;
+  } else if (r.pointsAlready) {
+    pts = `⭐ Punkty za zwrot już dziś przyznane / 本日分の返却ポイントは付与済みです`;
+  } else {
+    pts = `⭐ Brak punktów (brak członka lub e-maila) / ポイントなし（会員情報またはメールが無いため）`;
+  }
+  const gift = `<div class="gift">${pts}<br><span style="font-size:.85em">${hint}</span></div>`;
   const d = document.getElementById('detail-card');
   d.innerHTML =
     `<div class="result">
