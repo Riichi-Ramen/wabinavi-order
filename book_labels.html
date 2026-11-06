@@ -73,6 +73,22 @@ select,input[type=text]{font-family:inherit;font-size:.9rem;padding:.5rem .6rem;
 .size-65  .lid{font-size:5.8pt;color:#555}
 .size-40s .lbrand,.size-65 .lbrand{display:none}
 
+/* 🆕 40a：52.5×29.7mm・4×10面・A4全面（余白なし）の宛名シール専用。
+   1ページ＝210×297mm の枠に、4列×10段を1面ずつ正確に並べる。QRと文字は各面の中央に固定位置で置く */
+.page{width:210mm;height:296.8mm;margin:0 auto 6mm;overflow:hidden;background:#fff;
+  break-after:page;page-break-after:always;position:relative}
+.page:last-child{break-after:auto;page-break-after:auto}
+.pgin{position:relative;display:grid;grid-template-columns:repeat(4,52.5mm);grid-auto-rows:29.7mm}
+.size-40a .label{width:52.5mm;height:29.7mm;padding:0;gap:2.4mm;justify-content:center;border-radius:0;
+  border:1px dashed #ddd;overflow:hidden}
+.size-40a .qr{background:#fff}
+.size-40a .qr img,.size-40a .qr canvas{width:14mm !important;height:14mm !important}
+.size-40a .txt{flex:none;width:27mm;min-width:0}
+.size-40a .ltitle{font-weight:700;color:#000;line-height:1.2;margin:0 0 .6mm;font-size:8pt;-webkit-line-clamp:3}
+.size-40a .lid{font-size:6.5pt;color:#555}
+.size-40a .lbrand{display:none}
+#sheet.size-40a{display:block}
+
 #sheet{display:grid;justify-content:center;gap:0}
 #sheet.size-24{grid-template-columns:repeat(3,70mm)}
 #sheet.size-40,#sheet.size-40s{grid-template-columns:repeat(4,48.5mm)}
@@ -84,6 +100,8 @@ select,input[type=text]{font-family:inherit;font-size:.9rem;padding:.5rem .6rem;
   .noprint{display:none !important}
   .label{border:1px dashed #eee}
   #sheet{gap:0}
+  .size-40a .label{border:none}          /* シールに罫線は印刷しない */
+  .page{margin:0}
 }
 </style>
 </head>
@@ -99,7 +117,8 @@ select,input[type=text]{font-family:inherit;font-size:.9rem;padding:.5rem .6rem;
     <div class="row">
       <label class="f">Rozmiar / サイズ</label>
       <select id="size">
-        <option value="40s" selected>48,5 × 25,4 mm — 40 szt./A4（小型QR＋略称・おすすめ）</option>
+        <option value="40a" selected>52,5 × 29,7 mm — 40 szt./A4（余白なしシール・QR＋略称・各面の中央に配置）</option>
+        <option value="40s">48,5 × 25,4 mm — 40 szt./A4（小型QR＋略称・おすすめ）</option>
         <option value="65">38,1 × 21,2 mm — 65 szt./A4（さらに小さめ・QR＋略称）</option>
         <option value="24">70 × 37 mm — 24 szt./A4（大きめ・タイトル全文）</option>
         <option value="40">48,5 × 25,4 mm — 40 szt./A4（タイトル全文・文庫向き）</option>
@@ -107,6 +126,13 @@ select,input[type=text]{font-family:inherit;font-size:.9rem;padding:.5rem .6rem;
       <label class="f">Pomiń / 先頭を空ける</label>
       <input type="text" id="skip" value="0" style="width:70px" title="使いかけのシール台紙用">
       <button class="btn ghost" onclick="load()">🔄 Odśwież / 再取得</button>
+    </div>
+    <div class="row" id="offrow">
+      <label class="f">Korekta / 位置補正（mm）→右 X</label>
+      <input type="text" id="ox" value="0" style="width:60px" inputmode="decimal">
+      <label class="f">↓下 Y</label>
+      <input type="text" id="oy" value="0" style="width:60px" inputmode="decimal">
+      <span class="count">試し印刷で全体が右・下にずれたら「−」で戻す（例：X −1、Y 0.5）。余白なしシール（52.5×29.7）用</span>
     </div>
     <div class="row">
       <button class="btn ghost" onclick="pickAll(true)">☑ Wszystkie / 全選択</button>
@@ -119,6 +145,9 @@ select,input[type=text]{font-family:inherit;font-size:.9rem;padding:.5rem .6rem;
     <div class="abhead">右の欄が<b>ラベルに印字される略称</b>です（小型サイズのとき）。気になる本だけ直接書き換えてください（赤枠＝手直し済み）。</div>
     <div class="picker" id="picker">Ładowanie… / 読み込み中…</div>
     <div class="hint">
+      ・<b>52.5×29.7mm 40面（余白なしシール）</b>：A4全面にぴったり並びます。QRと略称は各面の中央に固定位置で置きます。<br>
+      ・<span style="color:#c0392b"><b>印刷の前に</b>：</span>印刷ダイアログの「余白：<b>なし</b>」「倍率：<b>100%</b>（ページに合わせる・縮小は不可）」「用紙：A4」に。<br>
+      ・インクジェットは用紙の端（特に下側）が印刷できない機種があります。<b>先に普通紙へ試し印刷</b>し、シール台紙に重ねて光にかざして位置を確認してください。最下段が切れる場合は、「先頭を空ける」で最下段を使わないか、位置補正で調整してください。<br>
       ・<b>小型QR＋略称（おすすめ）</b>：QRは約14mm（65面は約13mm）。右に略称タイトル、その下に管理番号が入ります。<br>
       ・略称は自動で作ります（英字が主体。巻数は「#12」、副題・かっこ書き・長い和文は省略。和文だけの本は著者の英字名）。同じ略称の本は管理番号で見分けられます。<br>
       ・略称の手直しはこの端末のブラウザに保存されます（別の端末には引き継がれません）。<br>
@@ -129,7 +158,7 @@ select,input[type=text]{font-family:inherit;font-size:.9rem;padding:.5rem .6rem;
     </div>
   </div>
 
-  <div id="sheet" class="size-40s"></div>
+  <div id="sheet" class="size-40a"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -149,7 +178,7 @@ let BOOKS = [];
    ・「A / B」の併記は前半だけ（Spice & Wolf / 狼と香辛料 → Spice & Wolf）
    ・末尾のかっこ書きは省く（版・日本語併記など）。管理番号が同じ本を見分ける
    ・「:」「|」以降の副題は、手前が十分長い（10以上）ときだけ省く */
-const ABBR_MAX = { '40s': 34, '65': 26 };
+const ABBR_MAX = { '40a': 34, '40s': 34, '65': 26 };
 const ABBR_KEY = 'wabi_book_abbr_v1';
 let ABBR_OVR = {};
 try { ABBR_OVR = JSON.parse(localStorage.getItem(ABBR_KEY) || '{}') || {}; } catch (e) { ABBR_OVR = {}; }
@@ -211,7 +240,7 @@ function autoAbbr(title, max, author){
 function abbrFor(b, size){
   const o = ABBR_OVR[b.id];
   if (typeof o === 'string' && o.trim()) return o.trim();
-  return autoAbbr(b.title, ABBR_MAX[size] || ABBR_MAX['40s'], b.author);
+  return autoAbbr(b.title, ABBR_MAX[size] || ABBR_MAX['40a'], b.author);
 }
 
 async function load(){
@@ -253,7 +282,7 @@ function onAbbrInput(inp){
   if (!b) return;
   const size = document.getElementById('size').value;
   const v = inp.value.trim();
-  if (!v || v === autoAbbr(b.title, ABBR_MAX[size] || ABBR_MAX['40s'], b.author)) { delete ABBR_OVR[id]; inp.classList.remove('edited'); }
+  if (!v || v === autoAbbr(b.title, ABBR_MAX[size] || ABBR_MAX['40a'], b.author)) { delete ABBR_OVR[id]; inp.classList.remove('edited'); }
   else { ABBR_OVR[id] = v; inp.classList.add('edited'); }
   saveOvr();
   clearTimeout(abbrTimer); abbrTimer = setTimeout(build, 200);
@@ -271,52 +300,86 @@ function updCount(){
   document.getElementById('count').textContent = n + ' / ' + BOOKS.length + ' etykiet — ラベル' + n + '枚';
 }
 
+function makeLabel(b, size, small, qrPx){
+  const el = document.createElement('div');
+  el.className = 'label';
+  const qr = document.createElement('div'); qr.className = 'qr';
+  if (small) qr.style.padding = '0.9mm';   // QRの周りの白い余白（読み取りに必要）
+  const txt = document.createElement('div'); txt.className = 'txt';
+  if (small) {
+    txt.innerHTML = `<div class="ltitle">${esc(abbrFor(b, size))}</div>
+      <div class="lid">${esc(b.id)}</div>`;
+  } else {
+    txt.innerHTML = `<div class="lid">${esc(b.id)}</div>
+      <div class="ltitle">${esc(b.title)}</div>
+      <div class="lbrand">🍜 WABI NAVI · Toruń</div>`;
+  }
+  el.appendChild(qr); el.appendChild(txt);
+  return { el, qr };
+}
+function numOf(id){ const v = parseFloat(String(document.getElementById(id).value).replace(',', '.')); return isFinite(v) ? Math.max(-15, Math.min(15, v)) : 0; }
+function offsets(){ return { x: numOf('ox'), y: numOf('oy') }; }
+
 function build(){
   const size = document.getElementById('size').value;
   const skip = Math.max(0, parseInt(document.getElementById('skip').value || '0', 10) || 0);
   const sheet = document.getElementById('sheet');
   sheet.className = 'size-' + size;
   sheet.innerHTML = '';
-  const small = (size === '40s' || size === '65');
+  const small = (size === '40a' || size === '40s' || size === '65');
+  document.getElementById('offrow').style.display = (size === '40a') ? '' : 'none';
+  // 余白なしシール（40a）は印刷時の余白を0に。他のサイズは従来どおり8mm
+  let pc = document.getElementById('pagecss');
+  if (!pc) { pc = document.createElement('style'); pc.id = 'pagecss'; document.head.appendChild(pc); }
+  pc.textContent = (size === '40a') ? '@media print{@page{size:A4;margin:0}}' : '';
 
   const sel = {};
   document.querySelectorAll('.cb:checked').forEach(c => sel[c.value] = true);
   const list = BOOKS.filter(b => sel[b.id]);
 
-  for (let i = 0; i < skip; i++) {
-    const d = document.createElement('div');
-    d.className = 'label'; d.style.border = 'none';
-    sheet.appendChild(d);
-  }
-
   // 小型は高解像度（200px）で描いてCSSで縮める＝印刷で四角の縁がにじみにくい
   const qrPx = small ? 200 : (size === '24' ? 96 : 66);
-  list.forEach(b => {
-    const el = document.createElement('div');
-    el.className = 'label';
-    const qr = document.createElement('div'); qr.className = 'qr';
-    if (small) qr.style.padding = '0.9mm';   // QRの周りの白い余白（読み取りに必要）
-    const txt = document.createElement('div'); txt.className = 'txt';
-    if (small) {
-      txt.innerHTML = `<div class="ltitle">${esc(abbrFor(b, size))}</div>
-        <div class="lid">${esc(b.id)}</div>`;
-    } else {
-      txt.innerHTML = `<div class="lid">${esc(b.id)}</div>
-        <div class="ltitle">${esc(b.title)}</div>
-        <div class="lbrand">🍜 WABI NAVI · Toruń</div>`;
+  const draw = (b, parent) => {
+    const m = makeLabel(b, size, small, qrPx);
+    parent.appendChild(m.el);
+    try { new QRCode(m.qr, { text: 'WABIBOOK:' + b.id, width: qrPx, height: qrPx,
+                             correctLevel: QRCode.CorrectLevel.M }); }
+    catch(e){ m.qr.textContent = b.id; }
+  };
+
+  if (size === '40a') {
+    const items = []; for (let i = 0; i < skip; i++) items.push(null);
+    list.forEach(b => items.push(b));
+    const off = offsets();
+    for (let k = 0; k < items.length; k += 40) {
+      const page = document.createElement('div'); page.className = 'page';
+      const grid = document.createElement('div'); grid.className = 'pgin';
+      grid.style.left = off.x + 'mm'; grid.style.top = off.y + 'mm';
+      items.slice(k, k + 40).forEach(b => {
+        if (b) draw(b, grid);
+        else { const d = document.createElement('div'); d.className = 'label'; d.style.border = 'none'; grid.appendChild(d); }
+      });
+      page.appendChild(grid); sheet.appendChild(page);
     }
-    el.appendChild(qr); el.appendChild(txt);
-    sheet.appendChild(el);
-    try {
-      new QRCode(qr, { text: 'WABIBOOK:' + b.id, width: qrPx, height: qrPx,
-                       correctLevel: QRCode.CorrectLevel.M });
-    } catch(e){ qr.textContent = b.id; }
-  });
+  } else {
+    for (let i = 0; i < skip; i++) {
+      const d = document.createElement('div');
+      d.className = 'label'; d.style.border = 'none';
+      sheet.appendChild(d);
+    }
+    list.forEach(b => draw(b, sheet));
+  }
   updCount();
 }
 
 document.getElementById('size').onchange = function(){ if (BOOKS.length) renderPicker(); build(); };
 document.getElementById('skip').oninput  = build;
+document.getElementById('ox').oninput = build;
+document.getElementById('oy').oninput = build;
+try { const o = JSON.parse(localStorage.getItem('wabi_label_off_v1') || 'null'); if (o) { document.getElementById('ox').value = o.x; document.getElementById('oy').value = o.y; } } catch (e) {}
+function saveOff(){ try { localStorage.setItem('wabi_label_off_v1', JSON.stringify({ x: document.getElementById('ox').value, y: document.getElementById('oy').value })); } catch (e) {} }
+document.getElementById('ox').addEventListener('input', saveOff);
+document.getElementById('oy').addEventListener('input', saveOff);
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
