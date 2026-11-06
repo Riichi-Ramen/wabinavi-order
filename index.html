@@ -701,6 +701,29 @@ body.show-config .config-bar{display:flex}
   color:#1f4b6e;box-shadow:0 2px 8px rgba(47,102,144,.25)}
 .serve-chip[data-m="wynos"].sel{border-color:#b93c3c;background:linear-gradient(135deg,#fdecec,#f9dcdc);color:#8e2418}
 .serve-chip[data-m="kasa"].sel{border-color:#b68a00;background:linear-gradient(135deg,#fdf6e3,#f7ecc8);color:#8e6b00}
+
+/* ── 📚 書籍リスト（ジャンル折りたたみ＋紹介ポップアップ） ── */
+.bk-genre{margin-bottom:.7rem;border:1.5px solid var(--border);border-radius:12px;background:rgba(255,252,245,0.95);overflow:hidden}
+.bk-genre>summary,.bk-series>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;font-weight:700;font-size:.88rem;color:var(--text)}
+.bk-genre>summary::-webkit-details-marker,.bk-series>summary::-webkit-details-marker{display:none}
+.bk-genre>summary::after,.bk-series>summary::after{content:'▾';margin-left:auto;color:var(--muted);transition:transform .15s}
+.bk-genre[open]>summary::after,.bk-series[open]>summary::after{transform:rotate(180deg)}
+.bk-genre[open]>summary{border-bottom:1px solid var(--border);background:rgba(192,57,43,0.05)}
+.bk-count{font-weight:600;font-size:.7rem;color:var(--muted)}
+.bk-body{padding:.7rem .7rem .1rem}
+.bk-series{margin-bottom:.6rem;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,0.6)}
+.bk-series>summary{font-size:.8rem;padding:.55rem .8rem}
+.bk-series .bk-body{padding:.6rem .6rem .1rem}
+.bk-card{background:rgba(255,252,245,0.95);border:1.5px solid rgba(45,122,58,0.4);border-radius:12px;padding:.75rem .9rem;margin-bottom:.6rem}
+.bk-card.lent{border-color:rgba(230,126,34,0.5);opacity:.78}
+.bk-row{display:flex;justify-content:space-between;gap:.5rem;align-items:flex-start}
+.bk-title{flex:1;text-align:left;background:none;border:none;padding:0;font:inherit;font-weight:700;font-size:.86rem;color:var(--text);cursor:pointer;line-height:1.4}
+.bk-title:hover{color:var(--accent)}
+.bk-info{font-size:.7rem;color:var(--accent);margin-top:.2rem;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;text-decoration:underline}
+.bk-meta{font-size:.7rem;color:var(--muted);margin-top:.15rem}
+.bk-badge{flex-shrink:0;font-size:.64rem;font-weight:700;border-radius:12px;padding:.2rem .55rem;color:#fff}
+.bk-18{display:inline-block;font-size:.62rem;font-weight:800;border:1.5px solid #a00;color:#a00;border-radius:6px;padding:0 .3rem;margin-left:.3rem;vertical-align:middle}
+.bk-btn{margin-top:.5rem;background:#2d7a3a;color:#fff;border:none;border-radius:8px;padding:.42rem .95rem;font-size:.76rem;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -1274,6 +1297,24 @@ body.show-config .config-bar{display:flex}
   </div>
 
   <!-- ══ 貸出モーダル ══ -->
+  <!-- 📖 書籍の紹介ポップアップ -->
+  <div id="book-info-modal" style="display:none;position:fixed;inset:0;background:rgba(60,20,10,0.75);
+    backdrop-filter:blur(6px);z-index:610;align-items:center;justify-content:center;padding:1.2rem"
+    onclick="if(event.target===this)closeBookInfo()">
+    <div role="dialog" aria-modal="true" aria-labelledby="bi-title"
+      style="background:rgba(255,252,245,0.98);border-radius:16px;padding:1.3rem;width:100%;max-width:400px;
+      max-height:85vh;overflow:auto;box-shadow:0 8px 40px rgba(120,60,40,0.25)">
+      <div id="bi-title" style="font-size:.98rem;font-weight:700;color:var(--accent);margin-bottom:.25rem"></div>
+      <div id="bi-meta" style="font-size:.72rem;color:var(--muted);margin-bottom:.8rem;line-height:1.6"></div>
+      <div id="bi-desc" style="font-size:.82rem;line-height:1.75;color:var(--text);margin-bottom:.9rem"></div>
+      <div id="bi-status" style="font-size:.74rem;margin-bottom:.8rem"></div>
+      <button id="bi-borrow" class="bk-btn" style="display:none;width:100%;padding:.65rem;font-size:.85rem;margin:0 0 .5rem"></button>
+      <button onclick="closeBookInfo()"
+        style="width:100%;background:transparent;border:1.5px solid var(--border);color:var(--muted);
+               border-radius:10px;padding:.6rem;cursor:pointer;font-size:.84rem">✕ Zamknij / Close / 閉じる</button>
+    </div>
+  </div>
+
   <div id="borrow-modal" style="display:none;position:fixed;inset:0;background:rgba(60,20,10,0.75);
     backdrop-filter:blur(6px);z-index:600;align-items:center;justify-content:center;padding:1.2rem">
     <div style="background:rgba(255,252,245,0.97);border-radius:16px;padding:1.5rem;
@@ -3393,33 +3434,176 @@ async function loadBooks() {
       area.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1.5rem;font-size:.8rem">📚 蔵書を準備中です / Wkrótce dostępne</div>';
       return;
     }
-    area.innerHTML = data.books.map(b => `
-      <div style="background:rgba(255,252,245,0.95);border:1.5px solid ${b.lent?'rgba(230,126,34,0.5)':'rgba(45,122,58,0.4)'};
-        border-radius:12px;padding:.85rem 1rem;margin-bottom:.7rem;${b.lent?'opacity:.75':''}">
-        <div style="display:flex;justify-content:space-between;gap:.5rem;align-items:flex-start">
-          <div style="flex:1">
-            <div style="font-weight:700;font-size:.88rem">📖 ${b.title}</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">
-              ${b.author}${b.lang?'　🌐 '+b.lang:''}${b.genre?'　🏷️ '+b.genre:''}</div>
-          </div>
-          <span style="flex-shrink:0;font-size:.66rem;font-weight:700;border-radius:12px;
-            padding:.2rem .55rem;color:#fff;background:${b.lent?'#e67e22':'#2d7a3a'}">
-            ${b.lent?'貸出中 / Wypożyczona':'在庫あり / Dostępna'}</span>
-        </div>
-        ${b.lent
-          ? `<div style="font-size:.72rem;color:#b9640f;margin-top:.5rem">
-               🔙 返却予定 → <strong>${b.dueDate||'—'}</strong> から貸出可能<br>
-               <small>Dostępna od / Available from: ${b.dueDate||'—'}</small></div>`
-          : `<button onclick="openBorrowModal('${b.id}', this.dataset.t, this.dataset.a)"
-               data-t="${b.title.replace(/"/g,'&quot;')}" data-a="${b.author.replace(/"/g,'&quot;')}"
-               style="margin-top:.55rem;background:#2d7a3a;color:#fff;border:none;border-radius:8px;
-                      padding:.45rem 1rem;font-size:.76rem;font-weight:700;cursor:pointer">
-               📚 借りる / Wypożycz / Borrow</button>`}
-      </div>`).join('');
+    window.__books = data.books;
+    renderBooks(area, data.books);
   } catch(e) {
     area.innerHTML = '<div style="text-align:center;color:var(--accent);padding:1.5rem;font-size:.8rem">📡 読み込みに失敗しました。もう一度お試しください。</div>';
   }
 }
+
+// ── 📚 書籍リストの描画（ジャンルごとに折りたたみ。文字は textContent で入れる＝HTMLを解釈させない） ──
+const BOOK_GENRES = {
+  '1':  ['🍳','料理・グルメ','Kuchnia','Food & Cooking'],
+  '2':  ['🧳','紀行','Podróże','Travel'],
+  '3':  ['🏯','歴史','Historia','History'],
+  '4':  ['🗣️','言語','Język','Language'],
+  '5':  ['🎨','芸術・スポーツ','Sztuka i sport','Arts & Sports'],
+  '6':  ['🏙️','社会','Społeczeństwo','Society'],
+  '7':  ['📖','文学','Literatura','Literature'],
+  '8':  ['🎌','サブカルチャー','Subkultura','Subculture'],
+  '10': ['📈','政治・経済','Polityka i ekonomia','Politics & Economy'],
+  '11': ['🎎','日本文化','Kultura japońska','Japanese Culture'],
+  '12': ['📦','その他','Inne','Other'],
+  '13': ['📚','マンガ・コミック','Manga i komiksy','Manga & Comics']
+};
+const bkOpen = new Set();   // 開いている見出しを覚えておく（再読込しても閉じない）
+
+function bkEl(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function bkSeriesKey(title) {
+  return String(title || '').replace(/\s*[\(（]?\s*\d+\s*巻\s*[\)）]?\s*$/, '').trim();
+}
+function bkGenreInfo(g) {
+  const m = String(g || '').match(/^\s*(\d+)\s*(.*)$/);
+  const key = m ? m[1] : '';
+  const info = BOOK_GENRES[key];
+  return { order: m ? Number(m[1]) : 999, key: key || String(g || ''),
+           label: info ? `${info[0]} ${info[1]} / ${info[2]} / ${info[3]}` : ('🏷️ ' + (m ? m[2] : g || '—')) };
+}
+function bkCountText(list) {
+  const free = list.filter(b => !b.lent).length;
+  return `${list.length} · ✓${free}`;
+}
+
+function bkCard(b) {
+  const card = bkEl('div', 'bk-card' + (b.lent ? ' lent' : ''));
+  const row = bkEl('div', 'bk-row');
+  const left = document.createElement('div'); left.style.flex = '1';
+  const tbtn = bkEl('button', 'bk-title', '📖 ' + b.title);
+  tbtn.type = 'button';
+  tbtn.addEventListener('click', () => openBookInfo(b.id));
+  if (b.adult) tbtn.appendChild(bkEl('span', 'bk-18', '18+'));
+  left.appendChild(tbtn);
+  left.appendChild(bkEl('div', 'bk-meta', b.author + (b.lang ? '　🌐 ' + b.lang : '')));
+  if (b.descPl || b.descEn) {
+    const more = bkEl('button', 'bk-info', 'ℹ️ Opis / Description / 紹介');
+    more.type = 'button';
+    more.addEventListener('click', () => openBookInfo(b.id));
+    left.appendChild(more);
+  }
+  row.appendChild(left);
+  const badge = bkEl('span', 'bk-badge', b.lent ? '貸出中 / Wypożyczona' : '在庫あり / Dostępna');
+  badge.style.background = b.lent ? '#e67e22' : '#2d7a3a';
+  row.appendChild(badge);
+  card.appendChild(row);
+  if (b.lent) {
+    const d = bkEl('div', null, null);
+    d.style.cssText = 'font-size:.72rem;color:#b9640f;margin-top:.5rem';
+    d.appendChild(document.createTextNode('🔙 返却予定 → '));
+    d.appendChild(bkEl('strong', null, b.dueDate || '—'));
+    d.appendChild(document.createTextNode(' から貸出可能'));
+    d.appendChild(document.createElement('br'));
+    d.appendChild(bkEl('small', null, 'Dostępna od / Available from: ' + (b.dueDate || '—')));
+    card.appendChild(d);
+  } else {
+    const btn = bkEl('button', 'bk-btn', '📚 借りる / Wypożycz / Borrow');
+    btn.type = 'button';
+    btn.addEventListener('click', () => openBorrowModal(b.id, b.title, b.author));
+    card.appendChild(btn);
+  }
+  return card;
+}
+
+function bkDetails(cls, key, summaryParts, openDefault) {
+  const d = document.createElement('details');
+  d.className = cls;
+  if (bkOpen.has(key) || openDefault) d.open = true;
+  d.addEventListener('toggle', () => { d.open ? bkOpen.add(key) : bkOpen.delete(key); });
+  const sm = document.createElement('summary');
+  summaryParts.forEach(p => sm.appendChild(p));
+  d.appendChild(sm);
+  return d;
+}
+
+function renderBooks(area, books) {
+  area.textContent = '';
+  const groups = new Map();
+  books.forEach(b => {
+    const gi = bkGenreInfo(b.genre);
+    if (!groups.has(gi.key)) groups.set(gi.key, { gi, list: [] });
+    groups.get(gi.key).list.push(b);
+  });
+  [...groups.values()].sort((a, c) => a.gi.order - c.gi.order).forEach(g => {
+    const det = bkDetails('bk-genre', 'g:' + g.gi.key,
+      [bkEl('span', null, g.gi.label), bkEl('span', 'bk-count', bkCountText(g.list))], false);
+    const body = bkEl('div', 'bk-body');
+    if (g.list.length > 12) {
+      // 冊数の多いジャンル（マンガなど）は、シリーズごとにもう一段まとめる
+      const series = new Map();
+      g.list.forEach(b => {
+        const k = bkSeriesKey(b.title);
+        if (!series.has(k)) series.set(k, []);
+        series.get(k).push(b);
+      });
+      series.forEach((list, k) => {
+        if (list.length === 1) { body.appendChild(bkCard(list[0])); return; }
+        const sd = bkDetails('bk-series', 's:' + g.gi.key + ':' + k,
+          [bkEl('span', null, '📚 ' + k), bkEl('span', 'bk-count', bkCountText(list))], false);
+        const sb = bkEl('div', 'bk-body');
+        list.forEach(b => sb.appendChild(bkCard(b)));
+        sd.appendChild(sb);
+        body.appendChild(sd);
+      });
+    } else {
+      g.list.forEach(b => body.appendChild(bkCard(b)));
+    }
+    det.appendChild(body);
+    area.appendChild(det);
+  });
+}
+
+// ── 📖 紹介ポップアップ（ポーランド語・英語） ──
+function openBookInfo(id) {
+  const b = (window.__books || []).find(x => x.id === id);
+  if (!b) return;
+  document.getElementById('bi-title').textContent = b.title;
+  const meta = document.getElementById('bi-meta');
+  meta.textContent = '';
+  meta.appendChild(document.createTextNode(b.author + (b.lang ? '　🌐 ' + b.lang : '')));
+  if (b.genre) { meta.appendChild(document.createElement('br')); meta.appendChild(document.createTextNode(bkGenreInfo(b.genre).label)); }
+  if (b.adult) {
+    meta.appendChild(document.createElement('br'));
+    meta.appendChild(bkEl('strong', null, '🔞 18+ — treści dla dorosłych / adult content / 成人向け表現あり'));
+  }
+  const desc = document.getElementById('bi-desc');
+  desc.textContent = '';
+  if (b.descPl || b.descEn) {
+    if (b.descPl) { const p = bkEl('div', null, '🇵🇱 ' + b.descPl); p.style.marginBottom = '.55rem'; desc.appendChild(p); }
+    if (b.descEn) desc.appendChild(bkEl('div', null, '🇬🇧 ' + b.descEn));
+  } else {
+    const p = bkEl('div', null, 'Opis wkrótce / Description coming soon');
+    p.style.color = 'var(--muted)'; desc.appendChild(p);
+  }
+  const st = document.getElementById('bi-status');
+  st.textContent = b.lent
+    ? `貸出中 / Wypożyczona — ${b.dueDate || '—'} から貸出可能 / available from ${b.dueDate || '—'}`
+    : '在庫あり / Dostępna / Available';
+  st.style.color = b.lent ? '#b9640f' : '#2d7a3a';
+  const btn = document.getElementById('bi-borrow');
+  if (b.lent) { btn.style.display = 'none'; btn.onclick = null; }
+  else {
+    btn.style.display = 'block';
+    btn.textContent = '📚 借りる / Wypożycz / Borrow';
+    btn.onclick = () => { closeBookInfo(); openBorrowModal(b.id, b.title, b.author); };
+  }
+  document.getElementById('book-info-modal').style.display = 'flex';
+}
+function closeBookInfo() { document.getElementById('book-info-modal').style.display = 'none'; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBookInfo(); });
 
 function openBorrowModal(id, title, author) {
   // 🚧 準備中（BOOKS_COMING_SOON を false にすると解除されます）
