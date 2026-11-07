@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- reservations.html ・ v1.5-dostawa-20261019 -->
+<!-- reservations.html ・ v1.6-dupcancel-20261107 -->
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
@@ -392,7 +392,20 @@ function statusClass(st){
   return '';
 }
 
+// 2026-11-07：送信ミスで何度も登録された予約（同じ電話・日付・時刻）の「取消済みの控え」は表示しない。
+//   同じ予約が有効（確定・来店済など）で残っているときだけ隠す。本当にキャンセルした予約は今までどおり表示。
+function dupKey_(r){
+  const ph = String(r.phone || '').replace(/\D/g, '').slice(-9);
+  return ph ? (ph + '|' + r.date + '|' + (r.time || '')) : '';
+}
+function hideDupCancelled_(list){
+  const live = new Set();
+  list.forEach(r => { if (statusClass(r.status) !== 'grey') { const k = dupKey_(r); if (k) live.add(k); } });
+  return list.filter(r => statusClass(r.status) !== 'grey' || !live.has(dupKey_(r)));
+}
+
 function render(list){
+  list = hideDupCancelled_(list);
   const area = document.getElementById('list-area');
   const active = list.filter(r => statusClass(r.status) !== 'grey');
   const totalGuests = active.reduce((s,r) => s + (parseInt(r.guests,10)||0), 0);
