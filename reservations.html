@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- reservations.html ・ v1.6-dupcancel-20261107 -->
+<!-- reservations.html ・ v1.7-nodouble-20261107 -->
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
@@ -826,7 +826,10 @@ function telMsg(kind, html){
   b.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
+let telBusy_ = false;
 async function submitTel(force){
+  if (telBusy_) return;          // 送信中の連打は無視（二重登録防止）
+  telBusy_ = true;
   const btn = document.getElementById('tel-save');
   const payload = {
     action:  'telReservation',
@@ -844,6 +847,7 @@ async function submitTel(force){
   localStorage.setItem('wabi_staff_name', payload.staff);
 
   btn.disabled = true;
+  document.querySelectorAll('#tel-msg button').forEach(b => b.disabled = true);
   btn.textContent = '⏳ Zapisuję… / 登録中…';
   try{
     const d = await postGAS(payload);
@@ -864,6 +868,7 @@ async function submitTel(force){
   }catch(e){
     telMsg('err', '⚠️ Błąd połączenia / 通信エラー。もう一度お試しください。');
   }finally{
+    telBusy_ = false;
     btn.disabled = false;
     btn.textContent = '✅ Zapisz rezerwację / この内容で登録';
   }
