@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- 2026-11-03 セキュリティ：通信先・読み込み元を限定（XSSで情報が外へ出るのを防ぐ）。外部ドメインを足すときはここも直す -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'self'; form-action 'self'; object-src 'none'">
-<meta name="wabi-version" content="staff-20261025b">
+<meta name="wabi-version" content="staff-20261108-voucher">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — 係員専用 / Obsługa</title>
@@ -298,6 +298,21 @@ body{
     <button class="btn btn-secondary" style="margin-top:.5rem" onclick="stopQrScan()">✖ 中止 / Anuluj</button>
   </div>
   <div id="qr-result" style="margin-top:.8rem;display:none"></div>
+  <hr class="divider">
+  <div class="staff-title" style="font-size:.9rem">🎟 Bony / Vouchers / 金券</div>
+  <div class="id-tabs" id="voucher-tabs">
+    <button class="id-tab active" onclick="voucherTab_('redeem',this)">Użyj / Redeem / 使用</button>
+    <button class="id-tab" onclick="voucherTab_('sell',this)">Sprzedaj / Sell / 販売</button>
+    <button class="id-tab" onclick="voucherTab_('check',this)">Sprawdź / Check / 照会</button>
+  </div>
+  <div id="voucher-help" style="font-size:.7rem;color:var(--muted);line-height:1.5">Skanuj kolejne kody. / Scan vouchers continuously. / QRを連続して読み取ります。</div>
+  <button class="btn btn-green" onclick="voucherStartScan_()">📷 Skanuj / Scan / 読み取り</button>
+  <div id="voucher-camera" style="display:none;text-align:center"><video id="voucher-video" playsinline style="width:100%;max-width:320px;border-radius:12px"></video><button class="btn btn-secondary" onclick="voucherStopScan_()">Zatrzymaj / Stop / 停止</button></div>
+  <div id="voucher-list" style="font-size:.76rem;line-height:1.6;margin:.5rem 0"></div>
+  <div id="voucher-redeem-fields"><label class="form-label">Kwota rachunku (opcjonalnie) / Bill amount (optional) / 会計額（任意）</label><input class="form-input" id="voucher-bill" type="number" min="0" step="0.01" oninput="voucherRender_()"><label class="form-label">Personel i notatka / Staff and memo / 担当・メモ</label><input class="form-input" id="voucher-staff" maxlength="40"><input class="form-input" id="voucher-memo" maxlength="40" placeholder="Stolik / Table / 卓番号"><button class="btn btn-green" onclick="voucherSubmit_()">Użyj / Redeem / 使用する</button></div>
+  <div id="voucher-sell-fields" style="display:none"><div style="font-size:.7rem">4 × 50 zł = 180 zł / 4 × 100 zł = 350 zł</div><button class="btn btn-green" onclick="voucherSubmit_()">Sprzedaj / Sell / 販売する</button></div>
+  <div id="voucher-check-fields" style="display:none"><label class="form-label">Uszkodzony QR: sprawdź ID w arkuszu / Damaged QR: check ID in the sheet / QR破損時はシートで券IDを確認</label><input class="form-input" maxlength="8" placeholder="WV-00001" disabled></div>
+  <div id="voucher-result" style="margin-top:.6rem"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
@@ -522,6 +537,17 @@ function stopQrScan() {
   if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
   document.getElementById('qr-scan-area').style.display = 'none';
 }
+
+// ── 金券：使用・販売・照会（2026-11-08）──
+let voucherMode_='redeem',voucherCodes_=[],voucherItems_=[],voucherStream_=null,voucherTimer_=null,voucherPendingId_='';
+function voucherTab_(mode,btn){voucherMode_=mode;voucherCodes_=[];voucherItems_=[];voucherPendingId_='';document.querySelectorAll('#voucher-tabs .id-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');['redeem','sell','check'].forEach(x=>document.getElementById('voucher-'+x+'-fields').style.display=x===mode?'block':'none');document.getElementById('voucher-result').textContent='';voucherRender_();}
+function voucherText_(r){if(voucherMode_==='sell'){if(r==='inactive')return '✅ Do sprzedaży / Ready to sell / 販売できます';if(r==='ok')return '❌ Już aktywny / Already active / すでに有効';}const m={ok:'✅ Aktywny / Valid / 有効',used:'❌ Wykorzystany / Used / 使用済み',expired:'❌ Wygasł / Expired / 期限切れ',inactive:'❌ Nieaktywny / Inactive / 未販売',void:'❌ Anulowany / Void / 無効',badFormat:'❌ Nieprawidłowy format / Bad format / 形式不正',badSig:'❌ Podejrzenie fałszerstwa / Suspected forgery / 偽造の疑い',notFound:'❌ Nie znaleziono / Not found / 未登録'};return m[r]||String(r||'');}
+function voucherRender_(){const box=document.getElementById('voucher-list'),okResult=voucherMode_==='sell'?'inactive':'ok',total=voucherItems_.reduce((n,x)=>n+(x.result===okResult?(Number(x.face)||0):0),0);box.innerHTML=voucherItems_.map(x=>'<div>'+escStaffHtml_(x.id)+' — '+escStaffHtml_(voucherText_(x.result))+(x.face?' — '+Number(x.face)+' zł':'')+(x.usedAt?' — '+escStaffHtml_(x.usedAt):'')+'</div>').join('')+(voucherItems_.length?'<b>Razem / Total / 合計: '+total+' zł</b>':'');const raw=document.getElementById('voucher-bill').value,bill=Number(raw);if(voucherMode_==='redeem'&&raw!==''&&bill>=0&&bill<total)box.innerHTML+='<div style="color:#b00020;font-weight:700">Reszta nie jest wydawana. Pozostałe '+escStaffHtml_((total-bill).toFixed(2))+' zł nie zostanie zwrócone. / No change. '+escStaffHtml_((total-bill).toFixed(2))+' zł will not be returned. / お釣りは出ません。残額 '+escStaffHtml_((total-bill).toFixed(2))+' zł は返しません。</div>';}
+async function voucherAdd_(code){code=String(code||'').trim().toUpperCase();if(voucherCodes_.includes(code))return;if(voucherMode_==='check'){voucherCodes_=[];voucherItems_=[];}voucherPendingId_='';voucherCodes_.push(code);if(navigator.vibrate)navigator.vibrate(80);const pw=document.getElementById('staff-password').value;const d=await postGAS({action:'voucherCheck',password:pw,codes:[code]});maybeSavePw(pw,d);if(d.status==='ok'&&d.items&&d.items[0])voucherItems_.push(d.items[0]);else document.getElementById('voucher-result').textContent='❌ '+String(d.status||'error');voucherRender_();if(voucherMode_==='check')voucherStopScan_();}
+async function voucherStartScan_(){if(!document.getElementById('staff-password').value){showError('staff-error','Wpisz hasło / Enter password / パスワードを入力');return;}const video=document.getElementById('voucher-video');document.getElementById('voucher-camera').style.display='block';try{voucherStream_=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});video.srcObject=voucherStream_;await video.play();const c=document.createElement('canvas'),x=c.getContext('2d',{willReadFrequently:true});voucherTimer_=setInterval(()=>{if(video.readyState!==video.HAVE_ENOUGH_DATA)return;c.width=video.videoWidth;c.height=video.videoHeight;x.drawImage(video,0,0);const im=x.getImageData(0,0,c.width,c.height),q=jsQR(im.data,im.width,im.height);if(q&&/^WABIV1:/i.test(q.data))voucherAdd_(q.data);},250);}catch(e){voucherStopScan_();showError('staff-error','Brak dostępu do kamery / Camera unavailable / カメラを使えません');}}
+function voucherStopScan_(){if(voucherTimer_){clearInterval(voucherTimer_);voucherTimer_=null;}if(voucherStream_){voucherStream_.getTracks().forEach(t=>t.stop());voucherStream_=null;}document.getElementById('voucher-camera').style.display='none';}
+function voucherRequestId_(){return 'v-'+Date.now()+'-'+Math.random().toString(36).slice(2);}
+async function voucherSubmit_(){const pw=document.getElementById('staff-password').value,result=document.getElementById('voucher-result');if(!voucherCodes_.length){result.textContent='Skanuj bon / Scan a voucher / QRを読み取ってください';return;}const action=voucherMode_==='sell'?'voucherSell':'voucherRedeem';if(!voucherPendingId_)voucherPendingId_=voucherRequestId_();const payload={action,password:pw,codes:voucherCodes_.slice(),requestId:voucherPendingId_,staff:document.getElementById('voucher-staff').value,memo:document.getElementById('voucher-memo').value};result.textContent='…';try{const d=await postGAS(payload);maybeSavePw(pw,d);voucherPendingId_='';if(d.status==='ok'){result.innerHTML='<div class="rankup-box"><div class="rankup-text">✅ '+(action==='voucherSell'?'Ważny do / Valid until / 有効期限: <strong style="font-size:1.2rem">'+escStaffHtml_(String(d.expires||'').split('-').reverse().join('.'))+'</strong>':'Wykorzystano / Redeemed / 使用済み — '+Number(d.totalFace||0)+' zł')+'</div></div>';voucherCodes_=[];voucherItems_=[];voucherRender_();}else if(d.status==='rejected'){voucherItems_=Array.isArray(d.items)?d.items:voucherItems_;voucherRender_();result.textContent='❌ Nie wykorzystano żadnego bonu. / No vouchers were redeemed. / どの券も使用されていません。';}else result.textContent='❌ '+String(d.status||'error');}catch(e){result.textContent='📡 Błąd połączenia / Connection error / 通信エラー — ponów / retry / 再試行';}}
 
 // ══════════════════════════════════════════════════════════════
 //  🔑 パスワードの記憶（books.html と共通のキー wabi_staff_pw）
