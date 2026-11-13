@@ -65,7 +65,7 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
 <header>
   <h1>🍜 Wabi Navi — Instrukcja obsługi</h1>
   <div class="sub">日常操作マニュアル / Codzienne operacje</div>
-  <div class="ver">System v8.30 · Toruń</div>
+  <div class="ver">System v8.31 · Toruń</div>
 </header>
 
 <div class="intro">
@@ -323,6 +323,8 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
     <li><b>✅ Wszedł / 入店済み</b> — kolumna A. Gdy goście usiądą, <b>zaznacz pole</b>: wiersz robi się <b>zielony</b>, a u góry widać „Wszedł n/m”.
         To ten sam stan co przycisk <b>🍜 Przyszli</b> w panelu rezerwacji (odznaczenie = wraca „Potwierdzona”).
       <span class="pl">お客様が着席したら、A列の<b>チェックを入れる</b>。行が<b>緑</b>になり、上に「入店済み n/m」が出ます。予約パネルの「🍜 Przyszli／来店済」ボタンと同じ状態です（チェックを外すと「確定」に戻る）。</span></li>
+    <li>W panelu rezerwacji (<code>…/reservations.html</code>) <b>kalendarz 2 tygodni</b> (od dziś, 14 dni) jest widoczny stale; dotknij dnia, aby zobaczyć listę. Nagłówek kalendarza ukrywa / pokazuje go (zapamiętane na urządzeniu). Pod nim małe przyciski: skan członka, sprawdzanie członka, książki, 🎟 bony, Faktura/NIP, 🍳 kuchnia (arkusz stanu / aplikacja kuchni), kampanie, menu, ceny.
+      <span class="pl">予約パネルには<b>2週間カレンダー</b>（今日から14日間）が常に表示されます。日をタップするとその日の一覧。見出しを押すと隠す／表示（端末に記憶）。その下に小ボタン：会員QR照合、会員照会、図書、🎟金券、Faktura/NIP、🍳調理・配膳中（状況シート／キッチン専用アプリ）、広告カレンダー、メニュー、価格変更。</span></li>
     <li>Na tablecie przy barze masz też <b>panel rezerwacji</b> (<code>…/reservations.html</code>) —
         tam przyjmujesz rezerwacje telefoniczne i odznaczasz przyjścia. Patrz następne dwie sekcje.
       <span class="pl">カウンターのタブレットには<b>予約パネル</b>（<code>…/reservations.html</code>）もあります。電話予約の受付と来店チェックはこちら。次の2つのセクション参照。</span></li>
@@ -558,6 +560,50 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
     （例：3杯なら2人まで、1杯なら付与できません）。自分のスマホで注文した会員は自動で付き、人数の上限には数えません。</span></div>
 </section>
 
+<!-- 金券・Faktura/NIP（2026-11-13） -->
+<section>
+  <h2>🎟 Bony <span class="pl">金券（回数券型・先払い）</span></h2>
+  <span class="path">staff.html → „🎟 Sprzedaj bon” / „🎟 Użyj bonu” · <code>…/voucher_print.html</code> (druk / 印刷)</span>
+  <div class="note"><b>Zasady / ルール：</b> 4 × 50 zł = <b>180 zł</b> · 4 × 100 zł = <b>350 zł</b>. Każdy bon to osobna karta z własnym ID i kodem QR. Jednorazowy, <b>bez reszty, nie na gotówkę</b>. Ważny <b>6 miesięcy od sprzedaży</b>. Kupić może każdy — <b>członkostwo nie jest potrzebne</b>. Zakup bonu nie daje punktów; wizyta opłacona bonem daje punkty normalnie.<br>
+    <span class="jp">4枚で50 zł券=<b>180 zł</b>、100 zł券=<b>350 zł</b>。1枚ずつ別カードで、それぞれ固有のIDとQR。1回限りで<b>お釣りなし・現金化不可</b>。有効期間は<b>販売日から6か月</b>。<b>会員でなくても購入できます</b>。金券の購入にはポイントは付きません（金券で支払った来店には通常どおり付きます）。</span></div>
+
+  <h3 style="margin-top:1rem;font-size:.98rem;color:var(--ink)">① Sprzedaż <span class="pl">販売</span></h3>
+  <ol>
+    <li>staff.html → <b>🎟 Sprzedaj bon</b>. Zeskanuj <b>4 karty tej samej wartości</b> (nie muszą być po kolei). Każda musi pokazać „✅ Do sprzedaży”.<br><span class="jp">staff.html →「🎟 金券を販売」。<b>同じ額面の4枚</b>を読み取る（連番でなくてよい）。1枚ごとに「販売できます」と出る。</span></li>
+    <li>Naciśnij <b>Sprzedaj</b> — dopiero teraz 4 bony stają się ważne (od dziś + 6 miesięcy). Samo skanowanie ich nie aktywuje.<br><span class="jp">「販売する」を押すと、<b>この時点で</b>4枚が有効になります（今日から6か月）。読み取っただけでは有効になりません。</span></li>
+    <li>Pobierz zapłatę (180 zł / 350 zł) i wbij w kasie. <b>Wpisz na każdej karcie datę ważności i podpis sprzedawcy.</b><br><span class="jp">代金（180 zł／350 zł）を受け取り、レジに入力。<b>各カードに有効期限と販売者の署名を手書き</b>。</span></li>
+  </ol>
+  <div class="note">💡 Wskazówka: przygotuj z góry koperty po 4 karty (ta sama wartość). Niesprzedane karty są nieważne, więc zgubienie koperty nie szkodzi.<br><span class="jp">💡 同じ額面の4枚ずつ封筒に入れて準備しておくと速い。未販売のカードは無効なので、紛失しても被害は出ません。</span></div>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">② Użycie <span class="pl">使用（お会計のとき）</span></h3>
+  <ol>
+    <li>staff.html → <b>🎟 Użyj bonu</b>. Zeskanuj każdy bon, który gość oddaje. Na ekranie widać sumę wartości.<br><span class="jp">「🎟 金券を使用」。お客様が出したカードを1枚ずつ読み取る。画面に合計額が出ます。</span></li>
+    <li>(Opcjonalnie) wpisz kwotę rachunku i notatkę (stolik / numer rachunku). Jeśli rachunek jest <b>mniejszy</b> niż suma bonów, pojawi się ostrzeżenie — reszty nie wydajemy.<br><span class="jp">（任意）会計額とメモ（卓・伝票番号）を入れる。会計が券の合計より<b>少ない</b>と警告が出ます（お釣りは出しません）。</span></li>
+    <li>Potwierdź. Bony stają się zużyte. W kasie <b>odlicz sumę wartości</b> od rachunku (np. 50 zł + 100 zł = 150 zł) i rozlicz resztę normalnie.<br><span class="jp">確定すると使用済みになります。レジで<b>合計額を会計から差し引き</b>（例：50 zł＋100 zł＝150 zł）、残りを通常どおり精算。</span></li>
+  </ol>
+  <div class="note warn"><b>⚠️ System odrzuci bon, gdy / 次の券は弾かれます：</b> niesprzedany · już użyty · <b>przeterminowany</b> · skopiowany/sfałszowany kod. Jeśli <b>choć jeden</b> z kilku bonów jest nieważny, cała operacja jest odrzucona (nic nie zostaje zużyte).<br>
+    <span class="jp">未販売・使用済み・<b>期限切れ</b>・コピー／偽造のQR。複数枚のうち<b>1枚でも無効なら全体が不成立</b>（どれも使用済みになりません）。期限はカードの手書きではなく<b>システム上の日付</b>が基準です。</span></div>
+
+  <h3 style="margin-top:1.1rem;font-size:.98rem;color:var(--ink)">③ Druk kart <span class="pl">カードの印刷</span></h3>
+  <ol>
+    <li>Otwórz <code>…/voucher_print.html</code>, wpisz hasło, wybierz <b>wartość (50 zł / 100 zł / wszystkie)</b> i naciśnij „Pobierz”.<br><span class="jp">voucher_print.html を開き、パスワード→<b>額面（50／100／すべて）</b>を選んで「読み込む」。</span></li>
+    <li>A4, skala 100%, bez marginesów. „Drukuj przód” → odwróć tę samą kartkę → „Drukuj tył”. Najpierw zrób <b>próbę (Próba)</b>.<br><span class="jp">A4・倍率100%・余白なし。「表面を印刷」→同じ紙を裏返す→「裏面を印刷」。最初に<b>試し刷り</b>で向きを確認。</span></li>
+    <li>Po wydruku naciśnij <b>„Wydrukowano”</b> (potwierdzenie z liczbą sztuk). Zaznaczone zostaną tylko wyświetlone bony.<br><span class="jp">印刷後に<b>「印刷した」</b>を押す（枚数の確認が出ます）。画面に出ている券だけが印刷済みになります。</span></li>
+  </ol>
+  <div class="note">Właściciel: generowanie / unieważnianie / ponowne wydanie / podsumowanie — menu arkusza <b>🍜 Wabi Navi → 🎟 金券 / Bony</b>.<br><span class="jp">店主：発行・無効化・再発行・集計は、スプレッドシートのメニュー「🍜 Wabi Navi → 🎟 金券 / Bony」から。</span></div>
+</section>
+
+<section>
+  <h2>🧾 Faktura / Paragon z NIP <span class="pl">NIP照会（請求書・NIP付きレシートの依頼）</span></h2>
+  <span class="path">staff.html → „🧾 Faktura / NIP” (także z panelu rezerwacji / 予約パネルからも可)</span>
+  <ol>
+    <li>Gość prosi o fakturę lub paragon z NIP → otwórz <b>🧾 Faktura / NIP</b> i wpisz NIP (myślniki są OK).<br><span class="jp">お客様がFakturaまたはNIP付きレシートを希望 →「🧾 Faktura / NIP」を開き、NIPを入力（ハイフン可）。</span></li>
+    <li>Naciśnij <b>Sprawdź NIP</b> — z rejestru VAT (Ministerstwo Finansów) pojawią się nazwa, adres i status VAT.<br><span class="jp">「NIPを照会」を押すと、財務省のVAT登録簿から社名・住所・VAT状態が表示されます。</span></li>
+    <li><b>📋 Kopiuj</b> kopiuje NIP, nazwę i adres — wklej do kasy / programu fakturowego.<br><span class="jp">「コピー」でNIP・社名・住所をコピー。レジ（POS）／請求書ソフトに貼り付けます。</span></li>
+  </ol>
+  <div class="note">Ten ekran niczego nie zapisuje ani nie wysyła. Jeśli NIP jest błędny lub nie ma go w rejestrze, wyświetli się komunikat — poproś gościa o ponowne podanie numeru.<br><span class="jp">この画面は何も保存・送信しません。NIPが誤り、または登録簿にないときはメッセージが出ます。お客様に番号の再確認を依頼してください。</span></div>
+</section>
+
 <!-- 係員端末アクセス方法（2026-10-17 追加・同日 staff.html に分離） -->
 <section>
   <h2>📱 Telefon obsługi <span class="pl">係員端末アクセス方法</span></h2>
@@ -577,9 +623,11 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
         <td>Wpisz <b>hasło obsługi</b>. Zaznacz „zapamiętaj”, aby nie wpisywać go za każdym razem — <b>tylko na swoim telefonie</b>.<br>
             <span class="jp"><b>係員パスワード</b>を入力。「記憶する」にチェックすると次回から入力不要です（<b>ご自身のスマホだけ</b>）。図書の画面（books.html）と共通で記憶されます。</span></td></tr>
     <tr><td>3</td>
-        <td>Na stronie: ręczne dodawanie i cofanie punktów oraz „📷 Skanuj kod QR członka” (aparat — przy pierwszym użyciu zezwól na dostęp).
-            U góry jest skrót do wypożyczeń książek (books.html).<br>
-            <span class="jp">ページでは、手動ポイント付与・取消と「📷 会員QRスキャン付与」ができます（カメラは初回に許可が必要）。上部に図書の貸出・返却（books.html）へのボタンがあります。</span></td></tr>
+        <td>U góry jest <b>menu obsługi</b>: <b>📅 Rezerwacje</b> i <b>📷 Skan członka</b> (kod QR członka — przy pierwszym użyciu zezwól na dostęp do aparatu) na pierwszym miejscu; niżej punkty ręczne, sprawdzanie członka, Faktura/NIP, 🎟 bony, książki, kuchnia, quiz. Dotknięcie przycisku otwiera panel poniżej — strona się nie przeładowuje.<br>
+            <span class="jp">上部が<b>係員メニュー</b>です。<b>📅 予約</b>と<b>📷 会員QR照合</b>が最上段。その下に、手動ポイント、会員照会、Faktura/NIP、🎟金券、図書、キッチン、クイズが並びます。ボタンを押すと、下に該当のパネルが開きます（ページは移動しません）。カメラは初回に許可が必要。</span></td></tr>
+    <tr><td>4</td>
+        <td>Wystarczy adres <b>staff.html</b> — <b>nie trzeba</b> dopisywać <code>?staff=1</code> (urządzenie rejestruje się samo). Skróty typu <code>staff.html#voucher-sell</code> otwierają od razu wybrany panel; można je dodać do zakładek.<br>
+            <span class="jp">アドレスは<b>staff.html だけ</b>でOK。<code>?staff=1</code> は<b>不要</b>です（開くと端末が自動で登録されます）。<code>staff.html#voucher-sell</code> のように末尾を付けると、そのパネルを直接開けます（ブックマーク可）。</span></td></tr>
   </table>
 
   <div class="note">⚠️ <b>Nigdy nie zaznaczaj „zapamiętaj” na telefonie gościa ani na wspólnym tablecie.</b>
@@ -1031,7 +1079,9 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
 <!-- 6d. POS転記画面 -->
 <section>
   <h2>🧾 Przepisywanie do POS <span class="pl">POS転記画面</span></h2>
-  <span class="path">Menu obsługi → „🧾 Do POS” / 係員メニュー →「POS転記画面」 → <code>…/pos.html</code></span>
+  <span class="path"><code>…/pos.html</code></span>
+  <div class="note">ℹ️ Przycisk „Do POS” został <b>usunięty z menu obsługi</b> (nieużywany). Strona <code>pos.html</code> nadal istnieje.<br>
+    <span class="jp">ℹ️ 係員メニューの「POS転記」ボタンは<b>廃止</b>しました（使っていないため）。ページ自体（pos.html）は残っています。</span></div>
   <div class="note">Ekran do <b>przepisywania zamówień do GASTRO POS</b>: nazwa, ilość, cena, zmiany, uwagi — wszystko duże i w kolejności.
     <b>✌️ PODZIEL NA 2 MISKI</b> jest niebieskie, <b>🚫 BEZ</b> czerwone, dodatki zielone, uwagi gościa żółte. /
     <span class="jp">GASTRO POS へ注文を<b>再入力するための画面</b>。商品名・数量・価格・変更内容・客のメモを大きく表示します。
@@ -1249,6 +1299,9 @@ kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-
     <tr><td>📣 <b>Reklama</b><br><span class="pl">広告カレンダー</span></td>
         <td>Utwórz arkusz · Opublikuj na stronie · Wyślij pakiety · Automatyzacja ON/OFF<br>
         <span class="pl">シート作成・HPに反映・投稿パッケージ送信・自動反映ON/OFF（店主）</span></td></tr>
+    <tr><td>🎟 <b>Bony</b><br><span class="pl">金券</span></td>
+        <td>Sprzedaj / Użyj / Drukuj (otwiera stronę) · Utwórz arkusze · Generuj · Unieważnij · Wydaj ponownie · Podsumowanie (właściciel)<br>
+        <span class="pl">販売／使用／印刷ページ（画面を開く）・シート作成・発行・無効化・再発行・集計（店主）</span></td></tr>
     <tr><td>📊 <b>Raporty</b><br><span class="pl">分析</span></td>
         <td>Analiza ruchu · <b>📊 特典集計（前月）</b> · Sprawdź zdjęcia · Sprawdź wygasłe punkty<br>
         <span class="pl">客足分析・<b>特典集計（前月）</b>・写真チェック・失効チェック</span></td></tr>
