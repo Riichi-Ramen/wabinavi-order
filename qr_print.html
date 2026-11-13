@@ -63,6 +63,8 @@ h1{
 .jp-sub{font-size:.78rem;color:#9a8878;font-weight:400}
 .sec-head{text-align:center;font-size:1rem;color:#7a6858;margin:2rem 0 1rem;
   padding-top:1rem;border-top:2px dashed rgba(192,57,43,0.25)}
+.member-line{margin-top:.8rem;padding:.55rem .6rem;border:1.5px dashed rgba(192,57,43,.45);border-radius:10px;font-size:.74rem;line-height:1.55;color:#2c1810;text-align:center}
+.member-line small{display:block;font-size:.66rem;color:#7a6858;font-weight:400}
 @media print{
   body{background:#fff;padding:0}
   .qr-grid{gap:1rem}
@@ -84,6 +86,8 @@ h1{
   <button class="print-btn" onclick="printOnly('all')">🖨️ Drukuj wszystko / 全部印刷</button>
   <button class="print-btn alt" onclick="printOnly('tables')">🍜 Tylko stoliki / テーブルのみ</button>
   <button class="print-btn alt" onclick="printOnly('counter')">🎋 Tylko lada / カウンターのみ</button>
+
+  <a class="print-btn alt" style="text-decoration:none" href="member_cards.html">🌸 Karta Members Club / 会員登録カード・ポスター</a>
 </div>
 
 <h2 class="sec-head">🎋 Przy ladzie / At the counter <span class="jp-sub">カウンター用</span></h2>
@@ -225,7 +229,9 @@ for (let n = 1; n <= TABLE_COUNT; n++) {
       step(1, 'Zeskanuj kod QR', 'Scan the QR code', 'QRコードをスキャン') +
       step(2, 'Wybierz z menu i zamów', 'Choose from the menu and order', 'メニューから選んで注文') +
       step(3, 'Obsługa dostarczy zamówienie', 'Staff will serve you', '係員がお持ちします') +
-    '</div>';
+    '</div>' +
+    '<div class="member-line">🌸 <b>Members Club</b> — punkty i bonusy za wizyty. Zapytaj obsługę lub zobacz kartę na stole.' +
+      '<small>Earn points and perks — ask our staff or see the card on your table.<span class="jp-line">会員になるとポイントや特典が。係員、またはテーブルのカードをご覧ください。</span></small></div>';
   grid.appendChild(card);
   makeQR(card.querySelector('#qt-' + n), url);
 }
