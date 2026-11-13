@@ -253,6 +253,7 @@ async function login(){
     document.getElementById('login-card').classList.add('hidden');
     document.getElementById('main').classList.remove('hidden');
     setMode('lend');
+    prefetchSheetUrl();
   } catch(err){
     e.textContent = 'Błąd połączenia / 通信エラー'; e.style.display='block';
   }
@@ -260,7 +261,7 @@ async function login(){
 if (PW) {
   document.getElementById('login-card').classList.add('hidden');
   document.getElementById('main').classList.remove('hidden');
-  window.addEventListener('load', ()=>setMode('lend'));
+  window.addEventListener('load', ()=>{ setMode('lend'); prefetchSheetUrl(); });
 }
 
 // ── モード切替 ───────────────────────────────────────────────────
@@ -395,8 +396,24 @@ async function nextMode(m){
   setMode(m);
   if (was) startCam();
 }
+// 貸出状況シートのURL（係員パスワード確認後にだけサーバーから受け取る。ページには書かない）
+let BOOKS_SHEET_URL = '';
+async function prefetchSheetUrl(){
+  if (BOOKS_SHEET_URL || !PW) return;
+  try {
+    const d = await (await fetch(GAS_URL + '?action=staffSheetLinks&password=' + encodeURIComponent(PW))).json();
+    if (d && d.status === 'ok' && d.links && /^https:\/\/docs\.google\.com\/spreadsheets\//.test(d.links.books || '')) BOOKS_SHEET_URL = d.links.books;
+  } catch(e){}
+}
+// 手続き終了のとき、貸出状況（書籍シート）を別タブで開いて確認できるようにする
+function openBooksSheet(){
+  if (!BOOKS_SHEET_URL) { prefetchSheetUrl(); return; }
+  const w = window.open(BOOKS_SHEET_URL, '_blank', 'noopener');
+  if (!w) showErr('Zablokowano nowe okno — zezwól na wyskakujące okna / ポップアップがブロックされました。許可してください');
+}
 // 「終了」: カメラを止め、空の貸出画面（待機）に戻る
 async function finishMode(m){
+  openBooksSheet();   // ボタン操作の直後に開く（ポップアップ制限を避けるため、最初に実行）
   camBefore = false;
   await stopCam();
   setMode(m);
