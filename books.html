@@ -119,6 +119,10 @@ body{
   <!-- ── スキャン画面 ── -->
   <div class="card" id="scan-card">
     <div class="error-msg" id="err"></div>
+    <div id="reg-link" class="hidden" style="text-align:center;margin:.4rem 0 .8rem;font-size:.82rem;line-height:1.7">
+      Nie jest członkiem? / 会員でない方は →
+      <a href="staff.html#register" style="font-weight:700;color:var(--accent)">🪪 Zarejestruj / 会員登録へ</a>
+    </div>
     <div class="step" id="step-txt"></div>
     <div id="slots" class="hidden"></div>
     <div id="reader"></div>
@@ -267,8 +271,8 @@ function renderStep(){
     hint.innerHTML = 'Książka i karta członka — <b>w dowolnej kolejności</b>.<br>' +
                      '本のQRと会員カードのQR、<b>どちらから読んでもOK</b>です。';
     lab.textContent = 'lub wpisz ręcznie / 手入力（Cook-01 · WN-M-0001 · e-mail · tel.）';
-    note.innerHTML = 'Wypożyczenie tylko dla członków (bezpłatne). Rejestracja zajmuje minutę.<br>' +
-                     '貸出は会員限定（無料）。未登録の方はその場で登録できます。';
+    note.innerHTML = 'Wypożyczenie tylko dla członków (bezpłatne). Rejestracja zajmuje minutę — link poniżej.<br>' +
+                     '貸出は会員限定（無料）。未登録の方は、下のリンクから会員登録できます。';
     slots.classList.remove('hidden');
     renderSlots();
   } else {
@@ -369,7 +373,14 @@ async function handleCode(code){
       const r2 = await lookupAs(other, code);
       if (r2.status === 'ok') { kind = other; r = r2; }
     }
-    if (r.status !== 'ok') { showErr(r.message || 'Błąd / エラー'); return; }
+    if (r.status !== 'ok') {
+      showErr(r.message || 'Błąd / エラー');
+      // 会員として見つからなかったときは、登録画面へのリンクを出す（6秒ではなく、次のスキャンまで残す）
+      const rl = document.getElementById('reg-link');
+      if (rl) rl.classList.toggle('hidden', !(r.status === 'notFound' && /członka|会員/.test(String(r.message || ''))));
+      return;
+    }
+    { const rl = document.getElementById('reg-link'); if (rl) rl.classList.add('hidden'); }
 
     if (MODE === 'return') return onReturnScan(kind, r);
 
@@ -395,7 +406,11 @@ function lookupAs(kind, code){
 // ── 貸出実行 ─────────────────────────────────────────────────────
 async function doLend(){
   const r = await api('lend', { bookId: LEND.book.id, memberId: LEND.member.memberId });
-  if (r.status !== 'ok') { showErr(r.message || 'Błąd'); return; }
+  if (r.status !== 'ok') {
+    showErr(r.message || 'Błąd');
+    const rl = document.getElementById('reg-link'); if (rl) rl.classList.toggle('hidden', r.status !== 'notMember');
+    return;
+  }
   stopCam();
   document.getElementById('scan-card').classList.add('hidden');
   const d = document.getElementById('detail-card');

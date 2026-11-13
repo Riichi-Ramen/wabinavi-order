@@ -165,6 +165,7 @@ body{
     <button type="button" class="btn btn-secondary mbtn " data-pane="support" onclick="showPane_('support')">🔎 Sprawdź członka<br><small>会員照会・お客様サポート</small></button>
     <button type="button" class="btn btn-secondary mbtn" data-pane="nip" onclick="showPane_('nip')">🧾 Faktura / NIP<br><small>NIP照会・会社情報</small></button>
     <a class="btn btn-secondary mbtn " href="kitchen.html">🍳 Kuchnia<br><small>キッチン表示</small></a>
+    <button type="button" class="btn btn-secondary mbtn " data-pane="register" onclick="showPane_('register')">🪪 Rejestracja członka<br><small>会員の新規登録（その場で）</small></button>
     <a class="btn btn-secondary mbtn " href="books.html">📚 Książki<br><small>図書の貸出・返却</small></a>
     <a class="btn btn-secondary mbtn " href="items.html">🚫 Wyprzedane<br><small>商品の表示・売切</small></a>
     <button type="button" class="btn btn-secondary mbtn " data-pane="howto" onclick="showPane_('howto')">📖 Instrukcje<br><small>手順の案内</small></button>
@@ -199,6 +200,33 @@ body{
     <button class="btn btn-secondary" style="margin-top:.5rem" onclick="nipCopy_()">📋 Kopiuj / コピー（NIP・社名・住所）</button>
     <div id="nip-copied" style="font-size:.72rem;margin-top:.3rem"></div>
   </div>
+</div>
+
+<div class="card pane" id="pane-register">
+  <div class="staff-title">🪪 Rejestracja członka / 会員の新規登録</div>
+  <p style="font-size:.72rem;color:var(--muted);margin:.2rem 0 .6rem;line-height:1.6">
+    <b>Najlepiej: gość rejestruje się sam na swoim telefonie</b> (przycisk poniżej) — sam wpisuje swój e-mail.<br>
+    おすすめは、<b>お客様ご自身のスマホで登録</b>していただくことです（下のボタン）。ご自身でメールを入力していただけます。
+  </p>
+  <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0 0 .8rem" href="stamp.html" target="_blank" rel="noopener">🎋 Otwórz rejestrację gościa / お客様用の登録画面を開く</a>
+  <hr class="divider">
+  <div class="staff-title">✍️ Rejestracja przez obsługę / 係員が代わりに入力</div>
+  <label class="form-label">Imię i nazwisko / 氏名</label>
+  <input class="form-input" type="text" id="rg-name" maxlength="80" autocomplete="off" placeholder="Imię Nazwisko">
+  <label class="form-label">E-mail <small>（会員IDと確認メールの送り先 / potwierdzenie trafi na ten adres）</small></label>
+  <input class="form-input" type="email" inputmode="email" autocapitalize="off" autocomplete="off" id="rg-email" maxlength="254" placeholder="jan@email.com">
+  <label class="form-label">Powtórz e-mail / メールをもう一度（入力ミス防止）</label>
+  <input class="form-input" type="email" inputmode="email" autocapitalize="off" autocomplete="off" id="rg-email2" maxlength="254" placeholder="jan@email.com">
+  <label class="form-label">Telefon / 電話（任意・予備の連絡先）</label>
+  <input class="form-input" type="tel" id="rg-phone" maxlength="30" autocomplete="off" placeholder="+48 600 000 000">
+  <label style="display:flex;gap:.5rem;align-items:flex-start;font-size:.74rem;line-height:1.6;margin:.6rem 0;cursor:pointer">
+    <input type="checkbox" id="rg-consent" style="width:18px;height:18px;margin-top:.15rem;accent-color:var(--accent)">
+    <span>Gość zapoznał(a) się z <a href="polityka.html" target="_blank" rel="noopener">Polityką prywatności</a> i wyraża zgodę (potwierdził(a) ustnie).<br>
+    お客様が<a href="polityka.html#jp" target="_blank" rel="noopener">プライバシーポリシー</a>を確認し、同意されました（口頭で確認）。</span>
+  </label>
+  <button class="btn btn-green" id="rg-btn" onclick="regStaff_()">✅ Zarejestruj / 登録する</button>
+  <div id="rg-err" class="error-msg" style="margin-top:.6rem"></div>
+  <div id="rg-ok" style="display:none;background:#f2f9ee;border:1.5px solid #2d7a3a;border-radius:12px;padding:.8rem;font-size:.86rem;color:#1f5429;margin-top:.6rem;line-height:1.7"></div>
 </div>
 
 <div class="card pane" id="pane-support">
@@ -677,6 +705,40 @@ function supOpenOrder() {
   window.open('index.html?table=' + t, '_blank', 'noopener');
 }
 
+// 🪪 係員が代わりに会員登録（登録の窓口は stamp.html と同じ GAS の register。同意の記録元は staff.html）
+async function regStaff_() {
+  const g = function (id) { return (document.getElementById(id).value || '').trim(); };
+  const err = document.getElementById('rg-err'), ok = document.getElementById('rg-ok'), btn = document.getElementById('rg-btn');
+  err.style.display = 'none'; ok.style.display = 'none';
+  const name = g('rg-name'), email = g('rg-email').toLowerCase(), email2 = g('rg-email2').toLowerCase(), phone = g('rg-phone');
+  const fail = function (t) { err.textContent = t; err.style.display = 'block'; };
+  if (!name) return fail('❌ Wpisz imię i nazwisko / 氏名を入力してください');
+  if (!email || email.indexOf('@') < 1 || email.indexOf('.', email.indexOf('@')) < 0) return fail('❌ Wpisz poprawny e-mail / メールアドレスを正しく入力してください');
+  if (email !== email2) return fail('❌ E-maile się różnią / 2つのメールアドレスが一致しません');
+  if (!document.getElementById('rg-consent').checked) return fail('❌ Potrzebna zgoda gościa (Polityka prywatności) / お客様の同意（プライバシーポリシー）が必要です');
+  btn.disabled = true;
+  try {
+    const res = await postGAS({ action:'register', name:name, email:email, altContact:phone, memberType:'G',
+                                consent:true, consentSource:'staff.html' });
+    if (res.status === 'ok') {
+      const mid = (res.member && res.member.memberId) || '—';
+      ok.innerHTML = '🌸 <b>Zarejestrowano / 登録しました</b><br>🪪 ' + escStaffHtml_(String(mid)) + ' — ' + escStaffHtml_(name)
+        + '<br><small>Potwierdzenie wysłano na e-mail. Wypożyczenie: zeskanuj kartę członkowską lub wpisz ID/e-mail w „Książki”.<br>'
+        + '確認メールを送りました。貸出は「Książki」で会員カードのQR、または会員ID・メールを入力してください。</small>';
+      ok.style.display = 'block';
+      ['rg-name','rg-email','rg-email2','rg-phone'].forEach(function (id) { document.getElementById(id).value = ''; });
+      document.getElementById('rg-consent').checked = false;
+    } else if (res.status === 'alreadyExists') {
+      const m = res.member || {};
+      fail('ℹ️ Ten e-mail jest już zarejestrowany / すでに登録されています' + (m.memberId ? ' (' + String(m.memberId) + ')' : ''));
+    } else {
+      fail('❌ ' + (res.message || 'Błąd / エラー'));
+    }
+  } catch (e) {
+    fail('📡 Błąd połączenia — spróbuj ponownie / 通信エラー：もう一度お試しください');
+  } finally { btn.disabled = false; }
+}
+
 async function supLookup() {
   const q = document.getElementById('sup-contact').value.trim();
   const area = document.getElementById('sup-result');
@@ -747,7 +809,7 @@ function openVoucher_(mode) {
 function openVoucherFromHash_() {
   try {
     const m = /^#voucher-(sell|redeem|check)$/.exec(location.hash); if (m) { openVoucher_(m[1]); return; }
-    const n = /^#(scan|points|support|howto|nip)$/.exec(location.hash); if (n) showPane_(n[1]);
+    const n = /^#(scan|points|support|howto|nip|register)$/.exec(location.hash); if (n) showPane_(n[1]);
   } catch (e) {}
 }
 window.addEventListener('DOMContentLoaded', () => {
