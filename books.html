@@ -50,7 +50,8 @@ body{
 .step{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
 .step b{color:var(--accent);font-size:.95rem}
 #reader{width:100%;border-radius:12px;overflow:hidden;margin-bottom:.7rem;background:#000;min-height:60px}
-#reader:empty{display:none}
+#reader{display:none}
+#reader.show{display:block}
 .scan-hint{font-size:.78rem;color:var(--muted);text-align:center;margin-bottom:.6rem;line-height:1.6}
 .book-box{border:1.5px solid var(--border);border-radius:12px;padding:.9rem;margin-bottom:.8rem;background:rgba(255,255,255,.6)}
 .book-id{font-family:ui-monospace,Menlo,monospace;font-weight:700;color:var(--accent);font-size:.95rem}
@@ -86,6 +87,12 @@ body{
 .slot .lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .slot .val{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .slot .val.empty{font-weight:400;color:var(--muted)}
+.scanst{display:none;border-radius:10px;padding:.6rem .8rem;margin-bottom:.6rem;text-align:center;font-weight:700;font-size:.9rem;line-height:1.5}
+.scanst small{display:block;font-weight:500;font-size:.78rem}
+.scanst.wait{display:block;background:#e8f1fb;color:#1a4f8a;border:1.5px solid #9bbbe0}
+.scanst.ok{display:block;background:#e3f6e8;color:#1b6b34;border:1.5px solid #2d7a3a}
+.scanst.warn{display:block;background:#fff1d6;color:#8a4b00;border:1.5px solid #e0a030;animation:warnBlink 1s ease-in-out 3}
+@keyframes warnBlink{50%{background:#ffd98a}}
 .slot.todo{border-style:dashed;border-color:#d9a441;background:#fff8e6}
 .slot .no{flex:none;width:1.5rem;height:1.5rem;border-radius:50%;background:#d9a441;color:#fff;font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center}
 .slot.filled .no{background:var(--green)}
@@ -138,6 +145,7 @@ body{
       <button class="btn off" id="cam-btn" onclick="toggleCam()"></button>
     </div>
     <div id="slots" class="hidden"></div>
+    <div class="scanst" id="scan-status"></div>
     <div id="reader"></div>
     <div class="scan-hint" id="scan-hint"></div>
     <label class="form-label" id="manual-label">lub wpisz ręcznie / 手入力</label>
@@ -325,6 +333,22 @@ function clearSlot(k){
 // ── カメラ ───────────────────────────────────────────────────────
 // カメラの開始・停止は1本の列に並べて順番に実行する（連打・停止中の再開によるフリーズ防止）
 let camQ = Promise.resolve(), camWanted = false, camBefore = false;
+// ── 読み取り状況の表示（待機／完了／未読み取りの警告） ──
+let warnTimer = null;
+function scanStatus(kind, html){
+  const el = document.getElementById('scan-status'); if (!el) return;
+  el.className = 'scanst' + (kind ? ' ' + kind : ''); el.innerHTML = html || '';
+}
+function armWarn(){
+  clearTimeout(warnTimer);
+  warnTimer = setTimeout(() => {
+    if (!camOn) return;
+    scanStatus('warn', '⚠ Nie odczytano kodu QR / QRコードを読み取れていません' +
+      '<small>Przybliż kod do kamery, trzymaj prosto i nieruchomo (15–25 cm), dobre światło.<br>' +
+      'QRを枠の中に入れ、15〜25cm離して静止。明るい場所で。読めなければ下の手入力へ。</small>');
+    armWarn();
+  }, 10000);
+}
 function camLabel(){
   const b = document.getElementById('cam-btn'); if (!b) return;
   if (camOn) { b.className = 'btn on';  b.innerHTML = '⏹ Wyłącz kamerę / カメラOFF<small>Kamera działa — skanuj / カメラ作動中</small>'; }
@@ -339,7 +363,7 @@ async function startCam_(){
     showErr('Skaner niedostępny — wpisz numer ręcznie / スキャナ利用不可。手入力してください'); return;
   }
   try {
-    document.getElementById('reader').innerHTML = '';
+    const rd = document.getElementById('reader'); rd.innerHTML = ''; rd.classList.add('show');
     scanner = new Html5Qrcode('reader');
     await scanner.start({ facingMode:'environment' },
       { fps:10, qrbox:{ width:230, height:230 } },
@@ -347,16 +371,19 @@ async function startCam_(){
       () => {});
     camOn = true;
     camLabel();
+    scanStatus('wait', '📷 Pokaż kod QR w ramce / QRコードを枠の中にかざしてください<small>Odczyt jest automatyczny / 自動で読み取ります</small>');
+    armWarn();
   } catch(e){
     scanner = null; camOn = false; camWanted = false;
-    document.getElementById('reader').innerHTML = '';
+    document.getElementById('reader').innerHTML = ''; document.getElementById('reader').classList.remove('show');
     showErr('Brak dostępu do kamery / カメラを利用できません');
   }
 }
 async function stopCam_(){
+  clearTimeout(warnTimer); scanStatus('', '');
   if (scanner) { try { await scanner.stop(); } catch(e){} try { scanner.clear(); } catch(e){} }
   camOn = false; scanner = null;
-  document.getElementById('reader').innerHTML = '';
+  document.getElementById('reader').innerHTML = ''; document.getElementById('reader').classList.remove('show');
   camLabel();
 }
 // 「次の貸出／返却」: カメラが動いていた場合は、止めてから自動で再開する
@@ -374,12 +401,22 @@ async function finishMode(m){
   setMode(m);
 }
 
+function beep(){
+  try { const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    const c = new C(), o = c.createOscillator(), g = c.createGain();
+    o.frequency.value = 1100; g.gain.value = .15; o.connect(g); g.connect(c.destination);
+    o.start(); setTimeout(() => { o.stop(); c.close(); }, 120);
+  } catch(e){}
+}
 let lastScan = '', lastTime = 0;
 function onScan(text){
   const now = Date.now();
   if (text === lastScan && now - lastTime < 2500) return;   // 連続読み取り防止
   lastScan = text; lastTime = now;
   if (navigator.vibrate) navigator.vibrate(60);
+  beep();
+  scanStatus('ok', '✅ Odczytano kod QR / QR読み取り完了<small>Sprawdzam… / 照合中…</small>');
+  armWarn();
   handleCode(text.trim());
 }
 function submitManual(){
@@ -414,6 +451,7 @@ async function handleCode(code){
     }
     if (r.status !== 'ok') {
       showErr(r.message || 'Błąd / エラー');
+      if (camOn) scanStatus('warn', '⚠ Kod odczytany, ale nie rozpoznany / QRは読めましたが、照合できませんでした<small>' + esc(r.message || '') + '</small>');
       // 会員として見つからなかったときは、登録画面へのリンクを出す（6秒ではなく、次のスキャンまで残す）
       const rl = document.getElementById('reg-link');
       if (rl) rl.classList.toggle('hidden', !(r.status === 'notFound' && /członka|会員/.test(String(r.message || ''))));
@@ -432,6 +470,9 @@ async function handleCode(code){
       if (r.lentCount) showBorrowedNote(r);
     }
     renderSlots();
+    if (camOn) scanStatus('ok', kind === 'book'
+      ? '✅ Książka odczytana / 本を読み取りました<small>' + esc(r.book.title) + (LEND.member ? '' : ' — teraz karta członka / 次は会員カード') + '</small>'
+      : '✅ Karta odczytana / 会員カードを読み取りました<small>' + esc(r.member.name) + (LEND.book ? '' : ' — teraz książka / 次は本のQR') + '</small>');
     if (LEND.book && LEND.member) await doLend();
   } catch(e){
     showErr('Błąd połączenia / 通信エラー');
