@@ -475,7 +475,7 @@ async function doReturn(b){
   if (r.status !== 'ok') { showErr(r.message || 'Błąd'); return; }
   stopCam();
   document.getElementById('scan-card').classList.add('hidden');
-  // ⭐ 返却ポイント（2pt・同じ会員は1日1回）の結果を係員に見せる
+  // ⭐ 返却ポイント（2pt・当日の注文がある会員だけ・1日1回・7日で2回まで）の結果を係員に見せる
   const hint = r.lateDays > 0
     ? `Zwrot po terminie (${r.lateDays} dni) — podziękuj za przyniesienie, bez uwag.<br>
        期限超過（${r.lateDays}日）。お礼を伝えてください。小言・料金はなし。`
@@ -489,6 +489,11 @@ async function doReturn(b){
     pts = `⭐ Zwrot w dniu wypożyczenia — bez punktów / 貸出当日の返却のため、ポイントは付きません`;
   } else if (r.pointsAlready) {
     pts = `⭐ Punkty za zwrot już dziś przyznane / 本日分の返却ポイントは付与済みです`;
+  } else if (r.pointsReason === 'noOrder') {
+    pts = `⭐ Brak zamówienia członka dziś — bez punktów za zwrot. Jeśli zamówi później, dodaj punkty ręcznie (arkusz Punkty / Obsługa).<br>`
+        + `本日この会員の注文が記録されていないため、返却ポイントは付きません（注文後に付けたい場合は、係員シートからポイントを手動で加算）`;
+  } else if (r.pointsReason === 'weeklyLimit') {
+    pts = `⭐ Limit punktów za zwrot: 2 razy na 7 dni — tym razem bez punktów / 直近7日で返却ポイントは2回まで。今回は付きません`;
   } else {
     pts = `⭐ Brak punktów (brak członka lub e-maila) / ポイントなし（会員情報またはメールが無いため）`;
   }
