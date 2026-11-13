@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- 2026-11-03 セキュリティ：通信先・読み込み元を限定（XSSで情報が外へ出るのを防ぐ）。外部ドメインを足すときはここも直す -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'self'; form-action 'self'; object-src 'none'">
-<meta name="wabi-version" content="staff-20261113-panes">
+<meta name="wabi-version" content="staff-20261113-panes2">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — 係員専用 / Obsługa</title>
@@ -693,7 +693,10 @@ function openVoucher_(mode) {
 }
 // 🎟 予約画面などからのリンク（#voucher-sell / #voucher-redeem / #voucher-check）
 function openVoucherFromHash_() {
-  try { const m = /^#voucher-(sell|redeem|check)$/.exec(location.hash); if (m) openVoucher_(m[1]); } catch (e) {}
+  try {
+    const m = /^#voucher-(sell|redeem|check)$/.exec(location.hash); if (m) { openVoucher_(m[1]); return; }
+    const n = /^#(scan|points|support|howto)$/.exec(location.hash); if (n) showPane_(n[1]);
+  } catch (e) {}
 }
 window.addEventListener('DOMContentLoaded', () => {
   initStaffDevice();
