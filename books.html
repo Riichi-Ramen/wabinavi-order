@@ -363,28 +363,45 @@ async function startCam_(){
   if (typeof Html5Qrcode === 'undefined') {
     showErr('Skaner niedostępny — wpisz numer ręcznie / スキャナ利用不可。手入力してください'); return;
   }
-  try {
-    const rd = document.getElementById('reader'); rd.innerHTML = ''; rd.classList.add('show');
-    scanner = new Html5Qrcode('reader');
-    // 読み取り精度：高解像度で撮影し、読み取り枠を映像の約85%に広げる（小さいQRでも読みやすく）。
-    //   ブラウザ内蔵のQR検出が使える環境では、そちらを優先する（無ければ自動で通常の方式）。
-    await scanner.start({ facingMode:'environment' },
-      { fps:15,
-        qrbox:(w, h) => { const m = Math.floor(Math.min(w, h) * 0.85); return { width:m, height:m }; },
-        videoConstraints:{ facingMode:'environment', width:{ ideal:1920 }, height:{ ideal:1080 } },
-        experimentalFeatures:{ useBarCodeDetectorIfSupported:true } },
-      txt => { onScan(txt); },
-      () => {});
-    camOn = true;
-    camLabel();
-    scanStatus('wait', '📷 Pokaż kod QR w ramce / QRコードを枠の中にかざしてください<small>Odczyt jest automatyczny / 自動で読み取ります</small>');
-    armWarn();
-    try { document.getElementById('cam-btn').scrollIntoView({block:'start', behavior:'smooth'}); } catch(e){}
-  } catch(e){
-    scanner = null; camOn = false; camWanted = false;
-    document.getElementById('reader').innerHTML = ''; document.getElementById('reader').classList.remove('show');
-    showErr('Brak dostępu do kamery / カメラを利用できません');
+  const rd = document.getElementById('reader');
+  const cb = txt => { onScan(txt); };
+  const qrbox = (w, h) => { const m = Math.floor(Math.min(w, h) * 0.85); return { width:m, height:m }; };
+  // 1回目：高解像度・広い読み取り枠・ブラウザ内蔵検出を優先。2回目：失敗したら標準の設定でやり直す（機種による相性対策）
+  const attempts = [
+    { fps:15, qrbox, videoConstraints:{ facingMode:'environment', width:{ ideal:1920 }, height:{ ideal:1080 } },
+      experimentalFeatures:{ useBarCodeDetectorIfSupported:true } },
+    { fps:10, qrbox }
+  ];
+  let lastErr = null;
+  for (let i = 0; i < attempts.length; i++) {
+    try {
+      rd.innerHTML = ''; rd.classList.add('show');
+      scanner = new Html5Qrcode('reader');
+      await scanner.start({ facingMode:'environment' }, attempts[i], cb, () => {});
+      camOn = true;
+      camLabel();
+      scanStatus('wait', '📷 Pokaż kod QR w ramce / QRコードを枠の中にかざしてください<small>Odczyt jest automatyczny / 自動で読み取ります</small>');
+      armWarn();
+      try { document.getElementById('cam-btn').scrollIntoView({block:'start', behavior:'smooth'}); } catch(e){}
+      return;
+    } catch(e) {
+      lastErr = e;
+      try { if (scanner) scanner.clear(); } catch(_) {}
+      scanner = null;
+      if (/NotAllowed|Permission|denied/i.test(String(e && (e.name || e)))) break;   // 許可されていない場合は、やり直しても同じ
+    }
   }
+  camOn = false; camWanted = false; scanner = null;
+  rd.innerHTML = ''; rd.classList.remove('show');
+  camLabel();
+  const denied = /NotAllowed|Permission|denied/i.test(String(lastErr && (lastErr.name || lastErr)));
+  const why = String((lastErr && (lastErr.name || lastErr.message)) || lastErr || '').slice(0, 80);
+  scanStatus('warn', '⚠ Brak dostępu do kamery / カメラを利用できません' + '<small>' +
+    (denied
+      ? 'Zezwól na kamerę: iPhone → Ustawienia → Safari → Kamera → „Pytaj” lub „Zezwalaj”; potem odśwież stronę. Nie otwieraj z aplikacji Gmail — otwórz w Safari / Chrome.<br>' +
+        'iPhone：設定→Safari→カメラ→「確認」か「許可」。許可後にページを再読み込み。Gmailアプリ内ではなく、Safari / Chromeで開いてください。'
+      : 'Kamera jest zajęta lub niedostępna — zamknij inne aplikacje używające kamery i spróbuj ponownie. / 他のアプリがカメラを使用中の可能性があります。閉じてからもう一度。') +
+    '<br>[' + esc(why) + ']</small>');
 }
 async function stopCam_(){
   clearTimeout(warnTimer); scanStatus('', '');
