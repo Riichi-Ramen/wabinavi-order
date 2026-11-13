@@ -192,9 +192,14 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
     <a class="qk-b" href="books.html" target="_blank" rel="noopener">📚 Książki<small>貸出・返却</small></a>
     <a class="qk-b" href="staff.html#voucher-sell" target="_blank" rel="noopener">🎟 Sprzedaj bon<small>金券販売</small></a>
     <a class="qk-b" href="staff.html#voucher-redeem" target="_blank" rel="noopener">🎟 Użyj bonu<small>金券使用</small></a>
+    <button type="button" class="qk-b" id="cook-btn" onclick="toggleCook_()">🍳 W kuchni / 調理・配膳中<small>状況を見る ▾</small></button>
     <button type="button" class="qk-b" onclick="openSheet_('ads')">📣 Kampanie<small>広告カレンダー</small></button>
     <button type="button" class="qk-b" onclick="openSheet_('menu')">📋 Menu<small>商品メニュー</small></button>
     <button type="button" class="qk-b" onclick="openSheet_('price')">💰 Ceny<small>価格変更</small></button>
+  </div>
+  <div id="cook-choice" style="display:none;width:100%;max-width:560px;margin:-.4rem 0 .8rem;gap:.4rem">
+    <button type="button" class="qk-b" style="flex:1" onclick="openSheet_('cooking')">📊 Arkusz stanu<small>調理・配膳の状況シート</small></button>
+    <a class="qk-b" style="flex:1" href="kitchen.html" target="_blank" rel="noopener">🍳 Aplikacja kuchni<small>キッチン専用アプリ</small></a>
   </div>
   <div id="list-area"><div class="spinner"></div></div>
 </div>
@@ -715,6 +720,7 @@ const STAFF_OTHER = 'その他 / Inne';
 
 // 🔒 2026-10-24：係員の読み取りは、パスワードをURLに載せずPOST本文で送る
 // 📣📋💰 スプレッドシートを新しいタブで開く（URLはパスワード確認後にサーバーから受け取る。ページには書かない）
+function toggleCook_(){const c=document.getElementById('cook-choice');c.style.display=c.style.display==='flex'?'none':'flex';}
 async function openSheet_(key){
   const w = window.open('about:blank','_blank');
   try{
