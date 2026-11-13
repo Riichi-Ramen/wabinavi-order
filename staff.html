@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- 2026-11-03 セキュリティ：通信先・読み込み元を限定（XSSで情報が外へ出るのを防ぐ）。外部ドメインを足すときはここも直す -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'self'; form-action 'self'; object-src 'none'">
-<meta name="wabi-version" content="staff-20261113-panes2">
+<meta name="wabi-version" content="staff-20261113-nip">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — 係員専用 / Obsługa</title>
@@ -151,6 +151,7 @@ body{
     <button type="button" class="btn btn-secondary mbtn main cur" data-pane="scan" onclick="showPane_('scan')">📷 Skan członka<br><small>会員QR照合・ポイント</small></button>
     <button type="button" class="btn btn-secondary mbtn " data-pane="points" onclick="showPane_('points')">➕ Punkty ręcznie<br><small>ポイント手動付与・取消</small></button>
     <button type="button" class="btn btn-secondary mbtn " data-pane="support" onclick="showPane_('support')">🔎 Sprawdź członka<br><small>会員照会・お客様サポート</small></button>
+    <button type="button" class="btn btn-secondary mbtn" data-pane="nip" onclick="showPane_('nip')">🧾 Faktura / NIP<br><small>NIP照会・会社情報</small></button>
     <a class="btn btn-secondary mbtn " href="kitchen.html">🍳 Kuchnia<br><small>キッチン表示</small></a>
     <a class="btn btn-secondary mbtn " href="books.html">📚 Książki<br><small>図書の貸出・返却</small></a>
     <a class="btn btn-secondary mbtn " href="items.html">🚫 Wyprzedane<br><small>商品の表示・売切</small></a>
@@ -173,6 +174,20 @@ body{
   <p style="font-size:.62rem;color:var(--muted);margin:0 0 .5rem;line-height:1.4">
     Odznaczenie i wykonanie operacji usuwa zapamiętane hasło. Nie używaj na urządzeniach gości. / Unchecking and performing an action clears the saved password. Do not use on guests' devices. / ※チェックを外して操作すると記憶は消去されます。お客様の端末では使用しないでください。</p>
 </details>
+
+<div class="card pane" id="pane-nip">
+  <div class="staff-title">🧾 Faktura / Paragon z NIP — NIP照会</div>
+  <p style="font-size:.72rem;color:var(--muted);margin:.2rem 0 .6rem;line-height:1.5">Wpisz NIP klienta — nazwa i adres z rejestru VAT (Ministerstwo Finansów). / Enter the customer's NIP — company name and address from the official VAT register. / お客様のNIPを入れると、財務省のVAT登録簿から社名・住所を表示します。</p>
+  <input class="form-input" id="nip-in" inputmode="numeric" maxlength="13" placeholder="np. 1234563218" style="text-align:center;font-size:1.1rem;letter-spacing:.1em" onkeydown="if(event.key==='Enter')nipLookup_()">
+  <button class="btn btn-green" id="nip-btn" onclick="nipLookup_()">🔍 Sprawdź NIP / NIPを照会</button>
+  <div id="nip-err" class="error-msg" style="margin-top:.6rem"></div>
+  <div id="nip-res" style="display:none;background:#f2f9ee;border:1.5px solid #2d7a3a;border-radius:12px;padding:.8rem;font-size:.86rem;color:#1f5429;margin-top:.6rem;line-height:1.7">
+    <div>🏢 <b id="nip-name"></b></div><div>📍 <span id="nip-addr"></span></div>
+    <div style="font-size:.74rem">NIP: <span id="nip-num"></span> · Status VAT: <span id="nip-vat"></span></div>
+    <button class="btn btn-secondary" style="margin-top:.5rem" onclick="nipCopy_()">📋 Kopiuj / コピー（NIP・社名・住所）</button>
+    <div id="nip-copied" style="font-size:.72rem;margin-top:.3rem"></div>
+  </div>
+</div>
 
 <div class="card pane" id="pane-support">
   <div class="staff-title">🙋 Pomoc gościom / お客様サポート</div>
@@ -678,6 +693,31 @@ async function supLookup() {
   }
 }
 
+// 🧾 NIP照会（注文アプリと同じ公開API lookupNip。財務省のVAT登録簿）
+function nipValid_(n){ if(!/^\d{10}$/.test(n)) return false; const w=[6,5,7,2,3,4,5,6,7]; let s=0; for(let i=0;i<9;i++) s+=w[i]*Number(n[i]); return s%11===Number(n[9]); }
+let nipLast_ = '';
+async function nipLookup_(){
+  const err=document.getElementById('nip-err'), res=document.getElementById('nip-res'), btn=document.getElementById('nip-btn');
+  err.style.display='none'; res.style.display='none'; document.getElementById('nip-copied').textContent='';
+  const nip=document.getElementById('nip-in').value.replace(/[^0-9]/g,'');
+  if(!nipValid_(nip)){ err.textContent='❌ Nieprawidłowy NIP / NIP番号が正しくありません'; err.style.display='block'; return; }
+  btn.disabled=true; btn.textContent='⏳ …';
+  try{
+    const d=await (await fetch(GAS_URL+'?action=lookupNip&nip='+nip)).json();
+    if(d.status==='ok'){
+      document.getElementById('nip-name').textContent=d.name||''; document.getElementById('nip-addr').textContent=d.address||'—';
+      document.getElementById('nip-num').textContent=nip; document.getElementById('nip-vat').textContent=d.statusVat||'—';
+      nipLast_=nip+'\n'+(d.name||'')+'\n'+(d.address||''); res.style.display='block';
+    } else if(d.status==='notFound'){ err.textContent='❌ NIP nie znaleziony w rejestrze VAT / VAT登録簿に見つかりません'; err.style.display='block'; }
+    else { err.textContent='⚠️ Błąd weryfikacji — spróbuj ponownie / 照会エラー。もう一度お試しください'; err.style.display='block'; }
+  }catch(e){ err.textContent='⚠️ Błąd połączenia / 通信エラー'; err.style.display='block'; }
+  btn.disabled=false; btn.textContent='🔍 Sprawdź NIP / NIPを照会';
+}
+async function nipCopy_(){
+  const t=document.getElementById('nip-copied');
+  try{ await navigator.clipboard.writeText(nipLast_); t.textContent='✅ Skopiowano / コピーしました'; }
+  catch(e){ t.textContent='⚠️ Zaznacz i skopiuj ręcznie / 手動でコピーしてください'; }
+}
 // 🧭 係員メニュー：ペイン（会員QR／ポイント／照会／手順／金券）の切替。ページ移動なし。
 function showPane_(name) {
   try { if (typeof stopQrScan === 'function') stopQrScan(); } catch (e) {}
@@ -695,7 +735,7 @@ function openVoucher_(mode) {
 function openVoucherFromHash_() {
   try {
     const m = /^#voucher-(sell|redeem|check)$/.exec(location.hash); if (m) { openVoucher_(m[1]); return; }
-    const n = /^#(scan|points|support|howto)$/.exec(location.hash); if (n) showPane_(n[1]);
+    const n = /^#(scan|points|support|howto|nip)$/.exec(location.hash); if (n) showPane_(n[1]);
   } catch (e) {}
 }
 window.addEventListener('DOMContentLoaded', () => {
