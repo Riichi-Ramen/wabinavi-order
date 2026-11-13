@@ -86,6 +86,16 @@ body{
 .slot .lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .slot .val{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .slot .val.empty{font-weight:400;color:var(--muted)}
+.slot.todo{border-style:dashed;border-color:#d9a441;background:#fff8e6}
+.slot .no{flex:none;width:1.5rem;height:1.5rem;border-radius:50%;background:#d9a441;color:#fff;font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+.slot.filled .no{background:var(--green)}
+.slot .val.empty{color:#8a5a00;font-weight:700}
+.slot .do{font-size:.72rem;font-weight:400;color:var(--muted);display:block}
+#cam-btn{padding:1rem;font-size:1rem;border:none;color:#fff;background:#1f7a3d;box-shadow:0 4px 14px rgba(31,122,61,.35)}
+#cam-btn small{display:block;font-weight:600;font-size:.75rem;opacity:.95}
+#cam-btn.off{animation:camPulse 1.6s ease-in-out infinite}
+#cam-btn.on{background:#b3261e;box-shadow:0 4px 14px rgba(179,38,30,.3)}
+@keyframes camPulse{0%,100%{box-shadow:0 0 0 0 rgba(31,122,61,.55)}50%{box-shadow:0 0 0 10px rgba(31,122,61,0)}}
 .slot .x{background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:.2rem .3rem}
 .note{font-size:.74rem;color:var(--muted);line-height:1.7;margin-top:.7rem}
 </style>
@@ -124,12 +134,12 @@ body{
       <a href="staff.html#register" style="font-weight:700;color:var(--accent)">🪪 Zarejestruj / 会員登録へ</a>
     </div>
     <div class="step" id="step-txt"></div>
+    <div class="btn-row" style="margin-bottom:.8rem">
+      <button class="btn off" id="cam-btn" onclick="toggleCam()"></button>
+    </div>
     <div id="slots" class="hidden"></div>
     <div id="reader"></div>
     <div class="scan-hint" id="scan-hint"></div>
-    <div class="btn-row" style="margin-bottom:.8rem">
-      <button class="btn btn-ghost" id="cam-btn" onclick="toggleCam()">📷 Kamera / カメラ</button>
-    </div>
     <label class="form-label" id="manual-label">lub wpisz ręcznie / 手入力</label>
     <input class="form-input" id="manual" autocapitalize="off" autocomplete="off"
            onkeydown="if(event.key==='Enter')submitManual()">
@@ -267,7 +277,7 @@ function renderStep(){
   document.getElementById('manual').value = '';
 
   if (MODE === 'lend') {
-    st.innerHTML = 'Wypożyczenie / 貸出 &nbsp; <b>Zeskanuj oba kody</b>';
+    st.innerHTML = 'Wypożyczenie / 貸出 &nbsp; <b>2 kody QR / QR2つ</b>';
     hint.innerHTML = 'Książka i karta członka — <b>w dowolnej kolejności</b>.<br>' +
                      '本のQRと会員カードのQR、<b>どちらから読んでもOK</b>です。';
     lab.textContent = 'lub wpisz ręcznie / 手入力（Cook-01 · WN-M-0001 · e-mail · tel.）';
@@ -283,6 +293,7 @@ function renderStep(){
     note.innerHTML = '';
     slots.classList.add('hidden');
   }
+  camLabel();
   document.getElementById('manual').focus();
 }
 
@@ -290,16 +301,18 @@ function renderStep(){
 function renderSlots(){
   const b = LEND.book, m = LEND.member;
   document.getElementById('slots').innerHTML =
-    `<div class="slot ${b?'filled':''}">
-       <div class="ico">${b?'✅':'📕'}</div>
-       <div class="body"><div class="lbl">Książka / 書籍</div>
-         <div class="val ${b?'':'empty'}">${b ? esc(b.id)+' · '+esc(b.title) : 'czeka na skan / 未スキャン'}</div></div>
+    `<div class="slot ${b?'filled':'todo'}">
+       <div class="no">${b?'✓':'②'}</div>
+       <div class="body"><div class="lbl">📕 Książka / 本</div>
+         <div class="val ${b?'':'empty'}">${b ? esc(b.id)+' · '+esc(b.title)
+           : 'Zeskanuj QR książki<span class="do">借りる本のQRコードを読み取る</span>'}</div></div>
        ${b?'<button class="x" onclick="clearSlot(&quot;book&quot;)">✕</button>':''}
      </div>
-     <div class="slot ${m?'filled':''}">
-       <div class="ico">${m?'✅':'🎫'}</div>
-       <div class="body"><div class="lbl">Członek / 会員</div>
-         <div class="val ${m?'':'empty'}">${m ? esc(m.name)+'（'+esc(m.memberId)+'）' : 'czeka na skan / 未スキャン'}</div></div>
+     <div class="slot ${m?'filled':'todo'}">
+       <div class="no">${m?'✓':'③'}</div>
+       <div class="body"><div class="lbl">🎫 Członek / 会員</div>
+         <div class="val ${m?'':'empty'}">${m ? esc(m.name)+'（'+esc(m.memberId)+'）'
+           : 'Zeskanuj kartę członka<span class="do">会員カードのQRコードを読み取る</span>'}</div></div>
        ${m?'<button class="x" onclick="clearSlot(&quot;member&quot;)">✕</button>':''}
      </div>`;
 }
@@ -312,6 +325,11 @@ function clearSlot(k){
 // ── カメラ ───────────────────────────────────────────────────────
 // カメラの開始・停止は1本の列に並べて順番に実行する（連打・停止中の再開によるフリーズ防止）
 let camQ = Promise.resolve(), camWanted = false, camBefore = false;
+function camLabel(){
+  const b = document.getElementById('cam-btn'); if (!b) return;
+  if (camOn) { b.className = 'btn on';  b.innerHTML = '⏹ Wyłącz kamerę / カメラOFF<small>Kamera działa — skanuj / カメラ作動中</small>'; }
+  else       { b.className = 'btn off'; b.innerHTML = '📷 ① WŁĄCZ KAMERĘ / カメラON<small>👆 Naciśnij na początku / まず最初に押す</small>'; }
+}
 function toggleCam(){ camOn ? stopCam() : startCam(); }
 function startCam(){ camWanted = true; return (camQ = camQ.then(startCam_, startCam_)); }
 function stopCam(){  camWanted = false; return (camQ = camQ.then(stopCam_,  stopCam_)); }
@@ -328,7 +346,7 @@ async function startCam_(){
       txt => { onScan(txt); },
       () => {});
     camOn = true;
-    document.getElementById('cam-btn').textContent = '⏹ Zatrzymaj / 停止';
+    camLabel();
   } catch(e){
     scanner = null; camOn = false; camWanted = false;
     document.getElementById('reader').innerHTML = '';
@@ -339,8 +357,7 @@ async function stopCam_(){
   if (scanner) { try { await scanner.stop(); } catch(e){} try { scanner.clear(); } catch(e){} }
   camOn = false; scanner = null;
   document.getElementById('reader').innerHTML = '';
-  const b = document.getElementById('cam-btn');
-  if (b) b.textContent = '📷 Kamera / カメラ';
+  camLabel();
 }
 // 「次の貸出／返却」: カメラが動いていた場合は、止めてから自動で再開する
 async function nextMode(m){
