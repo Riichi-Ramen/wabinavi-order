@@ -310,12 +310,18 @@ function clearSlot(k){
 }
 
 // ── カメラ ───────────────────────────────────────────────────────
+// カメラの開始・停止は1本の列に並べて順番に実行する（連打・停止中の再開によるフリーズ防止）
+let camQ = Promise.resolve(), camWanted = false, camBefore = false;
 function toggleCam(){ camOn ? stopCam() : startCam(); }
-async function startCam(){
+function startCam(){ camWanted = true; return (camQ = camQ.then(startCam_, startCam_)); }
+function stopCam(){  camWanted = false; return (camQ = camQ.then(stopCam_,  stopCam_)); }
+async function startCam_(){
+  if (camOn || !camWanted) return;
   if (typeof Html5Qrcode === 'undefined') {
     showErr('Skaner niedostępny — wpisz numer ręcznie / スキャナ利用不可。手入力してください'); return;
   }
   try {
+    document.getElementById('reader').innerHTML = '';
     scanner = new Html5Qrcode('reader');
     await scanner.start({ facingMode:'environment' },
       { fps:10, qrbox:{ width:230, height:230 } },
@@ -324,15 +330,31 @@ async function startCam(){
     camOn = true;
     document.getElementById('cam-btn').textContent = '⏹ Zatrzymaj / 停止';
   } catch(e){
+    scanner = null; camOn = false; camWanted = false;
+    document.getElementById('reader').innerHTML = '';
     showErr('Brak dostępu do kamery / カメラを利用できません');
   }
 }
-async function stopCam(){
-  if (scanner && camOn) { try { await scanner.stop(); scanner.clear(); } catch(e){} }
+async function stopCam_(){
+  if (scanner) { try { await scanner.stop(); } catch(e){} try { scanner.clear(); } catch(e){} }
   camOn = false; scanner = null;
   document.getElementById('reader').innerHTML = '';
   const b = document.getElementById('cam-btn');
   if (b) b.textContent = '📷 Kamera / カメラ';
+}
+// 「次の貸出／返却」: カメラが動いていた場合は、止めてから自動で再開する
+async function nextMode(m){
+  const was = camBefore || camOn || camWanted;
+  camBefore = false;
+  await stopCam();
+  setMode(m);
+  if (was) startCam();
+}
+// 「終了」: カメラを止め、空の貸出画面（待機）に戻る
+async function finishMode(m){
+  camBefore = false;
+  await stopCam();
+  setMode(m);
 }
 
 let lastScan = '', lastTime = 0;
@@ -411,7 +433,7 @@ async function doLend(){
     const rl = document.getElementById('reg-link'); if (rl) rl.classList.toggle('hidden', r.status !== 'notMember');
     return;
   }
-  stopCam();
+  camBefore = camOn || camWanted; stopCam();
   document.getElementById('scan-card').classList.add('hidden');
   const d = document.getElementById('detail-card');
   d.innerHTML =
@@ -426,7 +448,8 @@ async function doLend(){
          ${r.mailSent ? '📧 Potwierdzenie wysłane / 確認メール送信済み'
                       : '✉️ Brak e-maila w profilu — poinformuj ustnie / メール未登録：口頭でお伝えください'}</div>
      </div>
-     <div class="btn-row"><button class="btn btn-primary" onclick="setMode('lend')">📕 Następna / 次の貸出</button></div>`;
+     <div class="btn-row"><button class="btn btn-primary" onclick="nextMode('lend')">📕 Następna książka / 次の本を貸出</button></div>
+     <div class="btn-row"><button class="btn btn-ghost" onclick="finishMode('lend')">✔ Koniec / 手続き終了</button></div>`;
   d.classList.remove('hidden');
 }
 
@@ -488,7 +511,7 @@ async function doReturn(b){
   try { r = await api('return', { bookId: b.id }); }
   finally { busy(false); }
   if (r.status !== 'ok') { showErr(r.message || 'Błąd'); return; }
-  stopCam();
+  camBefore = camOn || camWanted; stopCam();
   document.getElementById('scan-card').classList.add('hidden');
   // ⭐ 返却ポイント（2pt・当日の注文がある会員だけ・1日1回・7日で2回まで）の結果を係員に見せる
   const hint = r.lateDays > 0
@@ -520,7 +543,8 @@ async function doReturn(b){
        <div style="font-weight:700">Zwrot zapisany / 返却を記録しました</div>
        <div class="sub" style="margin-top:.4rem">${esc(r.book.title)}<br>${esc(r.book.id)}</div>
      </div>${gift}
-     <div class="btn-row"><button class="btn btn-primary" onclick="setMode('return')">📗 Następna / 次の返却</button></div>`;
+     <div class="btn-row"><button class="btn btn-primary" onclick="nextMode('return')">📗 Następna książka / 次の本を返却</button></div>
+     <div class="btn-row"><button class="btn btn-ghost" onclick="finishMode('return')">✔ Koniec / 手続き終了</button></div>`;
   d.classList.remove('hidden');
 }
 
