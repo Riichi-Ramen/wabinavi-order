@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- 2026-11-03 セキュリティ：通信先・読み込み元を限定（XSSで情報が外へ出るのを防ぐ）。外部ドメインを足すときはここも直す -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'self'; form-action 'self'; object-src 'none'">
-<meta name="wabi-version" content="staff-20261108-voucher">
+<meta name="wabi-version" content="staff-20261113-voucherlink">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — 係員専用 / Obsługa</title>
@@ -671,6 +671,14 @@ window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('staff-password').value = savedPw;
       document.getElementById('staff-remember').checked = true;
       loadStaffPresets();
+    }
+  } catch (e) {}
+  // 🎟 予約画面などからのリンク（#voucher-sell / #voucher-redeem）：該当タブを開いて金券パネルへ移動
+  try {
+    const m = /^#voucher-(sell|redeem|check)$/.exec(location.hash);
+    if (m) {
+      const tabs = document.querySelectorAll('#voucher-tabs .id-tab'), idx = {redeem:0, sell:1, check:2}[m[1]];
+      if (tabs[idx]) { voucherTab_(m[1], tabs[idx]); document.getElementById('voucher-tabs').scrollIntoView({block:'start'}); }
     }
   } catch (e) {}
 });

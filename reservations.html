@@ -173,6 +173,10 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
     <small>電話で受けた予約をここから登録</small>
   </button>
   <button class="tel-open" onclick="openDeliveries()">🛵 Dostawy / 配達 <strong id="delivery-badge"></strong></button>
+  <div style="display:flex;gap:.5rem;width:100%;max-width:560px;margin-bottom:.5rem">
+    <a class="tel-open" style="flex:1;margin:0" href="staff.html#voucher-sell" target="_blank" rel="noopener">🎟 Sprzedaj bon / 金券を販売</a>
+    <a class="tel-open" style="flex:1;margin:0" href="staff.html#voucher-redeem" target="_blank" rel="noopener">🎟 Użyj bonu / 金券を使用</a>
+  </div>
   <div class="tabs">
     <button class="tab active" id="tab-today" onclick="setRange('today')">📅 Dziś / 今日</button>
     <button class="tab" id="tab-upcoming" onclick="setRange('upcoming')">🔜 Nadchodzące / 今後</button>
