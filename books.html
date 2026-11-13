@@ -397,7 +397,7 @@ async function nextMode(m){
   if (was) startCam();
 }
 // 貸出状況シートのURL（係員パスワード確認後にだけサーバーから受け取る。ページには書かない）
-let BOOKS_SHEET_URL = '';
+let BOOKS_SHEET_URL = '', LAST_SHEET_ROW = 0;
 async function prefetchSheetUrl(){
   if (BOOKS_SHEET_URL || !PW) return;
   try {
@@ -408,7 +408,10 @@ async function prefetchSheetUrl(){
 // 手続き終了のとき、貸出状況（書籍シート）を別タブで開いて確認できるようにする
 function openBooksSheet(){
   if (!BOOKS_SHEET_URL) { prefetchSheetUrl(); return; }
-  const w = window.open(BOOKS_SHEET_URL, '_blank', 'noopener');
+  // 直前に貸出・返却した本の行へ移動した状態で開く（スクロール不要）
+  const url = BOOKS_SHEET_URL + (LAST_SHEET_ROW > 1 ? '&range=A' + LAST_SHEET_ROW : '');
+  LAST_SHEET_ROW = 0;
+  const w = window.open(url, '_blank', 'noopener');
   if (!w) showErr('Zablokowano nowe okno — zezwól na wyskakujące okna / ポップアップがブロックされました。許可してください');
 }
 // 「終了」: カメラを止め、空の貸出画面（待機）に戻る
@@ -509,6 +512,7 @@ async function doLend(){
     const rl = document.getElementById('reg-link'); if (rl) rl.classList.toggle('hidden', r.status !== 'notMember');
     return;
   }
+  if (r.sheetRow > 1) LAST_SHEET_ROW = r.sheetRow;
   camBefore = camOn || camWanted; stopCam();
   document.getElementById('scan-card').classList.add('hidden');
   const d = document.getElementById('detail-card');
@@ -587,6 +591,7 @@ async function doReturn(b){
   try { r = await api('return', { bookId: b.id }); }
   finally { busy(false); }
   if (r.status !== 'ok') { showErr(r.message || 'Błąd'); return; }
+  if (r.sheetRow > 1) LAST_SHEET_ROW = r.sheetRow;
   camBefore = camOn || camWanted; stopCam();
   document.getElementById('scan-card').classList.add('hidden');
   // ⭐ 返却ポイント（2pt・当日の注文がある会員だけ・1日1回・7日で2回まで）の結果を係員に見せる
