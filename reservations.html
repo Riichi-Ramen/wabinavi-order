@@ -154,17 +154,18 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
 
 /* 2026-11-13 今週のコード：上部の中央に1行で表示（左上固定をやめて場所を節約。文字は大きめ） */
 #wk-code{position:static;margin:2px auto 8px;width:max-content;max-width:100%;background:#2c1810;border:2px solid #c8a96e;border-radius:12px;
-  padding:.3rem 1rem;text-align:center;display:none;box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap}
+  padding:.3rem .7rem;text-align:center;display:none;box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap}
+#wk-code .lg{display:inline-block;vertical-align:middle;height:46px;width:auto;background:#fff;border-radius:8px;padding:2px 4px;margin-right:.6rem}
 #wk-code .l,#wk-code .c{display:inline-block;vertical-align:middle}
-#wk-code .l{color:#c8a96e;font-weight:700;font-size:.78rem;line-height:1.3;margin-right:.7rem}
-#wk-code .c{color:#ff6b57;font-weight:800;font-size:2.3rem;letter-spacing:.2em;margin-left:.2em;line-height:1.1}
+#wk-code .l{color:#c8a96e;font-weight:700;font-size:.7rem;line-height:1.3;margin-right:.4rem;white-space:normal;width:6.1rem;text-align:left}
+#wk-code .c{color:#ff6b57;font-weight:800;font-size:2.1rem;letter-spacing:.12em;margin-left:0;line-height:1.1}
 </style>
 </head>
 <body>
 
 <div class="logo-txt" id="logo-tap">和美なび</div>
 <div class="title">📋 Rezerwacje — panel personelu / 予約一覧（スタッフ用）</div>
-<div id="wk-code"><div class="l">🔑 Kod tygodnia / 今週のコード</div><div class="c" id="wk-code-v">----</div></div>
+<div id="wk-code"><img class="lg" src="wabinavi_logo.jpg" alt="和美なび WABI NAVI"><div class="l">🔑 Kod tygodnia<br>今週のコード</div><div class="c" id="wk-code-v">----</div></div>
 
 <!-- ログイン -->
 <div class="card" id="login-card">
@@ -452,6 +453,7 @@ async function loadWkCode_(){
     if (d && d.status === 'ok' && /^\d{4}$/.test(String(d.stampCode || ''))){
       document.getElementById('wk-code-v').textContent = String(d.stampCode);
       document.getElementById('wk-code').style.display = 'block';
+      document.getElementById('logo-tap').style.display = 'none';
     }
   }catch(e){ wkCodeAt_ = 0; }
 }
