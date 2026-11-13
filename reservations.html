@@ -186,12 +186,16 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
     <button class="tab active" id="tab-today" onclick="setRange('today')">📅 Dziś / 今日</button>
     <button class="tab" id="tab-upcoming" onclick="setRange('upcoming')">🔜 Nadchodzące / 今後</button>
     <button class="tab" id="tab-all" onclick="setRange('all')">🗂 Wszystkie / 全件</button>
-    <button class="tab" id="tab-cal" onclick="setRange('cal')">📆 3 tyg. / 3週間</button>
   </div>
   <div class="summary">
     <span id="sum-text"></span>
     <button class="refresh" onclick="load()">🔄 Odśwież / 更新</button>
   </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;width:100%;max-width:560px;margin:.2rem 0 .3rem">
+    <button type="button" id="cal-toggle" class="refresh" style="text-decoration:none" onclick="toggleCal_()"></button>
+    <span id="cal-sum" style="font-size:.7rem;color:var(--muted)"></span>
+  </div>
+  <div id="cal-grid" style="width:100%;max-width:560px;margin-bottom:.8rem"></div>
   <div class="qk">
     <a class="qk-b" href="staff.html#scan" target="_blank" rel="noopener">📷 Skan członka<small>会員QR照合</small></a>
     <a class="qk-b" href="staff.html#support" target="_blank" rel="noopener">🔎 Sprawdź członka<small>会員照会</small></a>
@@ -378,26 +382,47 @@ function showLoginErr(m, ok){
   e.style.display = 'block';
 }
 
-let CAL = false;
 function setRange(r){
-  CAL = (r === 'cal');
-  RANGE = CAL ? 'all' : r;
-  ['today','upcoming','all','cal'].forEach(x =>
+  RANGE = r;
+  ['today','upcoming','all'].forEach(x =>
     document.getElementById('tab-'+x).classList.toggle('active', x === r));
   load();
 }
 // 📆 3週間カレンダー（予約シート「Rezerwacja / Dziś」の下段と同じ内容。日をタップすると、その日の一覧）
 function calDay_(date){
-  CAL = false; RANGE = date;
-  ['today','upcoming','all','cal'].forEach(x => document.getElementById('tab-'+x).classList.remove('active'));
+  RANGE = date;
+  ['today','upcoming','all'].forEach(x => document.getElementById('tab-'+x).classList.remove('active'));
   load();
 }
-function renderCal_(list){
-  const area = document.getElementById('list-area');
+// 常時表示（隠す／表示の切替は端末に記憶）。一覧のタブとは独立して、3週間ぶんを別に読む。
+let CAL_HIDDEN = false;
+try { CAL_HIDDEN = localStorage.getItem('wabi_cal_hidden') === '1'; } catch (e) {}
+function applyCalVisibility_(){
+  const g = document.getElementById('cal-grid'), b = document.getElementById('cal-toggle');
+  if (!g || !b) return;
+  g.style.display = CAL_HIDDEN ? 'none' : 'block';
+  b.textContent = (CAL_HIDDEN ? '▸ ' : '▾ ') + '📆 Kalendarz 3 tyg. / 3週間カレンダー ' + (CAL_HIDDEN ? '（表示 / Pokaż）' : '（隠す / Ukryj）');
+}
+document.addEventListener('DOMContentLoaded', applyCalVisibility_);
+function toggleCal_(){
+  CAL_HIDDEN = !CAL_HIDDEN;
+  try { localStorage.setItem('wabi_cal_hidden', CAL_HIDDEN ? '1' : '0'); } catch (e) {}
+  applyCalVisibility_();
+  if (!CAL_HIDDEN) loadCal_();
+}
+async function loadCal_(){
+  if (CAL_HIDDEN || !PW) return;
+  try{
+    const d = await (await staffRead_(GAS_URL + '?action=getReservations&password=' + encodeURIComponent(PW) + '&range=all')).json();
+    if (d && d.status === 'ok') renderCal_(d.reservations || [], d.today || TODAY);
+  }catch(e){}
+}
+function renderCal_(list, today){
+  const area = document.getElementById('cal-grid');
   const act = hideDupCancelled_(list).filter(r => statusClass(r.status) !== 'grey');
   const byDate = {}; act.forEach(r => { (byDate[r.date] = byDate[r.date] || []).push(r); });
   const pad = n => String(n).padStart(2,'0'), fmt = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-  const base = new Date((TODAY || fmt(new Date())) + 'T12:00:00');
+  const base = new Date((today || fmt(new Date())) + 'T12:00:00');
   const monday = new Date(base); monday.setDate(base.getDate() - ((base.getDay() + 6) % 7));
   let from = null, to = null, cnt = 0, gsum = 0;
   let html = '<div class="cal"><div class="cal-h">Pon 月</div><div class="cal-h">Wt 火</div><div class="cal-h">Śr 水</div><div class="cal-h">Czw 木</div><div class="cal-h">Pt 金</div><div class="cal-h">Sob 土</div><div class="cal-h">Ndz 日</div>';
@@ -407,13 +432,13 @@ function renderCal_(list){
     const g = rows.reduce((n,r) => n + (parseInt(r.guests,10)||0), 0);
     cnt += rows.length; gsum += g;
     const shown = rows.slice(0,4).map(r => '🕐'+esc(r.time||'?')+' ×'+esc(r.guests)).join('<br>') + (rows.length > 4 ? '<br>+' + (rows.length-4) : '');
-    html += '<button type="button" class="cal-c'+(ds===TODAY?' today':'')+(rows.length?' has':'')+'" onclick="calDay_(\''+ds+'\')">'
-      + '<b>'+pad(dt.getDate())+'.'+pad(dt.getMonth()+1)+'</b>'+(ds===TODAY?' ⭐':'')
+    html += '<button type="button" class="cal-c'+(ds===today?' today':'')+(rows.length?' has':'')+'" onclick="calDay_(\''+ds+'\')">'
+      + '<b>'+pad(dt.getDate())+'.'+pad(dt.getMonth()+1)+'</b>'+(ds===today?' ⭐':'')
       + (rows.length ? '<span class="cal-n">'+rows.length+' rez. / '+g+' os.</span>'+shown : '<span class="cal-n">—</span>') + '</button>';
   }
-  html += '</div><p class="empty" style="margin-top:.6rem">Dotknij dnia — lista / 日をタップすると、その日の一覧</p>';
+  html += '</div><p style="font-size:.66rem;color:var(--muted);text-align:center;margin:.3rem 0 0">Dotknij dnia — lista / 日をタップすると、その日の一覧</p>';
   area.innerHTML = html;
-  document.getElementById('sum-text').textContent = cnt + ' rezerwacji / 件 · ' + gsum + ' osób / 名 (3 tyg. / 3週間)';
+  const t = document.getElementById('cal-sum'); if (t) t.textContent = cnt + ' rez. · ' + gsum + ' os.';
 }
 
 let wkCodeAt_ = 0;
@@ -452,7 +477,8 @@ async function load(silentAuth){
     LOAD_FAIL = '';
     loadWkCode_();
     TODAY = d.today;
-    if (CAL) renderCal_(d.reservations || []); else render(d.reservations || []);
+    render(d.reservations || []);
+    loadCal_();
     if (!staffNamesLoaded){ staffNamesLoaded = true; loadStaffNames(); }
     return true;
   }catch(e){
