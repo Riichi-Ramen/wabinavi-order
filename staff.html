@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- 2026-11-03 セキュリティ：通信先・読み込み元を限定（XSSで情報が外へ出るのを防ぐ）。外部ドメインを足すときはここも直す -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'self'; form-action 'self'; object-src 'none'">
-<meta name="wabi-version" content="staff-20261113-voucherbtn">
+<meta name="wabi-version" content="staff-20261113-panes">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — 係員専用 / Obsługa</title>
@@ -21,7 +21,7 @@ body{
   display:flex;flex-direction:column;align-items:center;
   padding:1.5rem 1rem 3rem;
 }
-.logo{width:120px;margin:0 auto 1.2rem;display:block;filter:drop-shadow(0 3px 10px rgba(200,100,80,.3))}
+.logo{width:36px;margin:0 auto .3rem;display:block;filter:drop-shadow(0 3px 10px rgba(200,100,80,.3))}
 .title{font-size:1rem;color:var(--accent);font-weight:700;text-align:center;margin-bottom:.3rem}
 .subtitle{font-size:.75rem;color:var(--muted);text-align:center;margin-bottom:1.5rem}
 
@@ -115,6 +115,11 @@ body{
 .spinner{display:inline-block;width:24px;height:24px;border:3px solid rgba(192,57,43,0.2);
   border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:.5rem}
 @keyframes spin{to{transform:rotate(360deg)}}
+.pane{display:none}.pane.on{display:block}
+.mbtn{display:block;text-align:center;text-decoration:none;margin:0;font-size:.8rem;padding:.55rem .3rem;line-height:1.35;width:100%}
+.mbtn.main{border:2px solid var(--accent);background:rgba(192,57,43,.06)}
+.mbtn.cur{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mbtn.cur small{color:#fff}
 </style>
 </head>
 <body>
@@ -130,34 +135,46 @@ body{
 
 <!-- 2026-10-21：係員メニューの先頭に「今週のコード」を大きく出す（口頭でお客様に伝えるため）。
      コードはパスワード確認後にサーバーから届く（このページには書かない・公開しない）。 -->
-<div class="card" id="weekly-code-card" style="padding:1rem;text-align:center;background:#2c1810;border:3px solid #c8a96e">
-  <div style="color:#c8a96e;font-weight:700;font-size:.95rem">🔑 Kod tygodnia / Weekly code / 今週のコード</div>
-  <div id="weekly-code" style="font-size:clamp(1.8rem,9vw,2.6rem);font-weight:800;letter-spacing:.2em;margin:.2rem 0 .1rem .2em;color:#ff6b57;line-height:1.1;white-space:nowrap">— — — —</div>
-  <div id="weekly-code-note" style="color:#f1e6d3;font-size:.78rem;line-height:1.6">
+<div class="card" id="weekly-code-card" style="padding:.5rem .8rem;text-align:center;background:#2c1810;border:3px solid #c8a96e">
+  <div style="color:#c8a96e;font-weight:700;font-size:.78rem">🔑 Kod tygodnia / Weekly code / 今週のコード</div>
+  <div id="weekly-code" style="font-size:clamp(1.8rem,9vw,2.6rem);font-weight:800;letter-spacing:.2em;margin:0 0 .1rem .2em;color:#ff6b57;line-height:1.1;white-space:nowrap">— — — —</div>
+  <div id="weekly-code-note" style="color:#f1e6d3;font-size:.7rem;line-height:1.5">
     🔒 Wpisz hasło poniżej, aby zobaczyć / 下の「係員専用パネル」にパスワードを入れると表示されます</div>
-  <div style="color:#c8a96e;font-size:.66rem;margin-top:.4rem;line-height:1.5">
+  <div style="color:#c8a96e;font-size:.6rem;margin-top:.3rem;line-height:1.4">
     Podaj gościowi ustnie, gdy prosi o pieczątkę. Nie publikuj i nie wywieszaj. / スタンプを押したいお客様に口頭で。掲示・SNSはNG。<br>
     Zmienia się co tydzień (stary kod nie działa). / 毎週変わります（前の週のコードは使えません）。</div>
 </div>
 
-<div class="card" id="admin-menu" style="padding:1rem">
-  <div class="staff-title">🧰 Menu obsługi / 係員メニュー</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="#voucher-sell">🎟 Sprzedaj bon<br><small>金券を販売</small></a>
-    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="#voucher-redeem">🎟 Użyj bonu<br><small>金券を使用</small></a>
-    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="books.html">📚 Książki<br><small>図書の貸出・返却</small></a>
-    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="reservations.html">📅 Rezerwacje<br><small>予約の確認・操作</small></a>
-    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="kitchen.html">🍳 Kuchnia<br><small>キッチン表示</small></a>
-    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="pos.html">🧾 Do POS<br><small>POS転記画面</small></a>
-    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="items.html">🚫 Wyprzedane<br><small>商品の表示・売切</small></a>
-    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="nihongo.html" target="_blank" rel="noopener">🎌 Japoński / Quiz<br><small>日本語・クイズ（確認用）</small></a>
-    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="book_labels.html">🏷 Etykiety QR<br><small>書籍QRラベル印刷</small></a>
+<div class="card" id="admin-menu" style="padding:.7rem">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.45rem">
+    <a class="btn btn-secondary mbtn main" href="reservations.html">📅 Rezerwacje<br><small>予約の確認・操作</small></a>
+    <button type="button" class="btn btn-secondary mbtn main cur" data-pane="scan" onclick="showPane_('scan')">📷 Skan członka<br><small>会員QR照合・ポイント</small></button>
+    <button type="button" class="btn btn-secondary mbtn " data-pane="points" onclick="showPane_('points')">➕ Punkty ręcznie<br><small>ポイント手動付与・取消</small></button>
+    <button type="button" class="btn btn-secondary mbtn " data-pane="support" onclick="showPane_('support')">🔎 Sprawdź członka<br><small>会員照会・お客様サポート</small></button>
+    <a class="btn btn-secondary mbtn " href="kitchen.html">🍳 Kuchnia<br><small>キッチン表示</small></a>
+    <a class="btn btn-secondary mbtn " href="books.html">📚 Książki<br><small>図書の貸出・返却</small></a>
+    <a class="btn btn-secondary mbtn " href="items.html">🚫 Wyprzedane<br><small>商品の表示・売切</small></a>
+    <button type="button" class="btn btn-secondary mbtn " data-pane="howto" onclick="showPane_('howto')">📖 Instrukcje<br><small>手順の案内</small></button>
+    <button type="button" class="btn btn-secondary mbtn " data-pane="voucher-sell" onclick="openVoucher_('sell')">🎟 Sprzedaj bon<br><small>金券を販売</small></button>
+    <button type="button" class="btn btn-secondary mbtn " data-pane="voucher-redeem" onclick="openVoucher_('redeem')">🎟 Użyj bonu<br><small>金券を使用</small></button>
+    <a class="btn btn-secondary mbtn " href="nihongo.html" target="_blank" rel="noopener">🎌 Japoński / Quiz<br><small>日本語・クイズ（確認用）</small></a>
+    <a class="btn btn-secondary mbtn " href="book_labels.html">🏷 Etykiety QR<br><small>書籍QRラベル印刷</small></a>
   </div>
-  <div style="font-size:.66rem;color:var(--muted);margin-top:.5rem;line-height:1.5">
-    Punkty: poniżej / ポイント付与は下のパネル。Każda strona prosi o hasło obsługi. / 各ページで係員パスワードを求められる場合があります。</div>
 </div>
 
-<div class="card" id="support-card">
+<details class="card" id="pw-card" open style="padding:.6rem .8rem">
+  <summary style="font-weight:700;font-size:.8rem;cursor:pointer">🔑 Hasło / パスワード <span id="pw-ok" style="color:#2e7d32"></span></summary>
+  <label class="form-label">🔑 パスワード / Hasło</label>
+  <input class="form-input" type="password" id="staff-password" placeholder="Hasło / Password / パスワード" onchange="loadStaffPresets()" oninput="scheduleStaffPresets()">
+  <label style="display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--muted);margin:.3rem 0 .5rem;cursor:pointer">
+    <input type="checkbox" id="staff-remember" style="width:16px;height:16px;accent-color:var(--accent)">
+    この端末を記憶する（スタッフ端末のみ）/ Zapamiętaj to urządzenie
+  </label>
+  <p style="font-size:.62rem;color:var(--muted);margin:0 0 .5rem;line-height:1.4">
+    Odznaczenie i wykonanie operacji usuwa zapamiętane hasło. Nie używaj na urządzeniach gości. / Unchecking and performing an action clears the saved password. Do not use on guests' devices. / ※チェックを外して操作すると記憶は消去されます。お客様の端末では使用しないでください。</p>
+</details>
+
+<div class="card pane" id="pane-support">
   <div class="staff-title">🙋 Pomoc gościom / お客様サポート</div>
 
   <label class="form-label">🔎 Sprawdź członka / 会員の状況を確認（電話またはメール）</label>
@@ -202,7 +219,7 @@ body{
   </details>
 </div>
 
-<div class="card" id="howto-card">
+<div class="card pane" id="pane-howto">
   <div class="staff-title">📖 Instrukcje / 手順の案内（スプレッドシート・メール）</div>
   <div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem;line-height:1.5">
     Te czynności wykonuje się w arkuszu Google lub e-mailem (brak osobnej strony). / これらはスプレッドシートかメールで行います（専用ページはありません）。</div>
@@ -242,8 +259,8 @@ body{
     📘 <a href="instrukcja-obsluga-7f3a9c2e.html" style="color:var(--accent);font-weight:700">Pełna instrukcja / マニュアル全文</a></div>
 </div>
 
-<div class="card" id="screen-staff">
-  <div class="staff-title">🔒 係員専用パネル / Panel obsługi</div>
+<div class="card pane" id="pane-points">
+  <div class="staff-title">➕ Ręczne punkty / ポイント手動付与・取消</div>
   <div style="background:rgba(192,57,43,.07);border-radius:10px;padding:.55rem .7rem;margin:.2rem 0 .8rem;font-size:.72rem;line-height:1.6;color:var(--ink)">
     <b>Co można tu zrobić / What you can do here / このパネルでできること</b><br>
     ① Ręczne dodanie punktów (przyciski poniżej) / Add points manually (buttons below) / ポイントの<b>手動付与</b><br>
@@ -253,14 +270,6 @@ body{
     Regular stamps (ramen 10 · donburi 7 · starters 3 · drinks 2 pts) are earned by guests themselves — use this panel only to add or undo points by hand.<br>
     注文に応じた通常のスタンプ（ラーメン10・丼物7・前菜3・ドリンク2pt）はお客様が自分で押すと自動で付きます。ここは係員が手で付ける・取り消すときだけ使います。</span>
   </div>
-  <label class="form-label">🔑 パスワード / Hasło</label>
-  <input class="form-input" type="password" id="staff-password" placeholder="Hasło / Password / パスワード" onchange="loadStaffPresets()" oninput="scheduleStaffPresets()">
-  <label style="display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--muted);margin:.3rem 0 .5rem;cursor:pointer">
-    <input type="checkbox" id="staff-remember" style="width:16px;height:16px;accent-color:var(--accent)">
-    この端末を記憶する（スタッフ端末のみ）/ Zapamiętaj to urządzenie
-  </label>
-  <p style="font-size:.62rem;color:var(--muted);margin:0 0 .5rem;line-height:1.4">
-    Odznaczenie i wykonanie operacji usuwa zapamiętane hasło. Nie używaj na urządzeniach gości. / Unchecking and performing an action clears the saved password. Do not use on guests' devices. / ※チェックを外して操作すると記憶は消去されます。お客様の端末では使用しないでください。</p>
   <label class="form-label">📧 E-mail lub telefon członka / Member e-mail or phone / 会員のメールまたは電話番号</label>
   <input class="form-input" type="text" inputmode="email" autocapitalize="off" id="staff-email" placeholder="jan@email.com / 669751337">
   <label class="form-label">🍜 Liczba punktów / Points to add (manual) / 付与するポイント（手動）</label>
@@ -287,7 +296,9 @@ body{
       onclick="doStaffRemovePoint(5)">↩️ −5 pkt cofnij / Undo −5 / −5pt取消</button>
   </div>
   <div id="staff-result" style="margin-top:.8rem;display:none"></div>
-  <hr class="divider">
+</div>
+
+<div class="card pane on" id="pane-scan">
   <div class="staff-title" style="font-size:.85rem">📷 会員QRスキャン付与 / Skanuj kod QR członka</div>
   <p style="font-size:.72rem;color:var(--muted);margin:.3rem 0 .6rem;line-height:1.5">
     Zeskanuj kod QR z karty członka — zamówienie zostanie zweryfikowane automatycznie.<br>
@@ -300,7 +311,9 @@ body{
     <button class="btn btn-secondary" style="margin-top:.5rem" onclick="stopQrScan()">✖ 中止 / Anuluj</button>
   </div>
   <div id="qr-result" style="margin-top:.8rem;display:none"></div>
-  <hr class="divider">
+</div>
+
+<div class="card pane" id="pane-voucher">
   <div class="staff-title" style="font-size:.9rem">🎟 Bony / Vouchers / 金券</div>
   <div class="id-tabs" id="voucher-tabs">
     <button class="id-tab active" onclick="voucherTab_('redeem',this)">Użyj / Redeem / 使用</button>
@@ -665,14 +678,22 @@ async function supLookup() {
   }
 }
 
-// 🎟 メニュー・予約画面からのリンク（#voucher-sell / #voucher-redeem / #voucher-check）：該当タブを開いて金券パネルへ移動
+// 🧭 係員メニュー：ペイン（会員QR／ポイント／照会／手順／金券）の切替。ページ移動なし。
+function showPane_(name) {
+  try { if (typeof stopQrScan === 'function') stopQrScan(); } catch (e) {}
+  try { if (typeof voucherStopScan_ === 'function') voucherStopScan_(); } catch (e) {}
+  document.querySelectorAll('.pane').forEach(function (el) { el.classList.toggle('on', el.id === 'pane-' + name); });
+  document.querySelectorAll('#admin-menu [data-pane]').forEach(function (b) { b.classList.toggle('cur', b.getAttribute('data-pane') === name || (name === 'voucher' && b.getAttribute('data-pane') === ('voucher-' + voucherMode_))); });
+  const el = document.getElementById('pane-' + name); if (el) el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function openVoucher_(mode) {
+  const tabs = document.querySelectorAll('#voucher-tabs .id-tab'), idx = {redeem:0, sell:1, check:2}[mode];
+  if (!tabs[idx]) return;
+  voucherTab_(mode, tabs[idx]); showPane_('voucher');
+}
+// 🎟 予約画面などからのリンク（#voucher-sell / #voucher-redeem / #voucher-check）
 function openVoucherFromHash_() {
-  try {
-    const m = /^#voucher-(sell|redeem|check)$/.exec(location.hash);
-    if (!m) return;
-    const tabs = document.querySelectorAll('#voucher-tabs .id-tab'), idx = {redeem:0, sell:1, check:2}[m[1]];
-    if (tabs[idx]) { voucherTab_(m[1], tabs[idx]); document.getElementById('voucher-tabs').scrollIntoView({block:'start'}); }
-  } catch (e) {}
+  try { const m = /^#voucher-(sell|redeem|check)$/.exec(location.hash); if (m) openVoucher_(m[1]); } catch (e) {}
 }
 window.addEventListener('DOMContentLoaded', () => {
   initStaffDevice();
@@ -681,6 +702,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (savedPw) {
       document.getElementById('staff-password').value = savedPw;
       document.getElementById('staff-remember').checked = true;
+      document.getElementById('pw-card').open = false; document.getElementById('pw-ok').textContent = '✓';
       loadStaffPresets();
     }
   } catch (e) {}
