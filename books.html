@@ -490,8 +490,8 @@ async function doReturn(b){
   } else if (r.pointsAlready) {
     pts = `⭐ Punkty za zwrot już dziś przyznane / 本日分の返却ポイントは付与済みです`;
   } else if (r.pointsReason === 'noOrder') {
-    pts = `⭐ Brak zamówienia członka dziś — bez punktów za zwrot. Jeśli zamówi później, dodaj punkty ręcznie (arkusz Punkty / Obsługa).<br>`
-        + `本日この会員の注文が記録されていないため、返却ポイントは付きません（注文後に付けたい場合は、係員シートからポイントを手動で加算）`;
+    pts = `⭐ Brak zamówienia członka dziś — punkty za zwrot dodadzą się <b>automatycznie</b>, jeśli zamówi później tego samego dnia (z kartą członkowską).<br>`
+        + `本日この会員の注文がまだ無いため、返却ポイントは保留です。<b>今日このあと会員カードで注文されれば自動で付与</b>されます。`;
   } else if (r.pointsReason === 'weeklyLimit') {
     pts = `⭐ Limit punktów za zwrot: 2 razy na 7 dni — tym razem bez punktów / 直近7日で返却ポイントは2回まで。今回は付きません`;
   } else {
