@@ -50,7 +50,7 @@ body{
 .step{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
 .step b{color:var(--accent);font-size:.95rem}
 #reader{width:100%;border-radius:12px;overflow:hidden;margin-bottom:.7rem;background:#000;min-height:60px}
-#reader{display:none;max-width:360px;margin-left:auto;margin-right:auto}
+#reader{display:none;max-width:480px;margin-left:auto;margin-right:auto}
 #reader.show{display:block}
 .scan-hint{font-size:.78rem;color:var(--muted);text-align:center;margin-bottom:.6rem;line-height:1.6}
 .book-box{border:1.5px solid var(--border);border-radius:12px;padding:.9rem;margin-bottom:.8rem;background:rgba(255,255,255,.6)}
@@ -366,8 +366,13 @@ async function startCam_(){
   try {
     const rd = document.getElementById('reader'); rd.innerHTML = ''; rd.classList.add('show');
     scanner = new Html5Qrcode('reader');
+    // 読み取り精度：高解像度で撮影し、読み取り枠を映像の約85%に広げる（小さいQRでも読みやすく）。
+    //   ブラウザ内蔵のQR検出が使える環境では、そちらを優先する（無ければ自動で通常の方式）。
     await scanner.start({ facingMode:'environment' },
-      { fps:10, qrbox:{ width:230, height:230 } },
+      { fps:15,
+        qrbox:(w, h) => { const m = Math.floor(Math.min(w, h) * 0.85); return { width:m, height:m }; },
+        videoConstraints:{ facingMode:'environment', width:{ ideal:1920 }, height:{ ideal:1080 } },
+        experimentalFeatures:{ useBarCodeDetectorIfSupported:true } },
       txt => { onScan(txt); },
       () => {});
     camOn = true;
