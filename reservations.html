@@ -152,19 +152,19 @@ select.tel-input{appearance:none;-webkit-appearance:none;cursor:pointer;
 .done .sum{font-size:.9rem;line-height:1.7;color:var(--text)}
 .done .note{font-size:.74rem;color:var(--muted);margin-top:.5rem;line-height:1.5}
 
-/* 2026-11-07 今週のコード（左上。狭い画面では上部に通常表示） */
-#wk-code{position:fixed;top:10px;left:10px;z-index:50;background:#2c1810;border:2px solid #c8a96e;border-radius:12px;
-  padding:.45rem .8rem;text-align:center;display:none;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-#wk-code .l{color:#c8a96e;font-weight:700;font-size:.68rem;line-height:1.3}
-#wk-code .c{color:#ff6b57;font-weight:800;font-size:1.9rem;letter-spacing:.2em;margin-left:.2em;line-height:1.1}
-@media (max-width:900px){#wk-code{position:static;margin:8px auto;width:max-content}}
+/* 2026-11-13 今週のコード：上部の中央に1行で表示（左上固定をやめて場所を節約。文字は大きめ） */
+#wk-code{position:static;margin:2px auto 8px;width:max-content;max-width:100%;background:#2c1810;border:2px solid #c8a96e;border-radius:12px;
+  padding:.3rem 1rem;text-align:center;display:none;box-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap}
+#wk-code .l,#wk-code .c{display:inline-block;vertical-align:middle}
+#wk-code .l{color:#c8a96e;font-weight:700;font-size:.78rem;line-height:1.3;margin-right:.7rem}
+#wk-code .c{color:#ff6b57;font-weight:800;font-size:2.3rem;letter-spacing:.2em;margin-left:.2em;line-height:1.1}
 </style>
 </head>
 <body>
 
-<div id="wk-code"><div class="l">🔑 Kod tygodnia / 今週のコード</div><div class="c" id="wk-code-v">----</div></div>
 <div class="logo-txt" id="logo-tap">和美なび</div>
 <div class="title">📋 Rezerwacje — panel personelu / 予約一覧（スタッフ用）</div>
+<div id="wk-code"><div class="l">🔑 Kod tygodnia / 今週のコード</div><div class="c" id="wk-code-v">----</div></div>
 
 <!-- ログイン -->
 <div class="card" id="login-card">
