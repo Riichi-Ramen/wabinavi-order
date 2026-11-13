@@ -4,7 +4,19 @@
 <meta charset="UTF-8">
 <!-- 2026-11-03 セキュリティ：通信先・読み込み元を限定（XSSで情報が外へ出るのを防ぐ）。外部ドメインを足すときはここも直す -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'self'; form-action 'self'; object-src 'none'">
-<meta name="wabi-version" content="staff-20261113-nip">
+<script>
+// 🏠 最初に開いたときは予約画面へ（2026-11-13 店主の要望）。末尾が付いたURL（#scan・#voucher-sell・#menu など）と ?staff=0（解除）は、この画面のまま。
+(function () {
+  try {
+    var q = new URLSearchParams(location.search).get('staff');
+    if (!location.hash && q !== '0') {
+      localStorage.setItem('wabi_staff_device', '1');   // 端末の係員登録は、ここでも行う
+      location.replace('reservations.html');
+    }
+  } catch (e) {}
+})();
+</script>
+<meta name="wabi-version" content="staff-20261113-home">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — 係員専用 / Obsługa</title>
