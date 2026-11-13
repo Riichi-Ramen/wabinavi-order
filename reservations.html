@@ -388,7 +388,7 @@ function setRange(r){
     document.getElementById('tab-'+x).classList.toggle('active', x === r));
   load();
 }
-// 📆 3週間カレンダー（予約シート「Rezerwacja / Dziś」の下段と同じ内容。日をタップすると、その日の一覧）
+// 📆 2週間カレンダー（今日を先頭に14日間。日をタップすると、その日の一覧）
 function calDay_(date){
   RANGE = date;
   ['today','upcoming','all'].forEach(x => document.getElementById('tab-'+x).classList.remove('active'));
@@ -423,9 +423,10 @@ function renderCal_(list, today){
   const byDate = {}; act.forEach(r => { (byDate[r.date] = byDate[r.date] || []).push(r); });
   const pad = n => String(n).padStart(2,'0'), fmt = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   const base = new Date((today || fmt(new Date())) + 'T12:00:00');
-  const monday = new Date(base); monday.setDate(base.getDate() - ((base.getDay() + 6) % 7));
+  const monday = new Date(base);   // 今日を先頭に14日間（変数名は旧仕様のまま）
+  const DN = ['Ndz 日','Pon 月','Wt 火','Śr 水','Czw 木','Pt 金','Sob 土'];
   let from = null, to = null, cnt = 0, gsum = 0;
-  let html = '<div class="cal"><div class="cal-h">Pon 月</div><div class="cal-h">Wt 火</div><div class="cal-h">Śr 水</div><div class="cal-h">Czw 木</div><div class="cal-h">Pt 金</div><div class="cal-h">Sob 土</div><div class="cal-h">Ndz 日</div>';
+  let html = '<div class="cal">' + [0,1,2,3,4,5,6].map(k => '<div class="cal-h">' + DN[(base.getDay() + k) % 7] + '</div>').join('');
   for (let i = 0; i < 14; i++){
     const dt = new Date(monday); dt.setDate(monday.getDate() + i);
     const ds = fmt(dt), rows = (byDate[ds] || []).slice().sort((a,b) => String(a.time||'').localeCompare(String(b.time||'')));
