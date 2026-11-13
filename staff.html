@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!-- 2026-11-03 セキュリティ：通信先・読み込み元を限定（XSSで情報が外へ出るのを防ぐ）。外部ドメインを足すときはここも直す -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'self'; form-action 'self'; object-src 'none'">
-<meta name="wabi-version" content="staff-20261113-voucherlink">
+<meta name="wabi-version" content="staff-20261113-voucherbtn">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>和美なび WABI NAVI — 係員専用 / Obsługa</title>
@@ -132,7 +132,7 @@ body{
      コードはパスワード確認後にサーバーから届く（このページには書かない・公開しない）。 -->
 <div class="card" id="weekly-code-card" style="padding:1rem;text-align:center;background:#2c1810;border:3px solid #c8a96e">
   <div style="color:#c8a96e;font-weight:700;font-size:.95rem">🔑 Kod tygodnia / Weekly code / 今週のコード</div>
-  <div id="weekly-code" style="font-size:4rem;font-weight:800;letter-spacing:.25em;margin:.2rem 0 .1rem .25em;color:#ff6b57;line-height:1.1">— — — —</div>
+  <div id="weekly-code" style="font-size:clamp(1.8rem,9vw,2.6rem);font-weight:800;letter-spacing:.2em;margin:.2rem 0 .1rem .2em;color:#ff6b57;line-height:1.1;white-space:nowrap">— — — —</div>
   <div id="weekly-code-note" style="color:#f1e6d3;font-size:.78rem;line-height:1.6">
     🔒 Wpisz hasło poniżej, aby zobaczyć / 下の「係員専用パネル」にパスワードを入れると表示されます</div>
   <div style="color:#c8a96e;font-size:.66rem;margin-top:.4rem;line-height:1.5">
@@ -143,6 +143,8 @@ body{
 <div class="card" id="admin-menu" style="padding:1rem">
   <div class="staff-title">🧰 Menu obsługi / 係員メニュー</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="#voucher-sell">🎟 Sprzedaj bon<br><small>金券を販売</small></a>
+    <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="#voucher-redeem">🎟 Użyj bonu<br><small>金券を使用</small></a>
     <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="books.html">📚 Książki<br><small>図書の貸出・返却</small></a>
     <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="reservations.html">📅 Rezerwacje<br><small>予約の確認・操作</small></a>
     <a class="btn btn-secondary" style="display:block;text-align:center;text-decoration:none;margin:0;font-size:.82rem" href="kitchen.html">🍳 Kuchnia<br><small>キッチン表示</small></a>
@@ -663,6 +665,15 @@ async function supLookup() {
   }
 }
 
+// 🎟 メニュー・予約画面からのリンク（#voucher-sell / #voucher-redeem / #voucher-check）：該当タブを開いて金券パネルへ移動
+function openVoucherFromHash_() {
+  try {
+    const m = /^#voucher-(sell|redeem|check)$/.exec(location.hash);
+    if (!m) return;
+    const tabs = document.querySelectorAll('#voucher-tabs .id-tab'), idx = {redeem:0, sell:1, check:2}[m[1]];
+    if (tabs[idx]) { voucherTab_(m[1], tabs[idx]); document.getElementById('voucher-tabs').scrollIntoView({block:'start'}); }
+  } catch (e) {}
+}
 window.addEventListener('DOMContentLoaded', () => {
   initStaffDevice();
   try {
@@ -673,14 +684,8 @@ window.addEventListener('DOMContentLoaded', () => {
       loadStaffPresets();
     }
   } catch (e) {}
-  // 🎟 予約画面などからのリンク（#voucher-sell / #voucher-redeem）：該当タブを開いて金券パネルへ移動
-  try {
-    const m = /^#voucher-(sell|redeem|check)$/.exec(location.hash);
-    if (m) {
-      const tabs = document.querySelectorAll('#voucher-tabs .id-tab'), idx = {redeem:0, sell:1, check:2}[m[1]];
-      if (tabs[idx]) { voucherTab_(m[1], tabs[idx]); document.getElementById('voucher-tabs').scrollIntoView({block:'start'}); }
-    }
-  } catch (e) {}
+  openVoucherFromHash_();
+  window.addEventListener('hashchange', openVoucherFromHash_);
 });
 </script>
 </body>
